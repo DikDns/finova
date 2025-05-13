@@ -12,7 +12,7 @@ const changeSlide = (index) => {
 
 <template>  
   <!-- Main Content -->
-  <div class="min-h-screen bg-white font-serif">
+  <div class="min-h-screen bg-white">
     <!-- Header Navigation -->
     <header class="py-4">
       <div class="container mx-auto flex items-center px-4">
@@ -37,7 +37,7 @@ const changeSlide = (index) => {
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center">
           <div class="md:w-1/2">
-            <h1 class="mb-4 text-5xl font-bold text-black">Atur Keuangan <span class="text-[#284A63]">Jadi Lebih Mudah!</span></h1>
+            <h1 class="mb-4 text-5xl font-bold text-black font-serif">Atur Keuangan <span class="text-[#284A63]">Jadi Lebih Mudah!</span></h1>
             <p class="mb-6 text-gray-600">Pantau pemasukan dan pengeluaran, dapatkan rekomendasi keuangan berbasis AI, dan buat laporan otomatis dalam satu platform.</p>
             <Link :href="route('register')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Begin Planning</Link>
           </div>
@@ -51,7 +51,7 @@ const changeSlide = (index) => {
     <!-- Features Section -->
     <section class="py-16 bg-white">
       <div class="container mx-auto px-4 text-center">
-        <h2 class="mb-4 text-3xl font-bold">Fitur Andalan Kami</h2>
+        <h1 class="mb-4 text-3xl font-bold font-serif">Fitur Andalan Kami</h1>
         <p class="mb-12 text-gray-600">Fitur yang bikin keuanganmu lebih teratur dan terkontrol.</p>
         
         <div class="relative">
@@ -108,7 +108,7 @@ const changeSlide = (index) => {
             <img src="../../../public/zero-cost.jpg" alt="Zero Cost Budgeting" class="max-w-md mx-auto">
           </div>
           <div class="md:w-1/2 md:pl-12">
-            <h2 class="mb-4 text-3xl font-bold">Apa itu Zero <span class="text-[#284A63]">Cost Budgeting Method?</span></h2>
+            <h1 class="mb-4 text-3xl font-bold font-serif">Apa itu Zero <span class="text-[#284A63]">Cost Budgeting Method?</span></h1>
             <p class="mb-6 text-gray-600">Cara ngatur uang biar tiap pemasukan punya tujuan jelas. AI bantu kamu bikin rencana pengeluaran yang pas.</p>
             <Link :href="route('features')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Learn More</Link>
           </div>
@@ -121,7 +121,7 @@ const changeSlide = (index) => {
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center">
           <div class="md:w-1/2">
-            <h2 class="mb-4 text-3xl font-bold">Waktunya Kelola <span class="text-[#284A63]">Uang Lebih Baik!</span></h2>
+            <h1 class="mb-4 text-3xl font-bold font-serif">Waktunya Kelola <span class="text-[#284A63]">Uang Lebih Baik!</span></h1>
             <p class="mb-6 text-gray-600">Bergabung dengan platform kami untuk mendapatkan perencanaan keuangan berbasis AI, notifikasi batas anggaran, dan laporan keuangan otomatis. Yuk mulai atur keuanganmu sekarang. Gratis & gampang!</p>
             <div class="flex flex-wrap gap-4">
               <Link :href="route('register')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Begin Planning</Link>
