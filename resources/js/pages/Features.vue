@@ -10,11 +10,9 @@ const changeSlide = (index) => {
 };
 </script>
 
-<template>
-  <h1 class="font-serif text-2xl font-bold">Features</h1>
-  
+<template>  
   <!-- Main Content -->
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-white font-serif">
     <!-- Header Navigation -->
     <header class="py-4">
       <div class="container mx-auto flex items-center px-4">
@@ -31,7 +29,7 @@ const changeSlide = (index) => {
         <Link :href="route('login')" class="text-1xl font-medium text-gray-700 me-12 hover:text-[#284A63]">Login</Link>
         <Link :href="route('register')" class="rounded-[16px] bg-[#284A63] px-4 py-2 text-sm font-medium text-white hover:bg-white hover:text-[#284A63]">Begin Planning</Link>
       </div>
-    </header>
+    </header class="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
     <hr class="border-[#D9D9D9] border-2">
 
     <!-- Hero Section -->
