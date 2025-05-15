@@ -4,11 +4,7 @@ import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Navbar } from '@/components/ui/navigation-menu';
-
-// State untuk radio button
-const selectedPlan = ref('bulanan');
 
 // Data untuk money icons
 const moneyIcons = [
@@ -41,7 +37,7 @@ const pricingPlans = [
   }
 ];
 
-// Hapus buttonVariants karena kita akan menggunakan variant bawaan shadcn-vue
+
 </script>
 
 <template>
