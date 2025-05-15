@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import Navbar from '@/components/Navbar.vue';
+import { Navbar } from '@/components/ui/navigation-menu';
 
 // State untuk radio button
 const selectedPlan = ref('bulanan');
@@ -41,11 +41,7 @@ const pricingPlans = [
   }
 ];
 
-// Menambahkan variant untuk Button
-const buttonVariants = {
-  primary: "bg-[#284A63] text-white hover:bg-[#1a3245]",
-  outline: "border border-gray-300 text-gray-700 hover:bg-gray-50"
-};
+// Hapus buttonVariants karena kita akan menggunakan variant bawaan shadcn-vue
 </script>
 
 <template>
@@ -103,7 +99,7 @@ const buttonVariants = {
               </div>
             </RadioGroup>
 
-            <Button class="w-full mt-4" variant="primary" asChild>
+            <Button class="w-full mt-4 bg-[#284A63] hover:bg-[#1a3245]" asChild>
               <Link :href="route('register')">Coba Sekarang!</Link>
             </Button>
           </CardContent>
@@ -125,10 +121,10 @@ const buttonVariants = {
               Upgrade sekarang biar duit tetap aman dan terkontrol!
             </p>
             <div class="flex flex-col md:flex-row gap-4">
-              <Button variant="primary" asChild>
+              <Button class="bg-[#284A63] hover:bg-[#1a3245]" asChild>
                 <Link :href="route('register')">Mulai Atur Keuanganmu</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" class="hover:bg-gray-50" asChild>
                 <Link :href="route('features')">Eksplor Fitur</Link>
               </Button>
             </div>
