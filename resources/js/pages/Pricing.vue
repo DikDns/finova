@@ -1,211 +1,151 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { CheckCircle } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Navbar from '@/components/Navbar.vue';
 
-// Define pricing packages (belum digunakan di template)
-const packages = ref([
+// State untuk radio button
+const selectedPlan = ref('bulanan');
+
+// Data untuk money icons
+const moneyIcons = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: '2,500',
-    period: 'bulan',
-    features: [
-      'Coba fitur standar selama 7 hari',
-      'Laporan keuangan dasar',
-      'Support via email',
-    ],
-    popular: false,
+    image: '/img/money_1.webp',
+    title: 'Langganan Perhari, Hidup Jadi Simple!'
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    price: '3,000',
-    period: 'bulan',
-    features: [
-      'Semua fitur Starter',
-      'Fitur laporan lengkap',
-      'Akses penuh integrasi',
-      'Support prioritas 24/7',
-      'Update fitur terbaru',
-    ],
-    popular: true,
+    image: '/img/money_2.webp',
+    title: 'Gak Perlu Ribet Ngatur Keuangan Lagi!'
   },
-]);
+  {
+    image: '/img/money_3.webp',
+    title: 'Stop Tebak-Tebak Pengeluaran Bulanan!'
+  }
+];
+
+// Data untuk pricing plans
+const pricingPlans = [
+  {
+    id: 'bulanan',
+    name: 'Bulanan',
+    price: 'Rp2.500/hari',
+    discount: 'Hemat 17%'
+  },
+  {
+    id: 'harian',
+    name: 'Harian',
+    price: 'Rp3.000/hari'
+  }
+];
+
+// Menambahkan variant untuk Button
+const buttonVariants = {
+  primary: "bg-[#284A63] text-white hover:bg-[#1a3245]",
+  outline: "border border-gray-300 text-gray-700 hover:bg-gray-50"
+};
 </script>
 
 <template>
-  <div class="min-h-screen bg-white">
-    <!-- Header Navigation -->
-    <header class="py-4">
-      <div class="container mx-auto flex items-center px-4">
-        <!-- Logo -->
-        <Link :href="route('home')" class="text-2xl font-bold mr-12 text-blue-600">
-          <img src="/finova-logo.svg" alt="Finova Logo" class="h-12" />
-        </Link>
+  <div class="min-h-screen bg-background">
+    <Navbar />
+    
+    <Separator />
 
-        <!-- Navigation Menu -->
-        <nav class="flex items-start mr-auto space-x-12">
-          <Link :href="route('features')" class="text-base font-medium text-gray-700 hover:text-[#284A63]">Features</Link>
-          <Link :href="route('pricing')" class="text-base font-bold text-gray-900 hover:text-[#284A63]">Pricing</Link>
-        </nav>
-        <Link :href="route('login')" class="text-base font-medium text-gray-700 mr-12 hover:text-[#284A63]">Login</Link>
-        <Link
-          :href="route('register')"
-          class="rounded-2xl bg-[#284A63] px-4 py-2 text-sm font-medium text-white hover:bg-white hover:text-[#284A63]"
-        >
-          Begin Planning
-        </Link>
-      </div>
-    </header>
-
-    <hr class="border-[#D9D9D9] border-2" />
-
-    <!-- Hero Section -->
-    <section class="py-16 text-center bg-white">
-      <div class="container mx-auto px-4">
-        <h1 class="mb-4 text-5xl font-bold text-black">
-          Upgrade Finansialmu, <br /><span class="text-[#284A63]">Gak Pakai Ribet!</span>
+    <!-- Main Content -->
+    <main class="py-16">
+      <!-- Hero Section -->
+      <section class="container mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-12">
+          Upgrade Finansialmu, <br />
+          <span class="text-[#284A63]">Gak Pakai Ribet!</span>
         </h1>
 
-        <!-- Feature Icons -->
-        <div class="mt-12 flex flex-wrap items-center justify-center gap-16">
-          <div class="flex flex-col items-center">
-            <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#EFEFF0]">
-              <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="6" width="18" height="15" rx="2" stroke="currentColor" stroke-width="2" />
-                <path d="M4 11H20" stroke="currentColor" stroke-width="2" />
-                <path d="M9 16H15" stroke="currentColor" stroke-width="2" />
-                <path d="M8 3L8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                <path d="M16 3L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-            <p class="mb-1 text-center text-sm font-medium text-black">
-              Langganan Per Hari, Hitung<br />Pakai Simple!
-            </p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#AFB1B6]">
-              <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </div>
-            <p class="mb-1 text-center text-sm font-medium text-black">
-              Gak Pakai Ribet Ngatur<br />Keuangan Lagi
-            </p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#AFB1B6]">
-              <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" />
-                <path d="M9 10L11 12L15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </div>
-            <p class="mb-1 text-center text-sm font-medium text-black">
-              Stop Tebak-Tebak<br />Pengeluaran Bulanan
-            </p>
+        <!-- Money Icons -->
+        <div class="grid md:grid-cols-3 gap-8 mb-16">
+          <div v-for="(icon, index) in moneyIcons" :key="index" class="flex flex-col items-center">
+            <img :src="icon.image" :alt="icon.title" class="w-24 h-24 mb-4" loading="lazy" />
+            <h6 class="font-medium text-center">{{ icon.title }}</h6>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Pricing Section -->
-    <section class="bg-white">
-      <div class="container mx-auto px-4">
-        <div class="mx-auto max-w-3xl text-center">
-          <!-- Pricing Table -->
-          <div class="mx-auto max-w-xl rounded-md bg-[#EFEFF0] p-4">
-            <h2 class="mb-6 text-3xl font-bold text-black">Pilih Paket Sesuai <br />Kebutuhan!</h2>
-            <p class="mb-6 text-gray-600">
-              Coba demo secara gratis, Suka? Mulai dari Rp2.500/hari <br />untuk akses fitur mantap lainnya!
+        <!-- Pricing Container -->
+        <Card class="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle class="text-2xl font-bold">Pilih Paket Sesuai Kebutuhan!</CardTitle>
+            <CardDescription>
+              Coba demo secara gratis. Suka? Mulai dari Rp2.500/hari untuk akses fitur mantap lainnya!
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <RadioGroup v-model="selectedPlan" class="space-y-4">
+              <div v-for="plan in pricingPlans" :key="plan.id" 
+                   class="bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-[#284A63] transition-all">
+                <RadioGroupItem 
+                  :value="plan.id"
+                  :id="plan.id"
+                  class="peer sr-only"
+                />
+                <label :for="plan.id" 
+                       class="flex items-center justify-between cursor-pointer">
+                  <span class="font-medium">{{ plan.name }}</span>
+                  <div class="flex items-center space-x-4">
+                    <span v-if="plan.discount" 
+                          class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                      {{ plan.discount }}
+                    </span>
+                    <span class="font-bold">{{ plan.price }}</span>
+                  </div>
+                </label>
+              </div>
+            </RadioGroup>
+
+            <Button class="w-full mt-4" variant="primary" asChild>
+              <Link :href="route('register')">Coba Sekarang!</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Separator class="my-16" />
+
+      <!-- Features Section -->
+      <section class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+          <div class="md:w-1/2">
+            <h2 class="text-3xl font-bold mb-4">
+              Upgrade &<br />
+              Nikmati Fitur Lengkap!
+            </h2>
+            <p class="text-gray-600 mb-8">
+              Cuan lancar, finansial stabil<br />
+              Upgrade sekarang biar duit tetap aman dan terkontrol!
             </p>
-
-            <!-- Pricing Options -->
-            <div class="overflow-hidden rounded-md">
-              <!-- Bulanan Option (Selected) -->
-              <div class="flex items-center justify-between bg-white p-4">
-                <div class="flex items-center">
-                  <div class="mr-3 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#284A63] bg-[#284A63]">
-                    <div class="h-2 w-2 rounded-full bg-white"></div>
-                  </div>
-                  <span class="font-medium text-black">Bulanan</span>
-                </div>
-                <div class="text-left">
-                  <div class="ml-4 inline-block rounded-md bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
-                    Hemat 17%
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-2xl font-bold text-gray-800">
-                    Rp2.500<span class="text-sm text-gray-500">/hari</span>
-                  </div>
-                  <div class="text-xs text-gray-500">Langganan Rp75.000* setiap awal bulan</div>
-                </div>
-              </div>
-
-              <!-- Harian Option -->
-              <div class="flex items-center justify-between border-t border-gray-200 bg-white p-4">
-                <div class="flex items-center">
-                  <div class="mr-3 flex h-6 w-6 items-center justify-center rounded-full border-2 border-gray-300"></div>
-                  <span class="font-medium text-black">Harian</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-2xl font-bold text-gray-500">
-                    Rp3.000<span class="text-sm text-gray-500">/hari</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- CTA Button -->
-            <button class="mb-6 mt-4 w-full rounded-md bg-[#284A63] py-3 font-medium text-white">
-              Coba Sekarang!
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="py-16 bg-white text-left">
-      <div class="container mx-auto px-4">
-        <div class="mx-auto max-w-3xl">
-          <div class="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-            <div class="max-w-lg">
-              <h2 class="mb-4 text-3xl font-bold text-black">
-                Upgrade &<br /> Nikmati Fitur <br />Lengkap!
-              </h2>
-              <p class="mb-6 text-gray-600">
-                Cuan lancar, finansial stabil <br />Upgrade sekarang biar duit tetap aman dan terkontrol!
-              </p>
-              <div class="flex flex-wrap gap-4">
-                <button class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">
-                  Mulai Gratis Sekarang
-                </button>
-                <button
-                  class="rounded-md border border-gray-300 px-6 py-2 font-medium text-gray-700 hover:bg-[#284A63] hover:text-white"
-                >
-                  Pelajari Fitur Lengkap
-                </button>
-              </div>
-            </div>
-            <div class="flex justify-center">
-              <img src="/handMoney.png" alt="Feature illustration" class="max-w-xs" />
+            <div class="flex flex-col md:flex-row gap-4">
+              <Button variant="primary" asChild>
+                <Link :href="route('register')">Mulai Atur Keuanganmu</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link :href="route('features')">Eksplor Fitur</Link>
+              </Button>
             </div>
           </div>
+          <div class="md:w-1/2">
+            <img src="/img/hand-money.webp" alt="Hand with Money" class="max-w-md mx-auto" />
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
-    <hr class="border-[#D9D9D9] border-2" />
+    <Separator />
 
     <!-- Footer -->
-    <footer class="py-8 bg-white">
-      <div class="container mx-auto px-4 text-center text-sm text-gray-600">
-        Copyright © 2025, Finova. All Rights Reserved.
+    <footer class="py-8 border-t border-gray-200">
+      <div class="container mx-auto px-4 text-center text-gray-600">
+        <p>&copy; 2025 Finova. All Rights Reserved.</p>
       </div>
     </footer>
   </div>
