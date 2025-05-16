@@ -14,10 +14,13 @@ class Admin extends Model
         'adminId',
         'username',
         'email',
-        'passwordHash',
         'name',
         'adminRole',
         'lastLogin'
+    ];
+
+    protected $hidden = [
+        'passwordHash'
     ];
 
     protected $casts = [

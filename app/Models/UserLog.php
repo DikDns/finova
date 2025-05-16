@@ -15,10 +15,13 @@ class UserLog extends Model
         'userId',
         'username',
         'email',
-        'passwordHash',
         'name',
         'userRole',
         'createdAt'
+    ];
+
+    protected $hidden = [
+        'passwordHash'
     ];
 
     protected $casts = [

@@ -6,17 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Users extends Model
 {
-    protected $table = 'users';
+    protected $table = 'user';
     protected $primaryKey = 'userId';
-    public $timestamps = true;
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'userId',
         'username',
         'email',
-        'passwordHash',
         'name',
         'userRole'
+    ];
+
+    protected $hidden = [
+        'passwordHash'
     ];
 
     // Relationships

@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Budget extends Model
 {
-    public $incrementing = false;
     protected $keyType = 'string';
     protected $primaryKey = 'budgetId';
+    public $incrementing = false;
 
     protected $fillable = [
         'budgetId',
