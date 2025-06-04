@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class CategoryGroup extends Model
 {
-    protected $primaryKey = 'groupId';
+    protected $primaryKey = 'categoryGroupId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'groupId',
+        'categoryGroupId',
         'budgetId',
-        'groupName'
+        'categoryGroupName'
     ];
 
     public function budget()
@@ -23,6 +23,6 @@ class CategoryGroup extends Model
 
     public function categories()
     {
-        return $this->hasMany(Category::class, 'groupId');
+        return $this->hasMany(Category::class, 'categoryGroupId');
     }
 }

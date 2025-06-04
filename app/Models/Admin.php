@@ -15,15 +15,9 @@ class Admin extends Model
         'username',
         'email',
         'name',
-        'adminRole',
-        'lastLogin'
     ];
 
     protected $hidden = [
         'passwordHash'
-    ];
-
-    protected $casts = [
-        'lastLogin' => 'datetime'
     ];
 }

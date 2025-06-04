@@ -15,16 +15,16 @@ class CategoryBudget extends Model
         'monthBudgetId',
         'categoryId',
         'categoryMonth',
-        'catBudgetAssigned',
-        'catBudgetActivity',
-        'catBudgetAvailable'
+        'categoryBudgetAssigned',
+        'categoryBudgetActivity',
+        'categoryBudgetAvailable'
     ];
 
     protected $casts = [
         'categoryMonth' => 'datetime',
-        'catBudgetAssigned' => 'decimal:2',
-        'catBudgetActivity' => 'decimal:2',
-        'catBudgetAvailable' => 'decimal:2'
+        'categoryBudgetAssigned' => 'decimal:2',
+        'categoryBudgetActivity' => 'decimal:2',
+        'categoryBudgetAvailable' => 'decimal:2'
     ];
 
     public function monthlyBudget()

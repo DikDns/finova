@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('category', function (Blueprint $table) {
+            $table->string('categoryId', 20)->primary();
+            $table->string('groupId', 20);
+            $table->string('categoryName', 255);
+            $table->timestamps();
+            
+            $table->foreign('groupId')->references('categoryGroupId')->on('category_group')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('category');
+    }
+};
+?>
