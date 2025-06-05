@@ -2,32 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
-    protected $primaryKey = 'accountId';
+    use HasUuids;
+
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'accountId',
-        'budgetId',
-        'accountName',
+        'budget_id',
+        'name',
         'balance'
     ];
 
     protected $casts = [
-        'balance' => 'decimal:2'
+        'balance' => 'decimal:4'
     ];
 
     public function budget()
     {
-        return $this->belongsTo(Budget::class, 'budgetId');
+        return $this->belongsTo(Budget::class);
     }
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'accountId');
+        return $this->hasMany(Transaction::class);
     }
 }

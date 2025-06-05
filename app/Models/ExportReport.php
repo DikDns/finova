@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class ExportReport extends Model
 {
+    use HasUuids;
+
     protected $primaryKey = 'reportId';
     protected $keyType = 'string';
     public $incrementing = false;

@@ -2,27 +2,31 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CategoryGroup extends Model
 {
-    protected $primaryKey = 'categoryGroupId';
+    use HasUuids;
+
     protected $keyType = 'string';
     public $incrementing = false;
+    public $timestamps = false;
 
     protected $fillable = [
-        'categoryGroupId',
-        'budgetId',
-        'categoryGroupName'
+        'budget_id',
+        'name'
     ];
 
-    public function budget()
+    public function budget(): BelongsTo
     {
-        return $this->belongsTo(Budget::class, 'budgetId');
+        return $this->belongsTo(Budget::class);
     }
 
-    public function categories()
+    public function categories(): HasMany
     {
-        return $this->hasMany(Category::class, 'categoryGroupId');
+        return $this->hasMany(Category::class);
     }
 }

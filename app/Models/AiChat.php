@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class AiChat extends Model
 {
+    use HasUuids;
+
     protected $primaryKey = 'aiChatId';
-    protected $keyType ='string';
+    protected $keyType = 'string';
     public $incrementing = false;
-    
+
     protected $fillable = [
         'aiChatId',
         'userId',

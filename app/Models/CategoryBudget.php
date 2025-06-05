@@ -2,38 +2,50 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CategoryBudget extends Model
 {
-    protected $primaryKey = 'categoryBudgetId';
+    use HasUuids;
+
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'categoryBudgetId',
-        'monthBudgetId',
-        'categoryId',
-        'categoryMonth',
-        'categoryBudgetAssigned',
-        'categoryBudgetActivity',
-        'categoryBudgetAvailable'
+        'monthly_budget_id',
+        'category_id',
+        'month',
+        'assigned',
+        'activity',
+        'available'
     ];
 
     protected $casts = [
-        'categoryMonth' => 'datetime',
-        'categoryBudgetAssigned' => 'decimal:2',
-        'categoryBudgetActivity' => 'decimal:2',
-        'categoryBudgetAvailable' => 'decimal:2'
+        'month' => 'date',
+        'assigned' => 'decimal:4',
+        'activity' => 'decimal:4',
+        'available' => 'decimal:4'
     ];
 
-    public function monthlyBudget()
+    public function month(): Attribute
     {
-        return $this->belongsTo(MonthlyBudget::class, 'monthBudgetId');
+        // Get only the month and year from the date in the database and format it to "Month Year"
+        return Attribute::make(
+            get: fn($value) => $value->format('F Y'),
+            set: fn($value) => \Carbon\Carbon::parse($value)->startOfMonth(),
+        );
     }
 
-    public function category()
+    public function monthlyBudget(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'categoryId');
+        return $this->belongsTo(MonthlyBudget::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

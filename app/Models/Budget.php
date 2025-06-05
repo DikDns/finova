@@ -2,50 +2,62 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Budget extends Model
 {
+    use HasUuids;
+
     protected $keyType = 'string';
-    protected $primaryKey = 'budgetId';
     public $incrementing = false;
 
     protected $fillable = [
-        'budgetId',
-        'userId',
-        'budgetName',
-        'currencyType',
-        'createdAt',
-        'lastModified'
+        'user_id',
+        'name',
+        'description',
     ];
 
     protected $casts = [
-        'createdAt' => 'datetime',
-        'lastModified' => 'datetime'
+        'amount' => 'decimal:4',
     ];
 
-    public function user()
+    protected $attributes = [
+        'amount' => 0,
+        'currency_code' => 'IDR',
+    ];
+
+    protected function currencyCode(): Attribute
     {
-        return $this->belongsTo(User::class, 'userId');
+        return new Attribute(
+            set: fn($value) => strtoupper($value),
+        );
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function accounts()
     {
-        return $this->hasMany(Account::class, 'budgetId');
+        return $this->hasMany(Account::class);
     }
 
     public function categoryGroups()
     {
-        return $this->hasMany(CategoryGroup::class, 'budgetId');
+        return $this->hasMany(CategoryGroup::class);
     }
 
     public function monthlyBudgets()
     {
-        return $this->hasMany(MonthlyBudget::class, 'budgetId');
+        return $this->hasMany(MonthlyBudget::class);
     }
 
     public function exportReports()
     {
-        return $this->hasMany(ExportReport::class, 'budgetId');
+        return $this->hasMany(ExportReport::class);
     }
 }

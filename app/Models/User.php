@@ -2,60 +2,62 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends Model
+class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasUuids, Notifiable;
 
-    protected $primaryKey = 'userId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'userId',
         'username',
         'email',
         'name',
-        'userRole'
+        'password',
+    ];
+
+    protected $attributes = [
+        'role' => 'user',
     ];
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
         ];
     }
 
     // Relationships
-    public function budgets()
+    public function budgets(): HasMany
     {
-        return $this->hasMany(Budget::class, 'userId');
-    }
-
-    public function userLogs()
-    {
-        return $this->hasMany(UserLog::class, 'userId');
+        // Eloquent assumes that the foreign key on the Budget model is named user_id,
+        return $this->hasMany(Budget::class);
     }
 
     public function exportReports()
     {
-        return $this->hasMany(ExportReport::class, 'userId');
+        return $this->hasMany(ExportReport::class);
     }
 
     public function subscriptions()
-    {   
-        return $this->hasMany(Subscription::class, 'userId');
+    {
+        return $this->hasMany(Subscription::class);
     }
 
-    public function aichats()
+    public function aiChats()
     {
-        return $this->hasMany(AiChat::class, 'userId');
+        return $this->hasMany(AiChat::class);
     }
 }
-?>

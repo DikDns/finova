@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('category', function (Blueprint $table) {
-            $table->string('categoryId', 20)->primary();
-            $table->string('groupId', 20);
-            $table->string('categoryName', 255);
+        Schema::create('accounts', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->foreignUuid('budget_id');
+            $table->string('name');
+            $table->decimal('balance', 19, 4);
             $table->timestamps();
-            
-            $table->foreign('groupId')->references('categoryGroupId')->on('category_group')->onDelete('cascade');
         });
     }
 
@@ -26,7 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('category');
+        Schema::dropIfExists('accounts');
     }
 };
-?>
