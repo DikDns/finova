@@ -12,17 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('subscription', function (Blueprint $table) {
-            $table->string('subscriptionId', 20)->primary();
-            $table->string('userId', 20);
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id');
             $table->string('invoice', 100);
-            $table->string('paymentMethod', 100);
-            $table->date('startDate');
-            $table->date('endDate');
-            $table->date('createdAt');
-            $table->date('updatedAt');
+            $table->string('payment_method', 100);
+            $table->timestamp('start_date');
+            $table->timestamp('end_date');
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
             $table->timestamps();
-            
-            $table->foreign('userId')->references('userId')->on('user')->onDelete('cascade');
         });
     }
 

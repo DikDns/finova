@@ -4,34 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AiChat extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'aiChatId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'aiChatId',
-        'userId',
+        'user_id',
         'role',
         'content',
-        'categoryIds',
-        'transactionIds',
-        'accountIds',
-        'createdAt',
-        'updatedAt'
+        'category_ids',
+        'transaction_ids',
+        'account_ids',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
-        'createdAt' => 'datetime',
-        'updatedAt' => 'datetime'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->belongsTo(User::class);
     }
 }

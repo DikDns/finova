@@ -12,18 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ai_chat', function (Blueprint $table) {
-            $table->string('aiChatId', 20)->primary();
-            $table->string('userId', 20);
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id');
             $table->string('role', 20);
-            $table->string('content', 255);
-            $table->json('categoryIds');
-            $table->json('transactionIds');
-            $table->json('accountIds');
-            $table->date('createdAt');
-            $table->date('updatedAt');
+            $table->longText('content');
+            $table->json('category_ids');
+            $table->json('transaction_ids');
+            $table->json('account_ids');
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
             $table->timestamps();
-            
-            $table->foreign('userId')->references('userId')->on('user')->onDelete('cascade');
         });
     }
 

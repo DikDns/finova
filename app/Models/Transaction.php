@@ -4,37 +4,36 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'transactionId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'transactionId',
-        'accountId',
-        'categoryId',
+        'account_id',
+        'category_id',
         'payee',
-        'transactionDate',
-        'transactionAmount',
-        'transactionMemo'
+        'date',
+        'amount',
+        'memo'
     ];
 
     protected $casts = [
-        'transactionDate' => 'datetime',
-        'transactionAmount' => 'decimal:2'
+        'date' => 'datetime',
+        'amount' => 'decimal:2'
     ];
 
-    public function account()
+    public function account(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'accountId');
+        return $this->belongsTo(Account::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'categoryId');
+        return $this->belongsTo(Category::class);
     }
 }

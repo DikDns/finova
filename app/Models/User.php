@@ -46,17 +46,17 @@ class User extends Authenticatable
         return $this->hasMany(Budget::class);
     }
 
-    public function exportReports()
+    public function exportReports(): HasMany
     {
         return $this->hasMany(ExportReport::class);
     }
 
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
     }
 
-    public function aiChats()
+    public function aiChats(): HasMany
     {
         return $this->hasMany(AiChat::class);
     }

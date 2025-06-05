@@ -4,35 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserLog extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'logId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'logId',
-        'userId',
+        'user_id',
         'username',
         'email',
         'name',
-        'userRole',
-        'createdAt'
+        'role',
+        'created_at'
     ];
 
     protected $hidden = [
-        'passwordHash'
+        'password'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'email_verified_at' => 'datetime',
+        ];
+    }
 
     protected $casts = [
-        'createdAt' => 'datetime'
+        'created_at' => 'datetime'
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->belongsTo(User::class);
     }
 }

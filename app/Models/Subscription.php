@@ -4,33 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Subscription extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'subscriptionId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'subscriptionId',
-        'userId',
+        'user_id',
         'invoice',
-        'paymentMethod',
-        'startDate',
-        'endDate',
-        'createdAt',
-        'updatedAt'
+        'payment_method',
+        'start_date',
+        'end_date',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
-        'createdAt' => 'datetime',
-        'updatedAt' => 'datetime',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->belongsTo(User::class);
     }
 }

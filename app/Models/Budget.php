@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Budget extends Model
 {
@@ -41,22 +42,22 @@ class Budget extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function accounts()
+    public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
     }
 
-    public function categoryGroups()
+    public function categoryGroups(): HasMany
     {
         return $this->hasMany(CategoryGroup::class);
     }
 
-    public function monthlyBudgets()
+    public function monthlyBudgets(): HasMany
     {
         return $this->hasMany(MonthlyBudget::class);
     }
 
-    public function exportReports()
+    public function exportReports(): HasMany
     {
         return $this->hasMany(ExportReport::class);
     }

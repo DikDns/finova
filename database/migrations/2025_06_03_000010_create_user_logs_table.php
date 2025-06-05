@@ -12,17 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_log', function (Blueprint $table) {
-            $table->string('logId', 20)->primary();
-            $table->string('userId', 20);
-            $table->string('username', 50);
-            $table->string('email', 100);
-            $table->string('passwordHash', 255);
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id');
+            $table->string('username', 100)->unique();
+            $table->string('email', 100)->unique();
+            $table->string('password', 255);
             $table->string('name', 255);
-            $table->string('userRole', 20);
-            $table->date('createdAt');
+            $table->string('role', 20);
+            $table->timestamp('created_at');
             $table->timestamps();
-            
-            $table->foreign('userId')->references('userId')->on('user')->onDelete('cascade');
         });
     }
 

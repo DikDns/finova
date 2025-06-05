@@ -4,34 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExportReport extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'reportId';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'reportId',
-        'userId',
-        'budgetId',
-        'generatedDate',
-        'reportLink'
+        'user_id',
+        'budget_id',
+        'generated_date',
+        'report_link'
     ];
 
     protected $casts = [
-        'generatedDate' => 'datetime'
+        'generated_date' => 'datetime'
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->belongsTo(User::class);
     }
 
-    public function budget()
+    public function budget(): BelongsTo
     {
-        return $this->belongsTo(Budget::class, 'budgetId');
+        return $this->belongsTo(Budget::class);
     }
 }

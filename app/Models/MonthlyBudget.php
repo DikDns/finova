@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MonthlyBudget extends Model
 {
@@ -39,12 +41,12 @@ class MonthlyBudget extends Model
         );
     }
 
-    public function budget()
+    public function budget(): BelongsTo
     {
         return $this->belongsTo(Budget::class);
     }
 
-    public function categoryBudgets()
+    public function categoryBudgets(): HasMany
     {
         return $this->hasMany(CategoryBudget::class);
     }
