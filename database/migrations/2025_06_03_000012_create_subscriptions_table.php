@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('subscription', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id');
-            $table->string('invoice', 100);
-            $table->string('payment_method', 100);
+            $table->string('invoice', 50)->unique();
+            $table->string('payment_method', 50);
             $table->timestamp('start_date');
             $table->timestamp('end_date');
             $table->timestamp('created_at');

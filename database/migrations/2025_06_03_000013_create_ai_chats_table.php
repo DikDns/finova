@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ai_chat', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id');
-            $table->string('role', 20);
+            $table->string('role', 20)->default('user');
             $table->longText('content');
             $table->json('category_ids');
             $table->json('transaction_ids');
