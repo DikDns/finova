@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('account_id');
             $table->foreignUuid('category_id');
             $table->foreignUuid('budget_id');
             $table->string('payee', 255);
-            $table->datetimes('transaction_date');
+            $table->dateTime('transaction_date');
             $table->decimal('transaction_amount', 19, 4);
             $table->longText('transaction_memo');
             $table->timestamps();
