@@ -18,12 +18,16 @@ class UserLog extends Model
         'username',
         'email',
         'name',
-        'role',
+        'password',
         'created_at'
     ];
 
     protected $hidden = [
         'password'
+    ];
+
+    protected $attributes = [
+        'role' => 'user',
     ];
 
     protected function casts(): array
