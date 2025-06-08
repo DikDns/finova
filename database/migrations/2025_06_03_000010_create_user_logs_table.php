@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('password', 255);
             $table->string('name', 255);
             $table->string('role', 20)->default('user');
-            $table->timestamp('created_at');
             $table->timestamps();
         });
     }
@@ -32,4 +31,3 @@ return new class extends Migration
         Schema::dropIfExists('user_log');
     }
 };
-?>

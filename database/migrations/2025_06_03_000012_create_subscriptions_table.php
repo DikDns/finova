@@ -18,8 +18,6 @@ return new class extends Migration
             $table->string('payment_method', 50);
             $table->timestamp('start_date');
             $table->timestamp('end_date');
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at');
             $table->timestamps();
         });
     }
@@ -32,4 +30,3 @@ return new class extends Migration
         Schema::dropIfExists('subscription');
     }
 };
-?>

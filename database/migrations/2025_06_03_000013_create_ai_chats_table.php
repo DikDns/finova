@@ -19,8 +19,6 @@ return new class extends Migration
             $table->json('category_ids');
             $table->json('transaction_ids');
             $table->json('account_ids');
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at');
             $table->timestamps();
         });
     }
@@ -33,4 +31,3 @@ return new class extends Migration
         Schema::dropIfExists('ai_chat');
     }
 };
-?>
