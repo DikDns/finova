@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('user_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id');
-            $table->string('username', 20)->unique();
             $table->string('action', 50);
             $table->string('description', 255);
             $table->string('ip_address', 45);

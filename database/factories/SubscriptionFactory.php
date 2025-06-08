@@ -17,11 +17,10 @@ class SubscriptionFactory extends Factory
     public function definition(): array
     {
         return [
-            // create unique invoice pattern: YEAR-MONTH-DAY-NO
-            'invoice' => fake()->unique()->date() . '-' . fake()->unique()->numberBetween(1, 100),
-            'payment_method' => fake()->randomElement(['cash', 'bank', 'credit card']),
-            'start_date' => fake()->dateTime(),
-            'end_date' => fake()->dateTime(),
+            'invoice' => 'INV-' . fake()->unique()->numerify('######'),
+            'payment_method' => fake()->randomElement(['cash', 'bank_transfer', 'credit_card', 'debit_card', 'e_wallet']),
+            'start_date' => $startDate = fake()->dateTimeBetween('-1 year', 'now'),
+            'end_date' => fake()->dateTimeBetween($startDate, '+1 year'),
         ];
     }
 }

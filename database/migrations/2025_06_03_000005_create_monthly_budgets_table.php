@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('monthly_budgets', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('budgetId');
+            $table->foreignUuid('budget_id');
             $table->date('month');
             $table->decimal('total_income', 19, 2);
             $table->decimal('total_assigned', 19, 2);

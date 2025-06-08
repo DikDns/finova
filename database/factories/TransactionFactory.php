@@ -18,8 +18,8 @@ class TransactionFactory extends Factory
     {
         return [
             'payee' => fake()->company(),
-            'date' => fake()->dateTime(),
-            'amount' => fake()->randomFloat(2, 0, 1000),
+            'date' => fake()->dateTimeBetween('-3 months', 'now'),
+            'amount' => fake()->randomFloat(4, -1000, 1000),
             'memo' => fake()->sentence(),
         ];
     }

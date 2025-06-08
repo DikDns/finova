@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('category_groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('budgetId')->nullable()->index();
+            $table->foreignUuid('budget_id')->nullable()->index();
             $table->string('name', 255);
         });
     }
