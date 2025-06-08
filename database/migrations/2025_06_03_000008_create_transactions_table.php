@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignUuid('category_id');
             $table->foreignUuid('budget_id');
             $table->string('payee', 255);
-            $table->dateTime('transaction_date');
-            $table->decimal('transaction_amount', 19, 4);
-            $table->longText('transaction_memo');
+            $table->dateTime('date');
+            $table->decimal('amount', 19, 4);
+            $table->text('memo');
             $table->timestamps();
         });
     }
@@ -29,8 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction');
+        Schema::dropIfExists('transactions');
     }
 };
-
-?>

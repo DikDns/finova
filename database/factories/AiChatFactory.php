@@ -17,7 +17,11 @@ class AiChatFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'role' => fake()->randomElement(['user', 'ai']),
+            'content' => fake()->text(),
+            'category_ids' => fake()->numberBetween(1, 10),
+            'transaction_ids' => fake()->numberBetween(1, 10),
+            'account_ids' => fake()->numberBetween(1, 10),
         ];
     }
 }

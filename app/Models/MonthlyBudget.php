@@ -24,13 +24,16 @@ class MonthlyBudget extends Model
         'total_available'
     ];
 
-    protected $casts = [
-        'month' => 'date',
-        'total_income' => 'decimal:4',
-        'total_assigned' => 'decimal:4',
-        'total_activity' => 'decimal:4',
-        'total_available' => 'decimal:4',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'month' => 'date',
+            'total_income' => 'decimal:4',
+            'total_assigned' => 'decimal:4',
+            'total_activity' => 'decimal:4',
+            'total_available' => 'decimal:4',
+        ];
+    }
 
     public function month(): Attribute
     {

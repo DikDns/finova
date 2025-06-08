@@ -17,7 +17,10 @@ class CategoryBudgetFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'month' => fake()->date(),
+            'assigned' => fake()->randomFloat(2, 0, 1000),
+            'activity' => fake()->randomFloat(2, 0, 1000),
+            'available' => fake()->randomFloat(2, 0, 1000),
         ];
     }
 }

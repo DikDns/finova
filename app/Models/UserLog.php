@@ -16,31 +16,21 @@ class UserLog extends Model
     protected $fillable = [
         'user_id',
         'username',
-        'email',
-        'name',
-        'password',
-        'created_at'
-    ];
-
-    protected $hidden = [
-        'password'
-    ];
-
-    protected $attributes = [
-        'role' => 'user',
+        'action',
+        'description',
+        'ip_address',
+        'user_agent',
+        'old_values',
+        'new_values'
     ];
 
     protected function casts(): array
     {
         return [
-            'password' => 'hashed',
-            'email_verified_at' => 'datetime',
+            'old_values' => 'json',
+            'new_values' => 'json'
         ];
     }
-
-    protected $casts = [
-        'created_at' => 'datetime'
-    ];
 
     public function user(): BelongsTo
     {

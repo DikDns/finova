@@ -16,16 +16,20 @@ class Transaction extends Model
     protected $fillable = [
         'account_id',
         'category_id',
+        'budget_id',
         'payee',
         'date',
         'amount',
         'memo'
     ];
 
-    protected $casts = [
-        'date' => 'datetime',
-        'amount' => 'decimal:2'
-    ];
+    protected function casts(): array
+    {
+        return [
+            'date' => 'datetime',
+            'amount' => 'decimal:4'
+        ];
+    }
 
     public function account(): BelongsTo
     {
@@ -35,5 +39,10 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function budget(): BelongsTo
+    {
+        return $this->belongsTo(Budget::class);
     }
 }

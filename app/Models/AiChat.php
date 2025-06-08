@@ -15,19 +15,24 @@ class AiChat extends Model
 
     protected $fillable = [
         'user_id',
-        'role',
         'content',
         'category_ids',
         'transaction_ids',
         'account_ids',
-        'created_at',
-        'updated_at'
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+    protected $attributes = [
+        'role' => 'user',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'category_ids' => 'json',
+            'transaction_ids' => 'json',
+            'account_ids' => 'json',
+        ];
+    }
 
     public function user(): BelongsTo
     {

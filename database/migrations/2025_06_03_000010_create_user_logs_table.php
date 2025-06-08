@@ -15,10 +15,12 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id');
             $table->string('username', 20)->unique();
-            $table->string('email', 50)->unique();
-            $table->string('password', 255);
-            $table->string('name', 255);
-            $table->string('role', 20)->default('user');
+            $table->string('action', 50);
+            $table->string('description', 255);
+            $table->string('ip_address', 45);
+            $table->string('user_agent', 255)->nullable();
+            $table->json('old_values')->nullable();
+            $table->json('new_values')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_log');
+        Schema::dropIfExists('user_logs');
     }
 };

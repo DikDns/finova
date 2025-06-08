@@ -23,12 +23,15 @@ class CategoryBudget extends Model
         'available'
     ];
 
-    protected $casts = [
-        'month' => 'date',
-        'assigned' => 'decimal:4',
-        'activity' => 'decimal:4',
-        'available' => 'decimal:4'
-    ];
+    protected function casts(): array
+    {
+        return [
+            'month' => 'date',
+            'assigned' => 'decimal:4',
+            'activity' => 'decimal:4',
+            'available' => 'decimal:4'
+        ];
+    }
 
     public function month(): Attribute
     {

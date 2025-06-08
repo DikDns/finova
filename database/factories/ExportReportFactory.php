@@ -17,7 +17,7 @@ class ExportReportFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'report_link' => fake()->url(),
         ];
     }
 }

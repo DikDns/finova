@@ -17,7 +17,10 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'payee' => fake()->company(),
+            'date' => fake()->dateTime(),
+            'amount' => fake()->randomFloat(2, 0, 1000),
+            'memo' => fake()->sentence(),
         ];
     }
 }

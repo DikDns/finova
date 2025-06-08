@@ -21,14 +21,17 @@ class Budget extends Model
         'description',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:4',
-    ];
-
     protected $attributes = [
         'amount' => 0,
         'currency_code' => 'IDR',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:4',
+        ];
+    }
 
     protected function currencyCode(): Attribute
     {

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id');
             $table->foreignUuid('budget_id');
-            $table->dateTime('generated_date');
             $table->string('report_link', 255);
             $table->timestamps();
         });
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('export_report');
+        Schema::dropIfExists('export_reports');
     }
 };

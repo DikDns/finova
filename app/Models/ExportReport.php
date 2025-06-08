@@ -16,12 +16,7 @@ class ExportReport extends Model
     protected $fillable = [
         'user_id',
         'budget_id',
-        'generated_date',
         'report_link'
-    ];
-
-    protected $casts = [
-        'generated_date' => 'datetime'
     ];
 
     public function user(): BelongsTo

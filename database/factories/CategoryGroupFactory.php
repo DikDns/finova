@@ -18,7 +18,7 @@ class CategoryGroupFactory extends Factory
     {
         return [
             // Category Group random name
-            'name' => fake()->randomElement(['Pendidikan', 'Makanan', 'Transportasi', 'Belanja', 'Hiburan', 'Sosial'])
+            'name' => fake()->randomElement(['Pendidikan', 'Makanan', 'Transportasi', 'Belanja', 'Hiburan'])
         ];
     }
 }

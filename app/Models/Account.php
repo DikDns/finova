@@ -20,9 +20,12 @@ class Account extends Model
         'balance'
     ];
 
-    protected $casts = [
-        'balance' => 'decimal:4'
-    ];
+    protected function casts(): array
+    {
+        return [
+            'balance' => 'decimal:4'
+        ];
+    }
 
     public function budget(): BelongsTo
     {
