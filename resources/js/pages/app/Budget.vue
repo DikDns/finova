@@ -11,44 +11,44 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Category {
-  id: string;
-  name: string;
-  categoryBudgets: CategoryBudget[];
+    id: string;
+    name: string;
+    categoryBudgets: CategoryBudget[];
 }
 
 interface CategoryBudget {
-  id: string;
-  month: string;
-  assigned: number;
-  activity: number;
-  available: number;
-  category: Category;
+    id: string;
+    month: string;
+    assigned: number;
+    activity: number;
+    available: number;
+    category: Category;
 }
 
 interface CategoryGroup {
-  id: string;
-  name: string;
-  categories: Category[];
+    id: string;
+    name: string;
+    categories: Category[];
 }
 
 interface MonthlyBudget {
-  id: string;
-  month: string;
-  total_income: number;
-  total_assigned: number;
-  total_activity: number;
-  total_available: number;
-  categoryBudgets: CategoryBudget[];
+    id: string;
+    month: string;
+    total_income: number;
+    total_assigned: number;
+    total_activity: number;
+    total_available: number;
+    categoryBudgets: CategoryBudget[];
 }
 
 interface Budget {
-  id: string;
-  name: string;
-  description: string;
-  amount: number;
-  currency_code: string;
-  monthlyBudgets: MonthlyBudget[];
-  categoryGroups: CategoryGroup[];
+    id: string;
+    name: string;
+    description: string;
+    amount: number;
+    currency_code: string;
+    monthlyBudgets: MonthlyBudget[];
+    categoryGroups: CategoryGroup[];
 }
 
 interface Props {
@@ -61,8 +61,8 @@ const props = defineProps<Props>();
 const currentMonth = ref(new Date());
 
 const currentGroupCategory = computed(() => {
-    return props.budget
-})
+    return props.budget;
+});
 
 // Format currency
 const formatCurrency = (amount: number, currencyCode = 'IDR') => {
@@ -100,6 +100,49 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('budget', props.budget.id),
     },
 ];
+
+console.log(props.budget);
+
+// Get current month's budget data
+const currentMonthBudget = computed(() => {
+    const currentMonthStr = currentMonth.value.toISOString().slice(0, 7); // Format: YYYY-MM
+    return props.budget.monthlyBudgets.find((mb) => mb.month.startsWith(currentMonthStr));
+});
+
+// Group categories with their budgets
+const groupedCategories = computed(() => {
+    if (!props.budget?.categoryGroups) return [];
+
+    return props.budget.categoryGroups.map(group => {
+        if (!group?.categories) return null;
+
+        const categories = group.categories.map(category => {
+            const categoryBudget = currentMonthBudget.value?.categoryBudgets?.find(
+                cb => cb.category?.id === category.id
+            ) || { assigned: 0, activity: 0, available: 0 };
+
+            return {
+                id: category.id,
+                name: category.name,
+                icon: '💰', // Default icon
+                allocated: categoryBudget.assigned || 0,
+                spent: categoryBudget.activity || 0,
+                target: categoryBudget.available || 0
+            };
+        }).filter(Boolean);
+
+        if (!categories.length) return null;
+
+        return {
+            id: group.id,
+            name: group.name,
+            categories,
+            totalAllocated: categories.reduce((sum, cat) => sum + cat.allocated, 0),
+            totalSpent: categories.reduce((sum, cat) => sum + cat.spent, 0),
+            totalTarget: categories.reduce((sum, cat) => sum + cat.target, 0)
+        };
+    }).filter(Boolean);
+});
 </script>
 
 <template>

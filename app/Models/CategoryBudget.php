@@ -18,7 +18,6 @@ class CategoryBudget extends Model
     protected $fillable = [
         'monthly_budget_id',
         'category_id',
-        'month',
         'assigned',
         'activity',
         'available'
@@ -32,15 +31,6 @@ class CategoryBudget extends Model
             'activity' => 'decimal:4',
             'available' => 'decimal:4'
         ];
-    }
-
-    public function month(): Attribute
-    {
-        // Get only the month and year from the date in the database and format it to "Month Year"
-        return Attribute::make(
-            get: fn($value) => $value->format('F Y'),
-            set: fn($value) => \Carbon\Carbon::parse($value)->startOfMonth(),
-        );
     }
 
     public function monthlyBudget(): BelongsTo

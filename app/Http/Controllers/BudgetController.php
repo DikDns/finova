@@ -31,10 +31,14 @@ class BudgetController extends Controller
             abort(403);
         }
 
-        // Load the budget with its monthly budgets
-        $budget->monthlyBudgets();
-
-        $budget->categoryGroups()->with('categories')->get();
+        // Load the budget with all necessary relationships
+        $budget->load([
+            'monthlyBudgets' => function ($query) {
+                $query->orderBy('month', 'desc');
+            },
+            'monthlyBudgets.categoryBudgets',
+            'categoryGroups.categories.categoryBudgets',
+        ]);
 
         return Inertia::render('app/Budget', [
             'budget' => $budget
@@ -75,7 +79,7 @@ class BudgetController extends Controller
         $budget->description = $validated['description'] ?? $budget->description;
         $budget->save();
 
-        return redirect()->route('budgets.show', $budget);
+        return redirect()->route('budget', $budget);
     }
 
     /**
@@ -90,6 +94,6 @@ class BudgetController extends Controller
 
         $budget->delete();
 
-        return redirect()->route('budgets.index');
+        return redirect()->route('budgets');
     }
 }

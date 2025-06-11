@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\BudgetController;
-use App\Http\Controllers\TransactionController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('budgets');
+    }
+
     return Inertia::render('Home');
 })->name('home');
 

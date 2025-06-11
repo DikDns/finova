@@ -48,31 +48,34 @@ class DatabaseSeeder extends Seeder
                 $categoryGroups = CategoryGroup::factory(rand(3, 5))
                     ->create(['budget_id' => $budget->id]);
 
+                // Create category groups and their categories first
+                $allCategories = collect();
                 foreach ($categoryGroups as $categoryGroup) {
                     $categories = Category::factory(rand(3, 6))
                         ->create(['category_group_id' => $categoryGroup->id]);
+                    $allCategories = $allCategories->concat($categories);
+                }
 
-                    // Create category budgets for last 3 months
-                    foreach ($categories as $category) {
-                        // Create monthly budgets first
-                        $monthlyBudget = MonthlyBudget::factory()->create([
+                // Create monthly budgets for the last 3 months with consistent dates
+                $monthlyBudgets = collect();
+                for ($i = 0; $i < 3; $i++) {
+                    $monthlyBudgets->push(
+                        MonthlyBudget::factory()->create([
                             'budget_id' => $budget->id,
-                            'month' => now()->subMonths(rand(0, 2))->startOfMonth()
-                        ]);
+                            'month' => now()->subMonths($i)->startOfMonth()
+                        ])
+                    );
+                }
 
-                        // Create category budgets
+                // Create category budgets for each category in each monthly budget
+                foreach ($monthlyBudgets as $monthlyBudget) {
+                    foreach ($allCategories as $category) {
                         CategoryBudget::factory()->create([
                             'monthly_budget_id' => $monthlyBudget->id,
                             'category_id' => $category->id
                         ]);
                     }
                 }
-
-                // Create monthly budgets for last 3 months
-                MonthlyBudget::factory(3)->create([
-                    'budget_id' => $budget->id,
-                    'month' => fn() => now()->subMonths(rand(0, 2))->startOfMonth()
-                ]);
 
                 // Create accounts
                 $accounts = Account::factory(rand(2, 4))
