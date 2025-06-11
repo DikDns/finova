@@ -163,7 +163,7 @@ const availableBalance = ref(2000000);
                 <!-- Header with month selector -->
                 <div class="flex items-center justify-between">
                     <h1 class="font-serif text-2xl font-semibold tracking-tight">{{ props.budget.name }}</h1>
-                    
+
                     <div class="flex items-center space-x-2">
                         <Button variant="outline" size="icon" @click="goToPrevMonth">
                             <ChevronLeft class="h-4 w-4" />
@@ -192,29 +192,29 @@ const availableBalance = ref(2000000);
                 <!-- Tabs -->
                 <div class="border-b">
                     <div class="flex space-x-6">
-                        <button 
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary" 
+                        <button
+                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
                             :data-active="activeTab === 'semua'"
                             @click="setActiveTab('semua')"
                         >
                             Semua
                         </button>
-                        <button 
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary" 
+                        <button
+                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
                             :data-active="activeTab === 'kekurangan'"
                             @click="setActiveTab('kekurangan')"
                         >
                             Kekurangan Dana
                         </button>
-                        <button 
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary" 
+                        <button
+                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
                             :data-active="activeTab === 'kelebihan'"
                             @click="setActiveTab('kelebihan')"
                         >
                             Kelebihan Dana
                         </button>
-                        <button 
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary" 
+                        <button
+                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
                             :data-active="activeTab === 'dinonaktifkan'"
                             @click="setActiveTab('dinonaktifkan')"
                         >
@@ -246,21 +246,21 @@ const availableBalance = ref(2000000);
                                 <!-- Category groups with accordion -->
                                 <template v-for="group in mockCategoryGroups" :key="group.id">
                                     <!-- Group header row -->
-                                    <tr 
+                                    <tr
                                         class="border-b hover:bg-muted/50 cursor-pointer transition-colors"
                                         @click="toggleGroup(group.id)"
                                     >
                                         <td class="p-3" colspan="4">
                                             <div class="flex items-center gap-2">
-                                                <ChevronRight 
-                                                    class="h-4 w-4 transition-transform" 
+                                                <ChevronRight
+                                                    class="h-4 w-4 transition-transform"
                                                     :class="{ 'rotate-90': isGroupActive(group.id) }"
                                                 />
                                                 {{ group.name }}
                                             </div>
                                         </td>
                                     </tr>
-                                    
+
                                     <!-- Group summary row -->
                                     <tr class="border-b bg-muted/20">
                                         <td class="p-3"></td>
