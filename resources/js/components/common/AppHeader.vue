@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppLogo from '@/components/AppLogo.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue';
+import AppLogo from '@/components/common/FinovaLogo.vue';
+import AppLogoIcon from '@/components/common/FinovaLogoIcon.vue';
 import UserMenuContent from '@/components/common/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -108,7 +108,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="route('budgets.index')" class="flex items-center gap-x-2">
+                <Link :href="route('budgets')" class="flex items-center gap-x-2">
                     <AppLogo />
                 </Link>
 

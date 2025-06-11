@@ -11,7 +11,7 @@ import { BookOpen, Wallet } from 'lucide-vue-next';
 const mainNavItems: NavItem[] = [
     {
         title: 'Anggaran Anda',
-        href: route('budgets.index'),
+        href: route('budgets'),
         icon: Wallet,
     },
 ];
@@ -31,7 +31,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('budgets.index')">
+                        <Link :href="route('budgets')">
                             <FinovaLogo />
                         </Link>
                     </SidebarMenuButton>

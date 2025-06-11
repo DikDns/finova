@@ -2,36 +2,40 @@
 import Heading from '@/components/common/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { type NavItem } from '@/types';
+import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { ArrowLeft } from 'lucide-vue-next';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Profil',
         href: '/settings/profile',
     },
     {
-        title: 'Password',
+        title: 'Kata Sandi',
         href: '/settings/password',
-    },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
     },
 ];
 
-const page = usePage();
+const page = usePage<SharedData>();
 
-const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
+const currentPath = page.props.ziggy.location ? new URL(page.props.ziggy.location).pathname : '';
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+    <div class="mx-auto min-h-svh px-4 py-6 md:max-w-5xl">
+        <Heading title="Pengaturan" description="Kelola profil dan pengaturan akun Anda" />
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
-            <aside class="w-full max-w-xl lg:w-48">
-                <nav class="flex flex-col space-y-1 space-x-0">
+            <aside class="w-full max-w-lg lg:w-48">
+                <nav class="flex flex-col space-y-2 space-x-0">
+                    <Button class="mb-4 w-full justify-start" variant="ghost" as-child>
+                        <Link :href="route('budgets')">
+                            <ArrowLeft class="h-4 w-4" />
+                            Kembali
+                        </Link>
+                    </Button>
+
                     <Button
                         v-for="item in sidebarNavItems"
                         :key="item.href"

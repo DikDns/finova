@@ -2,9 +2,9 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, Plus, Edit, MoreVertical } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Category {
     id: string;
@@ -66,7 +66,7 @@ const formatCurrency = (amount: number, currencyCode = 'IDR') => {
         style: 'currency',
         currency: currencyCode,
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+        maximumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -111,12 +111,8 @@ const setActiveTab = (tab: string) => {
 // Breadcrumbs for navigation
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Budget Plans',
-        href: route('budgets.index'),
-    },
-    {
         title: props.budget.name,
-        href: route('budgets.show', props.budget.id),
+        href: route('budget', props.budget.id),
     },
 ];
 
@@ -133,8 +129,8 @@ const mockCategoryGroups: CategoryGroup[] = [
             { id: '2', name: 'Listrik', icon: '⚡', allocated: 450000, spent: -350000, target: 100000 },
             { id: '3', name: 'Sampah', icon: '🗑️', allocated: 450000, spent: -350000, target: 100000 },
             { id: '4', name: 'Air', icon: '💧', allocated: 450000, spent: -350000, target: 100000 },
-            { id: '5', name: 'Internet', icon: '📶', allocated: 450000, spent: -350000, target: 100000 }
-        ]
+            { id: '5', name: 'Internet', icon: '📶', allocated: 450000, spent: -350000, target: 100000 },
+        ],
     },
     {
         id: 'kebutuhan',
@@ -145,9 +141,9 @@ const mockCategoryGroups: CategoryGroup[] = [
         categories: [
             { id: '6', name: 'Makanan', icon: '🍔', allocated: 800000, spent: -750000, target: 50000 },
             { id: '7', name: 'Transportasi', icon: '🚗', allocated: 400000, spent: -300000, target: 100000 },
-            { id: '8', name: 'Kesehatan', icon: '💊', allocated: 300000, spent: -150000, target: 150000 }
-        ]
-    }
+            { id: '8', name: 'Kesehatan', icon: '💊', allocated: 300000, spent: -150000, target: 150000 },
+        ],
+    },
 ];
 
 // Available balance (to be allocated)
@@ -193,28 +189,28 @@ const availableBalance = ref(2000000);
                 <div class="border-b">
                     <div class="flex space-x-6">
                         <button
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
+                            class="border-primary hover:text-primary data-[active=true]:text-primary text-sm font-medium transition-all data-[active=true]:border-b-2"
                             :data-active="activeTab === 'semua'"
                             @click="setActiveTab('semua')"
                         >
                             Semua
                         </button>
                         <button
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
+                            class="border-primary hover:text-primary data-[active=true]:text-primary text-sm font-medium transition-all data-[active=true]:border-b-2"
                             :data-active="activeTab === 'kekurangan'"
                             @click="setActiveTab('kekurangan')"
                         >
                             Kekurangan Dana
                         </button>
                         <button
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
+                            class="border-primary hover:text-primary data-[active=true]:text-primary text-sm font-medium transition-all data-[active=true]:border-b-2"
                             :data-active="activeTab === 'kelebihan'"
                             @click="setActiveTab('kelebihan')"
                         >
                             Kelebihan Dana
                         </button>
                         <button
-                            class="border-primary text-sm font-medium transition-all hover:text-primary data-[active=true]:border-b-2 data-[active=true]:text-primary"
+                            class="border-primary hover:text-primary data-[active=true]:text-primary text-sm font-medium transition-all data-[active=true]:border-b-2"
                             :data-active="activeTab === 'dinonaktifkan'"
                             @click="setActiveTab('dinonaktifkan')"
                         >
@@ -235,7 +231,7 @@ const availableBalance = ref(2000000);
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
-                                <tr class="border-b bg-muted/50">
+                                <tr class="bg-muted/50 border-b">
                                     <th class="p-3 text-left font-medium">Kategori</th>
                                     <th class="p-3 text-left font-medium">Dialokasikan</th>
                                     <th class="p-3 text-left font-medium">Transaksi</th>
@@ -246,10 +242,7 @@ const availableBalance = ref(2000000);
                                 <!-- Category groups with accordion -->
                                 <template v-for="group in mockCategoryGroups" :key="group.id">
                                     <!-- Group header row -->
-                                    <tr
-                                        class="border-b hover:bg-muted/50 cursor-pointer transition-colors"
-                                        @click="toggleGroup(group.id)"
-                                    >
+                                    <tr class="hover:bg-muted/50 cursor-pointer border-b transition-colors" @click="toggleGroup(group.id)">
                                         <td class="p-3" colspan="4">
                                             <div class="flex items-center gap-2">
                                                 <ChevronRight
@@ -262,18 +255,18 @@ const availableBalance = ref(2000000);
                                     </tr>
 
                                     <!-- Group summary row -->
-                                    <tr class="border-b bg-muted/20">
+                                    <tr class="bg-muted/20 border-b">
                                         <td class="p-3"></td>
                                         <td class="p-3">
                                             <div class="flex flex-col">
-                                                <span class="text-xs text-muted-foreground">Dialokasikan</span>
+                                                <span class="text-muted-foreground text-xs">Dialokasikan</span>
                                                 <span>{{ formatCurrency(group.totalAllocated) }}</span>
                                             </div>
                                         </td>
                                         <td class="p-3 text-red-500">{{ formatCurrency(group.totalSpent) }}</td>
                                         <td class="p-3">
                                             <div class="flex flex-col">
-                                                <span class="text-xs text-muted-foreground">Target</span>
+                                                <span class="text-muted-foreground text-xs">Target</span>
                                                 <span>{{ formatCurrency(group.totalTarget) }}</span>
                                             </div>
                                         </td>
@@ -281,7 +274,7 @@ const availableBalance = ref(2000000);
 
                                     <!-- Category rows (shown when group is active) -->
                                     <template v-if="isGroupActive(group.id)">
-                                        <tr v-for="category in group.categories" :key="category.id" class="border-b hover:bg-muted/20">
+                                        <tr v-for="category in group.categories" :key="category.id" class="hover:bg-muted/20 border-b">
                                             <td class="p-3 pl-10">
                                                 <div class="flex items-center gap-2">
                                                     <span>{{ category.icon }}</span>
