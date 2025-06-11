@@ -40,8 +40,12 @@ class MonthlyBudget extends Model
     {
         // Get only the month and year from the date in the database and format it to "Month Year"
         return Attribute::make(
-            get: fn($value) => $value->format('F Y'),
-            set: fn($value) => \Carbon\Carbon::parse($value)->startOfMonth(),
+            get: function ($value) {
+                return date('F Y', strtotime($value));
+            },
+            set: function ($value) {
+                return date('Y-m-01', strtotime($value));
+            }
         );
     }
 
