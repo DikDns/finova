@@ -18,13 +18,18 @@ class Account extends Model
     protected $fillable = [
         'budget_id',
         'name',
-        'balance'
+        'balance',
+        // Cash, Loan
+        'type',
+        'interest',
+        'minimum_payment_monthly'
     ];
 
     protected function casts(): array
     {
         return [
-            'balance' => 'decimal:4'
+            'balance' => 'decimal:4',
+            'minimum_payment_monthly' => 'decimal:4'
         ];
     }
 
