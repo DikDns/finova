@@ -1,180 +1,163 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3'
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import RadioGroup from '@/components/ui/radio-group/RadioGroup.vue';
+import RadioGroupItem from '@/components/ui/radio-group/RadioGroupItem.vue';
+import { Separator } from '@/components/ui/separator';
+import { Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface MoneyIcon {
-  image: string
-  title: string
+    image: string;
+    title: string;
 }
 
 interface PricingPlan {
-  id: string
-  name: string
-  price: string
-  period: string
-  discount?: string
-  description?: string
+    id: string;
+    name: string;
+    price: string;
+    period: string;
+    discount?: string;
+    description?: string;
 }
 
-const selectedPlan = ref('bulanan')
+const selectedPlan = ref('bulanan');
 
 const moneyIcons: MoneyIcon[] = [
-  {
-    image: '/money_1.webp',
-    title: 'Langganan Perhari, Hidup Jadi Simple!'
-  },
-  {
-    image: '/money_2.webp',
-    title: 'Gak Perlu Ribet Ngatur Keuangan Lagi!'
-  },
-  {
-    image: '/money_3.webp',
-    title: 'Stop Tebak-Tebak Pengeluaran Bulanan!'
-  }
-]
+    {
+        image: '/money_1.webp',
+        title: 'Langganan Perhari, Hidup Jadi Simple!',
+    },
+    {
+        image: '/money_2.webp',
+        title: 'Gak Perlu Ribet Ngatur Keuangan Lagi!',
+    },
+    {
+        image: '/money_3.webp',
+        title: 'Stop Tebak-Tebak Pengeluaran Bulanan!',
+    },
+];
 
 const pricingPlans: PricingPlan[] = [
-  {
-    id: 'bulanan',
-    name: 'Bulanan',
-    price: 'Rp2.500',
-    period: '/hari',
-    discount: 'Hemat 17%',
-    description: 'Langganan Rp75.000 setiap awal bulan'
-  },
-  {
-    id: 'harian',
-    name: 'Harian',
-    price: 'Rp3.000',
-    period: '/hari',
-  }
-]
+    {
+        id: 'bulanan',
+        name: 'Bulanan',
+        price: 'Rp2.500',
+        period: '/hari',
+        discount: 'Hemat 17%',
+        description: 'Langganan Rp75.000 setiap awal bulan',
+    },
+    {
+        id: 'harian',
+        name: 'Harian',
+        price: 'Rp3.000',
+        period: '/hari',
+    },
+];
 </script>
 
 <template>
-  <div class="min-h-screen bg-background text-foreground">
-    <AppNavbar />
-    <Separator />
+    <div class="bg-background text-foreground min-h-screen">
+        <AppNavbar />
+        <Separator />
 
-    <main class="py-16">
-      <section class="container mx-auto px-4 mb-16 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-12">
-          Upgrade Finansialmu, <br />
-          <span class="text-primary">Gak Pakai Ribet!</span>
-        </h1>
+        <main class="py-16">
+            <section class="container mx-auto mb-16 px-4 text-center">
+                <h1 class="mb-12 text-4xl font-bold md:text-5xl">
+                    Upgrade Finansialmu, <br />
+                    <span class="text-primary">Gak Pakai Ribet!</span>
+                </h1>
 
-        <div class="grid md:grid-cols-3 gap-8 mb-16">
-          <div
-            v-for="(icon, index) in moneyIcons"
-            :key="index"
-            class="flex flex-col items-center"
-          >
-            <img
-              :src="icon.image"
-              :alt="icon.title"
-              class="w-24 h-24 mb-4"
-              loading="lazy"
-            />
-            <h6 class="font-medium text-center text-foreground">{{ icon.title }}</h6>
-          </div>
-        </div>
-
-        <Card class="max-w-2xl mx-auto bg-card text-card-foreground">
-          <CardHeader>
-            <CardTitle class="text-2xl font-bold">Pilih Paket Sesuai Kebutuhan!</CardTitle>
-            <CardDescription>
-              <div class="flex flex-col items-center text-muted-foreground">
-                <p>
-                  Coba demo secara gratis. Suka? Mulai dari Rp2.500/hari.
-                </p>
-                <p>
-                  Untuk akses fitur mantap lainnya!
-                </p>
-              </div>
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <RadioGroup v-model="selectedPlan" class="space-y-4">
-              <div
-                v-for="plan in pricingPlans"
-                :key="plan.id"
-                class="rounded-lg p-4 border-2 border-muted hover:border-primary transition-all"
-              >
-                <RadioGroupItem
-                  :value="plan.id"
-                  :id="plan.id"
-                  class="peer sr-only"
-                />
-                <label
-                  :for="plan.id"
-                  class="flex flex-col space-y-1 cursor-pointer"
-                >
-                  <div class="flex items-center justify-between">
-                    <span class="font-medium">{{ plan.name }}</span>
-                    <div class="flex items-center">
-                      <span
-                        v-if="plan.discount"
-                        class="bg-green-100 text-green-700 text-accent-foreground text-xs font-bold px-2 py-1 rounded-full me-6"
-                      >
-                        {{ plan.discount }}
-                      </span>
-                      <span class="font-extrabold text-2xl">{{ plan.price }}</span><span>{{ plan.period }}</span>
+                <div class="mb-16 grid gap-8 md:grid-cols-3">
+                    <div v-for="(icon, index) in moneyIcons" :key="index" class="flex flex-col items-center">
+                        <img :src="icon.image" :alt="icon.title" class="mb-4 h-24 w-24" loading="lazy" />
+                        <h6 class="text-foreground text-center font-medium">{{ icon.title }}</h6>
                     </div>
-                  </div>
+                </div>
 
-                  <span v-if="plan.description" class="text-sm text-muted-foreground text-right">
-                    {{ plan.description }}
-                  </span>
-                </label>
-              </div>
-            </RadioGroup>
+                <Card class="bg-card text-card-foreground mx-auto max-w-2xl">
+                    <CardHeader>
+                        <CardTitle class="text-2xl font-bold">Pilih Paket Sesuai Kebutuhan!</CardTitle>
+                        <CardDescription>
+                            <div class="text-muted-foreground flex flex-col items-center">
+                                <p>Coba demo secara gratis. Suka? Mulai dari Rp2.500/hari.</p>
+                                <p>Untuk akses fitur mantap lainnya!</p>
+                            </div>
+                        </CardDescription>
+                    </CardHeader>
 
-            <Button as-child class="w-full mt-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold">
-              <Link :href="route('register')">Coba Sekarang!</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
+                    <CardContent>
+                        <RadioGroup v-model="selectedPlan" class="space-y-4">
+                            <div
+                                v-for="plan in pricingPlans"
+                                :key="plan.id"
+                                class="border-muted hover:border-primary rounded-lg border-2 p-4 transition-all"
+                            >
+                                <RadioGroupItem :value="plan.id" :id="plan.id" class="peer sr-only" />
+                                <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">{{ plan.name }}</span>
+                                        <div class="flex items-center">
+                                            <span
+                                                v-if="plan.discount"
+                                                class="me-6 rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-700"
+                                            >
+                                                {{ plan.discount }}
+                                            </span>
+                                            <span class="text-2xl font-extrabold">{{ plan.price }}</span
+                                            ><span>{{ plan.period }}</span>
+                                        </div>
+                                    </div>
 
-      <!-- <Separator class="my-16" /> -->
+                                    <span v-if="plan.description" class="text-muted-foreground text-right text-sm">
+                                        {{ plan.description }}
+                                    </span>
+                                </label>
+                            </div>
+                        </RadioGroup>
 
-      <section class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row items-center gap-12">
-          <div class="md:w-1/2">
-            <h2 class="text-3xl font-bold mb-4">
-              Upgrade &<br />
-              Nikmati Fitur Lengkap!
-            </h2>
-            <p class="text-muted-foreground mb-8">
-              Cuan lancar, finansial stabil<br />
-              Upgrade sekarang biar duit tetap aman dan terkontrol!
-            </p>
-            <div class="flex flex-col md:flex-row gap-4">
-              <Button as-child class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                <Link href="/features/money-control">Mulai Atur Keuanganmu</Link>
-              </Button>
-              <Button as-child class="bg-primary-foreground/90 hover:bg-primary-foreground text-background rounded-full">
-                <Link :href="route('features')">Eksplor Fitur</Link>
-              </Button>
+                        <Button as-child class="bg-primary hover:bg-primary/90 text-primary-foreground mt-12 w-full rounded-full font-bold">
+                            <Link :href="route('register')">Coba Sekarang!</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </section>
+
+            <!-- <Separator class="my-16" /> -->
+
+            <section class="container mx-auto px-4">
+                <div class="flex flex-col items-center gap-12 md:flex-row">
+                    <div class="md:w-1/2">
+                        <h2 class="mb-4 text-3xl font-bold">
+                            Upgrade &<br />
+                            Nikmati Fitur Lengkap!
+                        </h2>
+                        <p class="text-muted-foreground mb-8">
+                            Cuan lancar, finansial stabil<br />
+                            Upgrade sekarang biar duit tetap aman dan terkontrol!
+                        </p>
+                        <div class="flex flex-col gap-4 md:flex-row">
+                            <Button as-child class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                                <Link href="/features/money-control">Mulai Atur Keuanganmu</Link>
+                            </Button>
+                            <Button as-child class="bg-primary-foreground/90 hover:bg-primary-foreground text-background rounded-full">
+                                <Link :href="route('features')">Eksplor Fitur</Link>
+                            </Button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <img src="/handMoney.png" alt="Hand with Money" class="mx-auto max-w-md" />
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <Separator />
+
+        <footer class="border-border border-t py-8">
+            <div class="text-muted-foreground container mx-auto px-4 text-center">
+                <p>&copy; 2025 Finova. All Rights Reserved.</p>
             </div>
-          </div>
-          <div class="md:w-1/2">
-            <img src="/handMoney.png" alt="Hand with Money" class="max-w-md mx-auto" />
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <Separator />
-
-    <footer class="py-8 border-t border-border">
-      <div class="container mx-auto px-4 text-center text-muted-foreground">
-        <p>&copy; 2025 Finova. All Rights Reserved.</p>
-      </div>
-    </footer>
-  </div>
+        </footer>
+    </div>
 </template>

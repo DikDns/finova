@@ -15,7 +15,10 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('budget_id');
             $table->string('name');
-            $table->decimal('balance', 19, 4);
+            $table->string('type');
+            $table->decimal('interest', 19, 4)->default(0);
+            $table->decimal('minimum_payment_monthly', 19, 4)->default(0);
+            $table->decimal('balance', 19, 4)->default(0);
             $table->timestamps();
         });
     }

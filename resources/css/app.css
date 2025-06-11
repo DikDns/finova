@@ -5,7 +5,7 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@custom-variant dark (&:is(.dark *));
+/* Removed dark mode variant */
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -45,7 +45,7 @@
     --primary-foreground: oklch(0.34 0.05 241.57);
     --secondary: oklch(0.75 0.05 202.7);
     --secondary-foreground: oklch(0.34 0.04 202.16);
-    --muted: oklch(0.97 0 286.38);
+    --muted: oklch(0.94 0 286.38);
     --muted-foreground: oklch(0.37 0.01 285.81);
     --accent: oklch(0.9 0 0);
     --accent-foreground: oklch(0.34 0 0);
@@ -67,53 +67,6 @@
     --sidebar-accent-foreground: oklch(0.34 0 0);
     --sidebar-border: oklch(0.9 0 0);
     --sidebar-ring: oklch(0.69 0.05 244.96);
-    --font-sans: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: 'Domine', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    --radius: 1.5rem;
-    --shadow-2xs: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 1px 2px -3px hsl(0 0% 0% / 0.1);
-    --shadow: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 1px 2px -3px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 2px 4px -3px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 4px 6px -3px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 8px 10px -3px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.25);
-}
-
-.dark {
-    --background: oklch(0.21 0.01 285.88);
-    --foreground: oklch(0.98 0 0);
-    --card: oklch(0.21 0.01 285.88);
-    --card-foreground: oklch(0.98 0 0);
-    --popover: oklch(0.21 0.01 285.88);
-    --popover-foreground: oklch(0.98 0 0);
-    --primary: oklch(0.41 0.05 244.28);
-    --primary-foreground: oklch(0.96 0.03 223.22);
-    --secondary: oklch(0.41 0.05 201.45);
-    --secondary-foreground: oklch(0.96 0.04 202.38);
-    --muted: oklch(0.37 0.01 285.81);
-    --muted-foreground: oklch(0.97 0 286.38);
-    --accent: oklch(0.34 0 0);
-    --accent-foreground: oklch(0.9 0 0);
-    --destructive: oklch(0.59 0.25 17.59);
-    --destructive-foreground: oklch(0.97 0.01 12.42);
-    --border: oklch(0.37 0.01 285.81);
-    --input: oklch(0.37 0.01 285.81);
-    --ring: oklch(0.41 0.05 244.28);
-    --chart-1: oklch(0.64 0.24 0.71);
-    --chart-2: oklch(0.45 0.23 304.02);
-    --chart-3: oklch(0.36 0.21 282.71);
-    --chart-4: oklch(0.56 0.21 269.02);
-    --chart-5: oklch(0.78 0.12 222.46);
-    --sidebar: oklch(0.21 0.01 285.88);
-    --sidebar-foreground: oklch(0.98 0 0);
-    --sidebar-primary: oklch(0.41 0.05 244.28);
-    --sidebar-primary-foreground: oklch(0.96 0.03 223.22);
-    --sidebar-accent: oklch(0.41 0 0);
-    --sidebar-accent-foreground: oklch(0.96 0 0);
-    --sidebar-border: oklch(0.37 0.01 285.81);
-    --sidebar-ring: oklch(0.41 0.05 244.28);
     --font-sans: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'Domine', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;

@@ -2,15 +2,38 @@
 
 ## Project Overview
 
-This is a Laravel + Vue starter kit that utilizes:
+This is a Laravel + Vue project that utilizes:
 
 - Vue 3 with TypeScript
 - shadcn-vue UI components
 - Lucide icons
 - Tailwind CSS for styling
 - Inertia.js for server-client communication
+- Always use NPM and/or COMPOSER
 
 ## Code Organization
+
+### Laravel Architecture
+
+1. **Routes**
+    - Define routes in `routes/web.php`
+    - Use resourceful routes for common CRUD operations
+    - Use `Route::get()` for simple pages
+2. **Controllers**
+    - Place controllers in `app/Http/Controllers`
+    - Use resourceful controllers for common CRUD operations
+    - Use `Route::resource()` for resourceful routes
+    - Use `Route::get()` for simple pages
+    - Use `Route::post()` for form submissions
+    - Use `Route::put()` for update requests
+    - Use `Route::delete()` for delete requests
+3. **Models**
+    - Implement models in `app/Models`
+    - Use Eloquent ORM for database interactions
+    - Use relationships for associations
+    - Use Eloquent's query builder for complex queries
+4. **Views**
+    - Place views in `resources/views`
 
 ### Vue Components
 
@@ -72,9 +95,21 @@ This is a Laravel + Vue starter kit that utilizes:
     - Maintain dark mode support using `dark:` variants
 
 2. **CSS Organization**
+
     - Place global styles in `resources/css/app.css`
     - Use component-specific styles within components when necessary
     - Leverage Tailwind's @apply directive for repeated utility patterns
+
+3. **Responsive Design**
+
+    - Use Tailwind's responsive design utilities
+    - Implement breakpoints for different screen sizes
+    - Use mobile-first design principles
+
+4. **Finova Styling Guidelines**
+    - Minimalist and modern design
+    - Use `--font-serif` for heading and `--font-sans` for body text
+    - The target users are mostly university students, who want to have a simple and clean design
 
 ## State Management
 

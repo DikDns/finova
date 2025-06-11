@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppContent from '@/components/AppContent.vue';
-import AppHeader from '@/components/AppHeader.vue';
-import AppShell from '@/components/AppShell.vue';
+import AppContent from '@/components/common/AppContent.vue';
+import AppHeader from '@/components/common/AppHeader.vue';
+import AppShell from '@/components/common/AppShell.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
