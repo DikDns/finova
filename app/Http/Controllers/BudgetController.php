@@ -16,36 +16,9 @@ class BudgetController extends Controller
     {
         $budgets = Budget::where('user_id', Auth::id())->get();
 
-        return Inertia::render('users/Budgets', [
+        return Inertia::render('budget/Budgets', [
             'budgets' => $budgets
         ]);
-    }
-
-    /**
-     * Show the form for creating a new budget plan.
-     */
-    public function create()
-    {
-        return Inertia::render('users/CreateBudget');
-    }
-
-    /**
-     * Store a newly created budget plan in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $budget = new Budget();
-        $budget->user_id = Auth::id();
-        $budget->name = $validated['name'];
-        $budget->description = $validated['description'] ?? '';
-        $budget->save();
-
-        return redirect()->route('budgets.index');
     }
 
     /**

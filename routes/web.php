@@ -17,12 +17,12 @@ Route::get('/pricing', function () {
     return Inertia::render('Pricing');
 })->name('pricing');
 
-// Budget routes
+// Main routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('budgets', BudgetController::class);
-    Route::resource('transactions', TransactionController::class);
+    Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
+    Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->name('budget');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/admin.php';
