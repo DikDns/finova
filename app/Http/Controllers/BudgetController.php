@@ -32,87 +32,11 @@ class BudgetController extends Controller
         }
 
         // Load the budget with its monthly budgets
-        $budget->load(['monthlyBudgets' => function ($query) {
-            $query->orderBy('month', 'desc');
-        }]);
+        $budget->monthlyBudgets();
 
-        // For each monthly budget, load the category groups with their categories and category budgets
-        foreach ($budget->monthlyBudgets as $monthlyBudget) {
-            // Get the original date object from the database
-            // We need to access the raw attribute to get the date object
-            $monthDate = $monthlyBudget->getRawOriginal('month') ?
-                date_create($monthlyBudget->getRawOriginal('month')) :
-                date_create($monthlyBudget->month);
+        $budget->categoryGroups()->with('categories')->get();
 
-            // Format the month for frontend in YYYY-MM format
-            $monthlyBudget->month = date_format($monthDate, 'Y-m');
-
-            // Load category groups for this budget
-            $categoryGroups = $budget->categoryGroups()->with(['categories' => function ($query) {
-                $query->orderBy('name');
-            }])->orderBy('name')->get();
-
-            // Initialize arrays to store processed data
-            $processedGroups = [];
-
-            foreach ($categoryGroups as $group) {
-                $categories = [];
-                $totalAllocated = 0;
-                $totalSpent = 0;
-                $totalTarget = 0;
-
-                foreach ($group->categories as $category) {
-                    // Get category budget for this month
-                    $categoryBudget = $category->categoryBudgets()
-                        ->where('monthly_budget_id', $monthlyBudget->id)
-                        ->first();
-
-                    // Get total spent for this category in this month
-                    $spent = $category->transactions()
-                        ->whereMonth('date', date_format($monthDate, 'm'))
-                        ->whereYear('date', date_format($monthDate, 'Y'))
-                        ->sum('amount');
-
-                    // Default values if no budget exists
-                    $allocated = 0;
-                    $target = 0;
-
-                    if ($categoryBudget) {
-                        $allocated = (float) $categoryBudget->assigned;
-                        // For now, target is the same as allocated
-                        $target = $allocated;
-                    }
-
-                    $totalAllocated += $allocated;
-                    $totalSpent += $spent;
-                    $totalTarget += $target;
-
-                    $categories[] = [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'icon' => $category->icon ?? null,
-                        'allocated' => $allocated,
-                        'spent' => $spent,
-                        'target' => $target
-                    ];
-                }
-
-                $processedGroups[] = [
-                    'id' => $group->id,
-                    'name' => $group->name,
-                    'categories' => $categories,
-                    'totalAllocated' => $totalAllocated,
-                    'totalSpent' => $totalSpent,
-                    'totalTarget' => $totalTarget
-                ];
-            }
-
-            // Add the processed category groups to the monthly budget
-            $monthlyBudget->category_groups = $processedGroups;
-        }
-
-
-        return Inertia::render('users/BudgetDetail', [
+        return Inertia::render('app/Budget', [
             'budget' => $budget
         ]);
     }
