@@ -4,7 +4,6 @@ import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-//import 
 
 interface MoneyIcon {
   image: string
@@ -15,7 +14,9 @@ interface PricingPlan {
   id: string
   name: string
   price: string
+  period: string
   discount?: string
+  description?: string
 }
 
 const selectedPlan = ref('bulanan')
@@ -39,13 +40,16 @@ const pricingPlans: PricingPlan[] = [
   {
     id: 'bulanan',
     name: 'Bulanan',
-    price: 'Rp2.500/hari',
-    discount: 'Hemat 17%'
+    price: 'Rp2.500',
+    period: '/hari',
+    discount: 'Hemat 17%',
+    description: 'Langganan Rp75.000 setiap awal bulan'
   },
   {
     id: 'harian',
     name: 'Harian',
-    price: 'Rp3.000/hari'
+    price: 'Rp3.000',
+    period: '/hari',
   }
 ]
 </script>
@@ -56,7 +60,7 @@ const pricingPlans: PricingPlan[] = [
     <Separator />
 
     <main class="py-16">
-      <section class="container mx-auto px-4 text-center">
+      <section class="container mx-auto px-4 mb-16 text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-12">
           Upgrade Finansialmu, <br />
           <span class="text-primary">Gak Pakai Ribet!</span>
@@ -107,21 +111,28 @@ const pricingPlans: PricingPlan[] = [
                 />
                 <label
                   :for="plan.id"
-                  class="flex items-center justify-between cursor-pointer"
+                  class="flex flex-col space-y-1 cursor-pointer"
                 >
-                  <span class="font-medium">{{ plan.name }}</span>
-                  <div class="flex items-center space-x-4">
-                    <span
-                      v-if="plan.discount"
-                      class="bg-green-100 text-green-700 text-accent-foreground text-xs font-bold px-2 py-1 rounded-full"
-                    >
-                      {{ plan.discount }}
-                    </span>
-                    <span class="font-bold">{{ plan.price }}</span>
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ plan.name }}</span>
+                    <div class="flex items-center">
+                      <span
+                        v-if="plan.discount"
+                        class="bg-green-100 text-green-700 text-accent-foreground text-xs font-bold px-2 py-1 rounded-full me-6"
+                      >
+                        {{ plan.discount }}
+                      </span>
+                      <span class="font-extrabold text-2xl">{{ plan.price }}</span><span>{{ plan.period }}</span>
+                    </div>
                   </div>
+
+                  <span v-if="plan.description" class="text-sm text-muted-foreground text-right">
+                    {{ plan.description }}
+                  </span>
                 </label>
               </div>
             </RadioGroup>
+
             <Button as-child class="w-full mt-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold">
               <Link :href="route('register')">Coba Sekarang!</Link>
             </Button>
@@ -129,7 +140,7 @@ const pricingPlans: PricingPlan[] = [
         </Card>
       </section>
 
-      <Separator class="my-16" />
+      <!-- <Separator class="my-16" /> -->
 
       <section class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center gap-12">
@@ -144,7 +155,7 @@ const pricingPlans: PricingPlan[] = [
             </p>
             <div class="flex flex-col md:flex-row gap-4">
               <Button as-child class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                <Link :href="route('register')">Mulai Atur Keuanganmu</Link>
+                <Link href="/features/money-control">Mulai Atur Keuanganmu</Link>
               </Button>
               <Button as-child class="bg-primary-foreground/90 hover:bg-primary-foreground text-background rounded-full">
                 <Link :href="route('features')">Eksplor Fitur</Link>
