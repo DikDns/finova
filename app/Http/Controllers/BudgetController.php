@@ -16,7 +16,7 @@ class BudgetController extends Controller
     {
         $budgets = Budget::where('user_id', Auth::id())->get();
 
-        return Inertia::render('budget/Budgets', [
+        return Inertia::render('budgets/Budgets', [
             'budgets' => $budgets
         ]);
     }

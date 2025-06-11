@@ -1,24 +1,15 @@
 <script setup lang="ts">
+import BudgetsSidebar from '@/components/budgets/BudgetsSidebar.vue';
 import AppContent from '@/components/common/AppContent.vue';
 import AppShell from '@/components/common/AppShell.vue';
-import AppSidebar from '@/components/common/AppSidebar.vue';
 import AppSidebarHeader from '@/components/common/AppSidebarHeader.vue';
-import type { BreadcrumbItemType } from '@/types';
-
-interface Props {
-    breadcrumbs?: BreadcrumbItemType[];
-}
-
-withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
 </script>
 
 <template>
     <AppShell variant="sidebar">
-        <AppSidebar />
+        <BudgetsSidebar />
         <AppContent variant="sidebar">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+            <AppSidebarHeader />
             <slot />
         </AppContent>
     </AppShell>
