@@ -36,8 +36,7 @@ class BudgetController extends Controller
             'monthlyBudgets' => function ($query) {
                 $query->orderBy('month', 'desc');
             },
-            'monthlyBudgets.categoryBudgets',
-            'categoryGroups.categories.categoryBudgets',
+            'categoryGroups.categories.categoryBudgets.monthlyBudget',
         ]);
 
         return Inertia::render('app/Budget', [
