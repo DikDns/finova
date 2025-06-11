@@ -160,9 +160,9 @@ const groupedCategories = computed(() => {
                 id: group.id,
                 name: group.name,
                 categories,
-                totalAllocated: categories.reduce((sum, cat) => sum + (parseFloat(cat.allocated) || 0), 0),
-                totalSpent: categories.reduce((sum, cat) => sum + (parseFloat(cat.spent) || 0), 0),
-                totalTarget: categories.reduce((sum, cat) => sum + (parseFloat(cat.target) || 0), 0),
+                totalAllocated: categories.reduce((sum, cat) => sum + cat.allocated, 0),
+                totalSpent: categories.reduce((sum, cat) => sum + cat.spent, 0),
+                totalTarget: categories.reduce((sum, cat) => sum + cat.target, 0),
             };
         })
         .filter(Boolean);
@@ -195,7 +195,7 @@ const groupedCategories = computed(() => {
                         <div>
                             <div class="flex items-center space-x-2">
                                 <div class="h-2 w-2 rounded-full bg-green-500"></div>
-                                <span class="text-xl font-semibold">{{ formatCurrency(budget.amount) }}</span>
+                                <span class="text-xl font-semibold">{{ formatCurrency(parseFloat(budget.amount)) }}</span>
                             </div>
                             <p class="text-muted-foreground text-sm">Siap dialokasikan</p>
                         </div>
@@ -214,7 +214,7 @@ const groupedCategories = computed(() => {
                         <div>KATEGORI</div>
                         <div class="text-right">DIALOKASIKAN</div>
                         <div class="text-right">AKTIVITAS</div>
-                        <div class="text-right">TERSEDIA</div>
+                        <div class="text-right">TARGET</div>
                     </div>
 
                     <Accordion type="multiple" class="space-y-0">
@@ -223,7 +223,9 @@ const groupedCategories = computed(() => {
                                 <div class="grid w-full grid-cols-4 gap-4">
                                     <div class="font-medium">{{ group?.name }}</div>
                                     <div class="text-right font-medium">{{ formatCurrency(group?.totalAllocated ?? 0) }}</div>
-                                    <div class="text-right font-medium text-red-500">{{ formatCurrency(group?.totalSpent ?? 0) }}</div>
+                                    <div :class="['text-right font-medium', (group?.totalSpent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500']">
+                                        {{ formatCurrency(group?.totalSpent ?? 0) }}
+                                    </div>
                                     <div class="text-right font-medium">{{ formatCurrency(group?.totalTarget ?? 0) }}</div>
                                 </div>
                             </AccordionTrigger>
@@ -231,13 +233,16 @@ const groupedCategories = computed(() => {
                                 <div
                                     v-for="category in group?.categories"
                                     :key="category.id"
-                                    class="hover:bg-muted/50 grid grid-cols-4 gap-4 border-t px-6 py-3 text-sm"
+                                    class="hover:bg-muted/50 grid grid-cols-4 gap-x-0 gap-y-4 border-t px-6 py-3 text-sm"
                                 >
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-x-4">
+                                        <div class="flex h-4 w-4 items-center justify-center"></div>
                                         <span>{{ category.name }}</span>
                                     </div>
                                     <div class="text-right">{{ formatCurrency(category.allocated) }}</div>
-                                    <div class="text-right text-red-500">{{ formatCurrency(category.spent) }}</div>
+                                    <div :class="['text-right font-medium', category.spent >= 0 ? 'text-green-500' : 'text-red-500']">
+                                        {{ formatCurrency(category.spent) }}
+                                    </div>
                                     <div class="text-right">{{ formatCurrency(category.target) }}</div>
                                 </div>
                             </AccordionContent>
