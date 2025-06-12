@@ -101,8 +101,9 @@ const submit = () => {
                             </span>
                             <InputError :message="form.errors.password" />
                         </div>
-                        
-                        <!-- Password Confirmation field -->
+                    </div>
+                    <div class="mb-5">
+                        <label class="mb-1.5 block text-[#000000]">Konfirmasi Password</label>
                         <div class="relative">
                             <input
                                 v-model="form.password_confirmation"
