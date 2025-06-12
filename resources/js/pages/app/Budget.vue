@@ -1,24 +1,13 @@
 <script setup lang="ts">
+import BudgetHeader from '@/components/budget/BudgetHeader.vue';
+import BudgetSummaryCard from '@/components/budget/BudgetSummaryCard.vue';
+import CategoryGroupItem from '@/components/budget/CategoryGroupItem.vue';
+import DeleteConfirmationDialogs from '@/components/budget/DeleteConfirmationDialogs.vue';
+import NewGroupForm from '@/components/budget/NewGroupForm.vue';
 import Accordion from '@/components/ui/accordion/Accordion.vue';
-import AccordionContent from '@/components/ui/accordion/AccordionContent.vue';
-import AccordionItem from '@/components/ui/accordion/AccordionItem.vue';
-import AccordionTrigger from '@/components/ui/accordion/AccordionTrigger.vue';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -40,27 +29,6 @@ const isCreatingCategory = ref<string | null>(null);
 const newGroupName = ref('');
 const newCategoryName = ref('');
 const isLoading = ref(false);
-
-// Delete confirmation dialog states
-const showDeleteGroupDialog = ref(false);
-const showDeleteCategoryDialog = ref(false);
-const groupToDelete = ref<{ id: string; name: string } | null>(null);
-const categoryToDelete = ref<{ id: string; name: string } | null>(null);
-
-// Format currency
-const formatCurrency = (amount: number, currencyCode = 'IDR') => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
-
-// Format month
-const formattedMonth = computed(() => {
-    return currentMonth.value.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
-});
 
 // Navigate to previous month
 const goToPrevMonth = () => {
@@ -140,19 +108,12 @@ const saveCategoryEdit = async () => {
     }
 };
 
-const deleteGroup = (groupId: string, groupName: string) => {
-    groupToDelete.value = { id: groupId, name: groupName };
-    showDeleteGroupDialog.value = true;
-};
-
-const confirmDeleteGroup = async () => {
-    if (!groupToDelete.value) return;
+const deleteGroup = async (groupId: string, groupName: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus grup "${groupName}"?`)) return;
 
     isLoading.value = true;
     try {
-        await router.delete(route('category-groups.destroy', groupToDelete.value.id));
-        showDeleteGroupDialog.value = false;
-        groupToDelete.value = null;
+        await router.delete(route('category-groups.destroy', groupId));
     } catch (error) {
         console.error('Error deleting group:', error);
     } finally {
@@ -160,19 +121,12 @@ const confirmDeleteGroup = async () => {
     }
 };
 
-const deleteCategory = (categoryId: string, categoryName: string) => {
-    categoryToDelete.value = { id: categoryId, name: categoryName };
-    showDeleteCategoryDialog.value = true;
-};
-
-const confirmDeleteCategory = async () => {
-    if (!categoryToDelete.value) return;
+const deleteCategory = async (categoryId: string, categoryName: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus kategori "${categoryName}"?`)) return;
 
     isLoading.value = true;
     try {
-        await router.delete(route('categories.destroy', categoryToDelete.value.id));
-        showDeleteCategoryDialog.value = false;
-        categoryToDelete.value = null;
+        await router.delete(route('categories.destroy', categoryId));
     } catch (error) {
         console.error('Error deleting category:', error);
     } finally {
@@ -280,34 +234,17 @@ const groupedCategories = computed(() => {
     <AppLayout :breadcrumbs="breadcrumbs" :budget_id="props.budget.id">
         <div class="p-6">
             <div class="flex flex-col gap-6">
-                <!-- Header with month selector -->
-                <div class="flex items-center justify-between">
-                    <h1 class="font-serif text-2xl font-semibold tracking-tight">{{ props.budget.name }}</h1>
+                <BudgetHeader
+                    :budget-name="props.budget.name"
+                    :current-month="currentMonth"
+                    @prev-month="goToPrevMonth"
+                    @next-month="goToNextMonth"
+                />
 
-                    <div class="flex items-center space-x-2">
-                        <Button variant="outline" size="icon" @click="goToPrevMonth">
-                            <ChevronLeft class="h-4 w-4" />
-                        </Button>
-                        <span class="text-sm font-medium">{{ formattedMonth }}</span>
-                        <Button variant="outline" size="icon" @click="goToNextMonth">
-                            <ChevronRight class="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                <BudgetSummaryCard :amount="budget.amount" :currency-code="budget.currency_code" />
 
-                <div class="bg-card rounded-lg border p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <div class="h-2 w-2 rounded-full bg-green-500"></div>
-                                <span class="text-xl font-semibold">{{ formatCurrency(parseFloat(budget.amount), budget.currency_code) }}</span>
-                            </div>
-                            <p class="text-muted-foreground text-sm">Siap dialokasikan</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2">
+                <NewGroupForm v-if="isCreatingGroup" :is-loading="isLoading" @save="saveNewGroup" @cancel="cancelEditing" />
+                <div v-else class="flex items-center gap-2">
                     <Button variant="outline" class="flex items-center gap-2" @click="startCreatingGroup" :disabled="isLoading">
                         <Plus class="h-4 w-4" />
                         <span>Tambah Grup Kategori</span>
@@ -315,260 +252,55 @@ const groupedCategories = computed(() => {
                 </div>
 
                 <main class="overflow-hidden rounded-lg border">
-                    <div class="bg-muted/50 flex px-6 py-3 text-sm font-medium">
-                        <div class="min-w-0 flex-1">KATEGORI</div>
-                        <div class="w-32 flex-shrink-0 text-right">DIALOKASIKAN</div>
-                        <div class="w-32 flex-shrink-0 text-right">AKTIVITAS</div>
-                        <div class="w-32 flex-shrink-0 text-right">TARGET</div>
+                    <div class="bg-muted/50 grid grid-cols-4 gap-y-4 px-6 py-3 text-sm font-medium">
+                        <div>KATEGORI</div>
+                        <div class="text-right">DIALOKASIKAN</div>
+                        <div class="text-right">AKTIVITAS</div>
+                        <div class="text-right">TARGET</div>
                     </div>
 
                     <Accordion type="multiple" class="space-y-0">
-                        <!-- New Group Creation Row -->
-                        <div v-if="isCreatingGroup" class="bg-muted/30 border-b px-6 py-3">
-                            <div class="flex w-full">
-                                <div class="flex min-w-0 flex-1 items-center gap-2">
-                                    <Input
-                                        v-model="newGroupName"
-                                        placeholder="Nama grup kategori baru"
-                                        class="h-8 text-sm"
-                                        @keyup.enter="saveNewGroup"
-                                        @keyup.escape="cancelEditing"
-                                        :disabled="isLoading"
-                                    />
-                                    <Button size="sm" variant="ghost" @click="saveNewGroup" :disabled="!newGroupName.trim() || isLoading">
-                                        <Check class="h-3 w-3" />
-                                    </Button>
-                                    <Button size="sm" variant="ghost" @click="cancelEditing" :disabled="isLoading">
-                                        <X class="h-3 w-3" />
-                                    </Button>
-                                </div>
-                                <div class="text-muted-foreground w-32 flex-shrink-0 text-right font-medium">-</div>
-                                <div class="text-muted-foreground w-32 flex-shrink-0 text-right font-medium">-</div>
-                                <div class="text-muted-foreground w-32 flex-shrink-0 text-right font-medium">-</div>
-                            </div>
-                        </div>
-
-                        <AccordionItem v-for="group in groupedCategories" :key="group?.id" :value="group?.id ?? ''" class="border-0 border-b">
-                            <AccordionTrigger class="hover:bg-muted/50 group px-6 py-3 hover:no-underline" :disabled="editingGroupId === group?.id">
-                                <div class="flex w-full" :class="editingGroupId === group?.id ? 'pointer-events-none' : ''">
-                                    <div class="flex min-w-0 flex-1 items-center gap-2">
-                                        <!-- Group Name Editing -->
-                                        <div v-if="editingGroupId === group?.id" class="pointer-events-auto flex flex-1 items-center gap-2">
-                                            <Input
-                                                v-model="editingGroupName"
-                                                class="h-8 text-sm font-medium"
-                                                @keyup.enter="saveGroupEdit"
-                                                @keyup.escape="cancelEditing"
-                                                @click.stop
-                                                :disabled="isLoading"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                @click.stop="saveGroupEdit"
-                                                :disabled="!editingGroupName.trim() || isLoading"
-                                            >
-                                                <Check class="h-3 w-3" />
-                                            </Button>
-                                            <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                <X class="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                        <!-- Group Name Display -->
-                                        <div v-else class="flex flex-1 items-center gap-2">
-                                            <span class="font-medium">{{ group?.name }}</span>
-                                            <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click.stop="startEditingGroup(group?.id ?? '', group?.name ?? '')"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Edit2 class="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click.stop="deleteGroup(group?.id ?? '', group?.name ?? '')"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Trash2 class="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="w-32 flex-shrink-0 text-right font-medium">
-                                        {{ formatCurrency(group?.totalAllocated ?? 0, budget.currency_code) }}
-                                    </div>
-                                    <div
-                                        class="w-32 flex-shrink-0 text-right font-medium"
-                                        :class="(group?.totalSpent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'"
-                                    >
-                                        {{ formatCurrency(group?.totalSpent ?? 0, budget.currency_code) }}
-                                    </div>
-                                    <div class="w-32 flex-shrink-0 text-right font-medium">
-                                        {{ formatCurrency(group?.totalTarget ?? 0, budget.currency_code) }}
-                                    </div>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent class="pt-0 pb-0">
-                                <!-- Add Category Button -->
-                                <div class="bg-muted/20 border-t px-6 py-2">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        class="flex items-center gap-2 text-xs"
-                                        @click="startCreatingCategory(group?.id ?? '')"
-                                        :disabled="isLoading"
-                                    >
-                                        <Plus class="h-3 w-3" />
-                                        <span>Tambah Kategori</span>
-                                    </Button>
-                                </div>
-
-                                <!-- New Category Creation Row -->
-                                <div v-if="isCreatingCategory === group?.id" class="bg-muted/30 border-t px-6 py-3">
-                                    <div class="flex text-sm">
-                                        <div class="flex min-w-0 flex-1 items-center gap-x-4">
-                                            <div class="flex h-4 w-4 items-center justify-center"></div>
-                                            <div class="flex min-w-0 flex-1 items-center gap-2">
-                                                <Input
-                                                    v-model="newCategoryName"
-                                                    placeholder="Nama kategori baru"
-                                                    class="h-8 text-sm"
-                                                    @keyup.enter="saveNewCategory"
-                                                    @keyup.escape="cancelEditing"
-                                                    @click.stop
-                                                    :disabled="isLoading"
-                                                />
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click.stop="saveNewCategory"
-                                                    :disabled="!newCategoryName.trim() || isLoading"
-                                                >
-                                                    <Check class="h-3 w-3" />
-                                                </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                    <X class="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                    </div>
-                                </div>
-
-                                <!-- Categories -->
-                                <div
-                                    v-for="category in group?.categories"
-                                    :key="category.id"
-                                    class="hover:bg-muted/50 group flex border-t px-6 py-3 text-sm"
-                                    :class="editingCategoryId === category.id ? 'pointer-events-none' : ''"
-                                >
-                                    <div class="flex min-w-0 flex-1 items-center gap-x-4">
-                                        <div class="flex h-4 w-4 items-center justify-center"></div>
-                                        <!-- Category Name Editing -->
-                                        <div
-                                            v-if="editingCategoryId === category.id"
-                                            class="pointer-events-auto flex min-w-0 flex-1 items-center gap-2"
-                                        >
-                                            <Input
-                                                v-model="editingCategoryName"
-                                                class="h-8 text-sm"
-                                                @keyup.enter="saveCategoryEdit"
-                                                @keyup.escape="cancelEditing"
-                                                @click.stop
-                                                :disabled="isLoading"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                @click.stop="saveCategoryEdit"
-                                                :disabled="!editingCategoryName.trim() || isLoading"
-                                            >
-                                                <Check class="h-3 w-3" />
-                                            </Button>
-                                            <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                <X class="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                        <!-- Category Name Display -->
-                                        <div v-else class="flex min-w-0 flex-1 items-center gap-2">
-                                            <span class="truncate" :title="category.name">{{ category.name }}</span>
-                                            <div class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click="startEditingCategory(category.id, category.name)"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Edit2 class="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click="deleteCategory(category.id, category.name)"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Trash2 class="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="w-32 flex-shrink-0 text-right">{{ formatCurrency(category.allocated, budget.currency_code) }}</div>
-                                    <div
-                                        class="w-32 flex-shrink-0 text-right font-medium"
-                                        :class="category.spent >= 0 ? 'text-green-500' : 'text-red-500'"
-                                    >
-                                        {{ formatCurrency(category.spent, budget.currency_code) }}
-                                    </div>
-                                    <div class="w-32 flex-shrink-0 text-right">{{ formatCurrency(category.target, budget.currency_code) }}</div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
+                        <CategoryGroupItem
+                            v-for="group in groupedCategories"
+                            :key="group?.id"
+                            :group="group"
+                            :budget="budget"
+                            :editing-group-id="editingGroupId"
+                            :editing-group-name="editingGroupName"
+                            :editing-category-id="editingCategoryId"
+                            :editing-category-name="editingCategoryName"
+                            :is-creating-category="isCreatingCategory"
+                            :new-category-name="newCategoryName"
+                            :is-loading="isLoading"
+                            @start-editing-group="startEditingGroup"
+                            @start-editing-category="startEditingCategory"
+                            @start-creating-category="startCreatingCategory"
+                            @save-group-edit="saveGroupEdit"
+                            @save-category-edit="saveCategoryEdit"
+                            @save-new-category="saveNewCategory"
+                            @delete-group="deleteGroup"
+                            @delete-category="deleteCategory"
+                            @cancel-editing="cancelEditing"
+                        />
                     </Accordion>
                 </main>
             </div>
         </div>
 
-        <!-- Delete Group Confirmation Dialog -->
-        <AlertDialog v-model:open="showDeleteGroupDialog">
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Konfirmasi Hapus Grup</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Apakah Anda yakin ingin menghapus grup "{{ groupToDelete?.name }}"? Tindakan ini tidak dapat dibatalkan dan akan menghapus
-                        semua kategori dalam grup ini.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel @click="showDeleteGroupDialog = false">Batal</AlertDialogCancel>
-                    <AlertDialogAction @click="confirmDeleteGroup" :disabled="isLoading" variant="destructive">
-                        {{ isLoading ? 'Menghapus...' : 'Hapus' }}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-
-        <!-- Delete Category Confirmation Dialog -->
-        <AlertDialog v-model:open="showDeleteCategoryDialog">
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Konfirmasi Hapus Kategori</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Apakah Anda yakin ingin menghapus kategori "{{ categoryToDelete?.name }}"? Tindakan ini tidak dapat dibatalkan.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel @click="showDeleteCategoryDialog = false">Batal</AlertDialogCancel>
-                    <AlertDialogAction @click="confirmDeleteCategory" :disabled="isLoading" variant="destructive">
-                        {{ isLoading ? 'Menghapus...' : 'Hapus' }}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <!-- Delete Confirmation Dialogs -->
+        <DeleteConfirmationDialogs
+            :show-group-dialog="showDeleteGroupDialog"
+            :show-category-dialog="showDeleteCategoryDialog"
+            :deleting-group-name="deletingGroupName"
+            :deleting-category-name="deletingCategoryName"
+            :is-loading="isLoading"
+            @confirm-delete-group="confirmDeleteGroup"
+            @confirm-delete-category="confirmDeleteCategory"
+            @cancel-delete="
+                showDeleteGroupDialog = false;
+                showDeleteCategoryDialog = false;
+            "
+        />
     </AppLayout>
 </template>
 
