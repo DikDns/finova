@@ -6,6 +6,7 @@ import RadioGroupItem from '@/components/ui/radio-group/RadioGroupItem.vue';
 import { Separator } from '@/components/ui/separator';
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import NavBar from '@/components/common/NavBar.vue';
 
 interface MoneyIcon {
     image: string;
@@ -138,7 +139,7 @@ const pricingPlans: PricingPlan[] = [
                         </p>
                         <div class="flex flex-col gap-4 md:flex-row">
                             <Button as-child class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                                <Link href="/features/money-control">Mulai Atur Keuanganmu</Link>
+                                <Link href="/register">Mulai Atur Keuanganmu</Link>
                             </Button>
                             <Button as-child class="bg-primary-foreground/90 hover:bg-primary-foreground text-background rounded-full">
                                 <Link :href="route('features')">Eksplor Fitur</Link>
