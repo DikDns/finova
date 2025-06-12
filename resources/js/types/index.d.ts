@@ -27,11 +27,61 @@ export interface SharedData extends PageProps {
 }
 
 export interface User {
-    id: number;
+    id: string;
     name: string;
+    username: string;
     email: string;
-    avatar?: string;
+    role: string;
     email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Category {
+    id: string;
+    name: string;
+    budget_id: string;
+    category_group_id: string;
+    category_budgets: CategoryBudget[];
+}
+
+export interface CategoryBudget {
+    id: string;
+    assigned: string;
+    activity: string;
+    available: string;
+    category_id: string;
+    created_at: string;
+    updated_at: string;
+    monthly_budget: MonthlyBudget;
+}
+
+export interface CategoryGroup {
+    id: string;
+    name: string;
+    budget_id: string;
+    categories: Category[];
+}
+
+export interface MonthlyBudget {
+    id: string;
+    month: string;
+    total_income: string;
+    total_assigned: string;
+    total_activity: string;
+    total_available: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Budget {
+    id: string;
+    name: string;
+    description: string;
+    amount: string;
+    currency_code: string;
+    monthly_budgets: MonthlyBudget[];
+    category_groups: CategoryGroup[];
     created_at: string;
     updated_at: string;
 }

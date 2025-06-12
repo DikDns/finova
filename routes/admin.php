@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Admin\UserLogController;
 
+Route::redirect('admin', '/admin/dashboard', 301);
+
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('admin/Dashboard');
@@ -19,5 +21,4 @@ Route::prefix('admin')->group(function () {
     Route::get('/subscription', function () {
         return Inertia::render('admin/Subscription');
     })->name('admin.subscription');
-
 });

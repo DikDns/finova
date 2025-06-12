@@ -1,26 +1,30 @@
 <script setup lang="ts">
 import FinovaLogo from '@/components/common/FinovaLogo.vue';
-import NavFooter from '@/components/common/NavFooter.vue';
 import NavMain from '@/components/common/NavMain.vue';
 import NavUser from '@/components/common/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Wallet } from 'lucide-vue-next';
+import { ChartBar, CreditCard, Wallet } from 'lucide-vue-next';
+
+const props = defineProps<{
+    budget_id: string;
+}>();
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Anggaran Anda',
-        href: route('budgets.index'),
+        title: 'Budget',
+        href: route('budget', props.budget_id),
         icon: Wallet,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Documentation',
-        href: 'https://finova.docs',
-        icon: BookOpen,
+        title: 'Analisis',
+        href: route('budget', props.budget_id),
+        icon: ChartBar,
+    },
+    {
+        title: 'Semua Rekening',
+        href: route('budget', props.budget_id),
+        icon: CreditCard,
     },
 ];
 </script>
@@ -30,11 +34,9 @@ const footerNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('budgets.index')">
-                            <FinovaLogo />
-                        </Link>
-                    </SidebarMenuButton>
+                    <SidebarMenuItem class="flex w-full items-center gap-2 overflow-hidden text-left text-sm outline-hidden">
+                        <FinovaLogo />
+                    </SidebarMenuItem>
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
@@ -44,7 +46,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

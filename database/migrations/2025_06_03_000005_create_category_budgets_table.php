@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('monthly_budget_id');
             $table->foreignUuid('category_id');
-            $table->date('month');
             $table->decimal('assigned', 19, 4);
             $table->decimal('activity', 19, 4);
             $table->decimal('available', 19, 4);

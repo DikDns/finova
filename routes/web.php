@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\BudgetController;
-use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryGroupController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('budgets');
+    }
+
     return Inertia::render('Home');
 })->name('home');
 
@@ -21,6 +27,16 @@ Route::get('/pricing', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
     Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->name('budget');
+
+    // Category Group Routes
+    Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');
+    Route::put('/category-groups/{categoryGroup}', [CategoryGroupController::class, 'update'])->name('category-groups.update');
+    Route::delete('/category-groups/{categoryGroup}', [CategoryGroupController::class, 'destroy'])->name('category-groups.destroy');
+
+    // Category Routes
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 require __DIR__ . '/settings.php';
