@@ -5,8 +5,23 @@ import RadioGroup from '@/components/ui/radio-group/RadioGroup.vue';
 import RadioGroupItem from '@/components/ui/radio-group/RadioGroupItem.vue';
 import { Separator } from '@/components/ui/separator';
 import { Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '@/components/common/NavBar.vue';
+
+const isMobile = ref(false);
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+};
+
+onMounted(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile);
+});
 
 interface MoneyIcon {
     image: string;
@@ -92,11 +107,11 @@ const pricingPlans: PricingPlan[] = [
                             <div
                                 v-for="plan in pricingPlans"
                                 :key="plan.id"
-                                class="border-muted hover:border-primary rounded-lg border-2 p-4 transition-all"
+                                class="border-muted hover:border-primary data-[state=checked]:border-primary rounded-lg border-2 p-4 transition-all relative"
                             >
-                                <RadioGroupItem :value="plan.id" :id="plan.id" class="peer sr-only" />
-                                <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1">
-                                    <div class="flex items-center justify-between">
+                                <RadioGroupItem :value="plan.id" :id="plan.id" :class="['absolute left-4', isMobile ? 'top-1/2 -translate-y-1/2' : 'top-4']" />
+                                <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1 pl-8">
+                                    <div :class="['flex items-center', isMobile ? 'flex-col space-y-2' : 'justify-between']">
                                         <span class="font-medium">{{ plan.name }}</span>
                                         <div class="flex items-center">
                                             <span
@@ -147,7 +162,7 @@ const pricingPlans: PricingPlan[] = [
                         </div>
                     </div>
                     <div class="md:w-1/2">
-                        <img src="/handMoney.png" alt="Hand with Money" class="mx-auto max-w-md" />
+                        <img src="/handMoney.png" alt="Hand with Money" class="mx-auto max-w-md scale-x-100 md:scale-x-100" />
                     </div>
                 </div>
             </section>
