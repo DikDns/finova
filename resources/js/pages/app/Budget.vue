@@ -35,6 +35,8 @@ const editingGroupId = ref<string | null>(null);
 const editingCategoryId = ref<string | null>(null);
 const editingGroupName = ref('');
 const editingCategoryName = ref('');
+const editingCategoryBudgetId = ref<string | null>(null);
+const editingAllocatedAmount = ref('');
 const isCreatingGroup = ref(false);
 const isCreatingCategory = ref<string | null>(null);
 const newGroupName = ref('');
@@ -97,11 +99,18 @@ const startEditingCategory = (categoryId: string, categoryName: string) => {
     editingCategoryName.value = categoryName;
 };
 
+const startEditingAllocated = (categoryBudgetId: string, allocatedAmount: string) => {
+    editingCategoryBudgetId.value = categoryBudgetId;
+    editingAllocatedAmount.value = allocatedAmount;
+};
+
 const cancelEditing = () => {
     editingGroupId.value = null;
     editingCategoryId.value = null;
     editingGroupName.value = '';
     editingCategoryName.value = '';
+    editingCategoryBudgetId.value = null;
+    editingAllocatedAmount.value = '';
     isCreatingGroup.value = false;
     isCreatingCategory.value = null;
     newGroupName.value = '';
@@ -113,7 +122,7 @@ const saveGroupEdit = async () => {
 
     isLoading.value = true;
     try {
-        await router.put(route('category-groups.update', editingGroupId.value), {
+        router.put(route('category-groups.update', editingGroupId.value), {
             name: editingGroupName.value.trim(),
         });
         cancelEditing();
@@ -129,12 +138,40 @@ const saveCategoryEdit = async () => {
 
     isLoading.value = true;
     try {
-        await router.put(route('categories.update', editingCategoryId.value), {
+        router.put(route('categories.update', editingCategoryId.value), {
             name: editingCategoryName.value.trim(),
         });
         cancelEditing();
     } catch (error) {
         console.error('Error updating category:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const saveAllocatedEdit = async () => {
+    if (!editingCategoryBudgetId.value) return;
+
+    const amount = parseFloat(editingAllocatedAmount.value);
+    if (isNaN(amount) || amount < 0) return;
+
+    // Add validation to check if amount exceeds budget amount
+    const budgetAmount = parseFloat(props.budget.amount);
+    if (amount > budgetAmount) {
+        alert(`Allocated amount cannot exceed budget amount (${formatCurrency(budgetAmount, props.budget.currency_code)})`);
+        return;
+    }
+
+    console.log('amount: ' + amount);
+
+    isLoading.value = true;
+    try {
+        router.put(route('category-budgets.update', editingCategoryBudgetId.value), {
+            assigned: amount,
+        });
+        cancelEditing();
+    } catch (error) {
+        console.error('Error updating allocated amount:', error);
     } finally {
         isLoading.value = false;
     }
@@ -150,7 +187,7 @@ const confirmDeleteGroup = async () => {
 
     isLoading.value = true;
     try {
-        await router.delete(route('category-groups.destroy', groupToDelete.value.id));
+        router.delete(route('category-groups.destroy', groupToDelete.value.id));
         showDeleteGroupDialog.value = false;
         groupToDelete.value = null;
     } catch (error) {
@@ -170,7 +207,7 @@ const confirmDeleteCategory = async () => {
 
     isLoading.value = true;
     try {
-        await router.delete(route('categories.destroy', categoryToDelete.value.id));
+        router.delete(route('categories.destroy', categoryToDelete.value.id));
         showDeleteCategoryDialog.value = false;
         categoryToDelete.value = null;
     } catch (error) {
@@ -195,7 +232,7 @@ const saveNewGroup = async () => {
 
     isLoading.value = true;
     try {
-        await router.post(route('category-groups.store'), {
+        router.post(route('category-groups.store'), {
             name: newGroupName.value.trim(),
             budget_id: props.budget.id,
         });
@@ -212,7 +249,7 @@ const saveNewCategory = async () => {
 
     isLoading.value = true;
     try {
-        await router.post(route('categories.store'), {
+        router.post(route('categories.store'), {
             name: newCategoryName.value.trim(),
             category_group_id: isCreatingCategory.value,
         });
@@ -257,6 +294,7 @@ const groupedCategories = computed(() => {
                         allocated: categoryBudget ? parseFloat(categoryBudget.assigned) : 0,
                         spent: categoryBudget ? parseFloat(categoryBudget.activity) : 0,
                         target: categoryBudget ? parseFloat(categoryBudget.available) : 0,
+                        category_budgets: category.category_budgets,
                     };
                 })
                 .filter(Boolean);
@@ -338,7 +376,7 @@ const groupedCategories = computed(() => {
                                     <Button size="sm" variant="ghost" @click="saveNewGroup" :disabled="!newGroupName.trim() || isLoading">
                                         <Check class="h-3 w-3" />
                                     </Button>
-                                    <Button size="sm" variant="ghost" @click="cancelEditing" :disabled="isLoading">
+                                    <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
                                         <X class="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -517,7 +555,43 @@ const groupedCategories = computed(() => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="w-32 flex-shrink-0 text-right">{{ formatCurrency(category.allocated, budget.currency_code) }}</div>
+                                    <div class="w-32 flex-shrink-0 text-right">
+                                        <div v-if="editingCategoryBudgetId === category.category_budgets[0]?.id" class="flex items-center space-x-1">
+                                            <Input
+                                                v-model="editingAllocatedAmount"
+                                                class="h-8 min-w-32"
+                                                type="number"
+                                                :disabled="isLoading"
+                                                @keyup.enter="saveAllocatedEdit"
+                                                @keyup.escape="cancelEditing"
+                                            />
+
+                                            <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit">
+                                                <Check class="h-3 w-3" />
+                                            </Button>
+                                            <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                <X class="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                        <div
+                                            v-else
+                                            class="flex items-center justify-end space-x-1"
+                                            @click="startEditingAllocated(category.category_budgets[0]?.id, category.allocated.toString())"
+                                        >
+                                            <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
+
+                                            <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    @click="startEditingAllocated(category.category_budgets[0]?.id, category.allocated.toString())"
+                                                    :disabled="isLoading"
+                                                >
+                                                    <Edit2 class="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div
                                         class="w-32 flex-shrink-0 text-right font-medium"
                                         :class="category.spent >= 0 ? 'text-green-500' : 'text-red-500'"
