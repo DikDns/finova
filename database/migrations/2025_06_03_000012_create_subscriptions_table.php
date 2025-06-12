@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignUuid('user_id');
             $table->string('invoice', 50)->unique();
             $table->string('payment_method', 50);
-            $table->timestamp('start_date');
-            $table->timestamp('end_date');
+            $table->timestamp('start_date')->useCurrent();
+            $table->timestamp('end_date')->nullable();
             $table->timestamps();
         });
     }
