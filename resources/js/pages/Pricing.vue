@@ -107,12 +107,12 @@ const pricingPlans: PricingPlan[] = [
                             <div
                                 v-for="plan in pricingPlans"
                                 :key="plan.id"
-                                class="border-muted hover:border-primary data-[state=checked]:border-primary rounded-lg border-2 p-4 transition-all relative"
+                                class="border-muted hover:border-primary  data-[state=checked]:border-primary rounded-lg border-2 p-4 transition-all relative"
                             >
                                 <RadioGroupItem :value="plan.id" :id="plan.id" :class="['absolute left-4', isMobile ? 'top-1/2 -translate-y-1/2' : 'top-4']" />
                                 <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1 pl-8">
                                     <div :class="['flex items-center', isMobile ? 'flex-col space-y-2' : 'justify-between']">
-                                        <span class="font-medium">{{ plan.name }}</span>
+                                        <span class="font-extrabold">{{ plan.name }}</span>
                                         <div class="flex items-center">
                                             <span
                                                 v-if="plan.discount"
