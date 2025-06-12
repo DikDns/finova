@@ -264,6 +264,7 @@ const groupedCategories = computed(() => {
                             v-for="group in groupedCategories"
                             :key="group?.id"
                             :group="group"
+                            :currency-code="budget.currency_code"
                             :budget="budget"
                             :editing-group-id="editingGroupId"
                             :editing-group-name="editingGroupName"
