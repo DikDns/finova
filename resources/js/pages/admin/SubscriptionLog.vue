@@ -46,7 +46,7 @@ const searchQuery = ref(props.filters.search || '')
 const perPage = ref(props.filters.per_page || 10)
 
 const search = () => {
-  router.get(route('admin.subscription-log'), {
+  router.get(route('admin.subscriptionlog'), {
     search: searchQuery.value,
     per_page: perPage.value,
     page: 1

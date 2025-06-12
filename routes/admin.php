@@ -12,7 +12,7 @@ Route::prefix('admin')->group(function () {
         return Inertia::render('admin/Dashboard');
     })->name('admin.dashboard');
 
-    Route::get('/subscription-log', [SubscriptionLogController::class, 'index'])->name('admin.subscription-log');
+    Route::get('/subscriptionlog', [SubscriptionLogController::class, 'index'])->name('admin.subscriptionlog');
     Route::get('/userlog', [UserLogController::class, 'index'])->name('admin.userlog');
 
     Route::get('/account', function () {
