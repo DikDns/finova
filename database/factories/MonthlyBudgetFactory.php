@@ -18,7 +18,7 @@ class MonthlyBudgetFactory extends Factory
     {
         return [
             'month' => fake()->date(),
-            'total_income' => fake()->randomFloat(2, 0, 1000),
+            'total_balance' => fake()->randomFloat(2, 0, 1000),
             'total_assigned' => fake()->randomFloat(2, 0, 1000),
             'total_activity' => fake()->randomFloat(2, 0, 1000),
             'total_available' => fake()->randomFloat(2, 0, 1000),

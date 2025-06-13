@@ -19,7 +19,7 @@ class MonthlyBudget extends Model
     protected $fillable = [
         'budget_id',
         'month',
-        'total_income',
+        'total_balance',
         'total_assigned',
         'total_activity',
         'total_available'
@@ -29,7 +29,7 @@ class MonthlyBudget extends Model
     {
         return [
             'month' => 'date',
-            'total_income' => 'decimal:4',
+            'total_balance' => 'decimal:4',
             'total_assigned' => 'decimal:4',
             'total_activity' => 'decimal:4',
             'total_available' => 'decimal:4',
