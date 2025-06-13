@@ -8,6 +8,10 @@ defineProps<{
 }>();
 
 const page = usePage<SharedData>();
+
+const getThePathOnly = (href: string) => {
+    return '/' + href.split('/').slice(3).join('/');
+};
 </script>
 
 <template>
@@ -15,10 +19,8 @@ const page = usePage<SharedData>();
         <SidebarGroupLabel>Platform</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton 
-                    as-child :is-active="item.href === page.url"
-                    :tooltip="item.title"
-                >
+                <!-- The item.href is contain the domain remove it -->
+                <SidebarMenuButton as-child :is-active="getThePathOnly(item.href) === page.url" :tooltip="item.title">
                     <Link :href="item.href">
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>

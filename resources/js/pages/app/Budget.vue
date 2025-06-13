@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem, type Budget } from '@/types';
+import { type Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -79,15 +79,6 @@ const goToNextMonth = () => {
     newDate.setMonth(newDate.getMonth() + 1);
     currentMonth.value = newDate;
 };
-
-// Breadcrumbs for navigation
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: props.budget.name,
-        href: route('budget', props.budget.id),
-    },
-];
-
 console.log(props.budget);
 
 // CRUD Functions
@@ -385,7 +376,7 @@ const groupedCategories = computed(() => {
 <template>
     <Head :title="`${props.budget.name}`" />
 
-    <AppLayout :breadcrumbs="breadcrumbs" :budget_id="props.budget.id">
+    <AppLayout :budget_id="props.budget.id">
         <div class="p-6">
             <div class="flex flex-col gap-6">
                 <!-- Header with month selector -->
@@ -748,7 +739,3 @@ const groupedCategories = computed(() => {
         </AlertDialog>
     </AppLayout>
 </template>
-
-<style scoped>
-/* Add any component-specific styles here */
-</style>

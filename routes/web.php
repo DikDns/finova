@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryBudgetController;
 use App\Http\Controllers\CategoryController;
@@ -24,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
     Route::get('/budgets/recent', [BudgetController::class, 'recent'])->name('budget.recent');
     Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->name('budget');
+
+    Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
+    Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');

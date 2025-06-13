@@ -18,12 +18,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Analisis',
-        href: route('budget', props.budget_id),
+        href: route('budget.analysis', props.budget_id),
         icon: ChartBar,
     },
     {
         title: 'Semua Rekening',
-        href: route('budget', props.budget_id),
+        href: route('budget.accounts', props.budget_id),
         icon: CreditCard,
     },
 ];
