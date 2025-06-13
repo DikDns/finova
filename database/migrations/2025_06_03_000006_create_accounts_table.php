@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('budget_id');
+            $table->foreignUuid('budget_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('type');
+            $table->string('type')->default('cash');
             $table->decimal('interest', 19, 4)->default(0);
             $table->decimal('minimum_payment_monthly', 19, 4)->default(0);
             $table->decimal('balance', 19, 4)->default(0);

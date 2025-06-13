@@ -1,25 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Admin\UserLogController;
-use App\Http\Controllers\Admin\SubscriptionLogController;
 
-Route::redirect('admin', '/admin/dashboard', 301);
+Route::redirect('admin', '/admin/admindashboard', 301);
 
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admindashboard', [DashboardController::class, 'index'])->name('admin.admindashboard');
 
-    Route::get('/subscriptionlog', [SubscriptionLogController::class, 'index'])->name('admin.subscriptionlog');
-    Route::get('/userlog', [UserLogController::class, 'index'])->name('admin.userlog');
+    Route::get('/adminaccount', function () {
+        return Inertia::render('admin/adminaccount');
+    })->name('admin.adminaccount');
 
-    Route::get('/account', function () {
-        return Inertia::render('admin/Account');
-    })->name('admin.account');
-
-    Route::get('/subscription', function () {
-        return Inertia::render('admin/Subscription');
-    })->name('admin.subscription');
+    Route::get('/adminsubscription', function () {
+        return Inertia::render('admin/adminsubscription');
+    })->name('admin.adminsubscription');
 });

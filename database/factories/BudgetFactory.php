@@ -19,7 +19,6 @@ class BudgetFactory extends Factory
         return [
             'name' => fake()->word(),
             'description' => fake()->sentence(),
-            'amount' => fake()->randomFloat(2, 0, 10000),
             'currency_code' => fake()->randomElement(['IDR', 'USD', 'EUR', 'GBP', 'JPY']),
         ];
     }
