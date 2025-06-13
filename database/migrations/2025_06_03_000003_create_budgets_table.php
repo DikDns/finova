@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignUuid('user_id')->index();
             $table->string('name', 255);
             $table->text('description');
-            $table->decimal('amount', 19, 4)->default(0);
             $table->string('currency_code', 3)->default('IDR');
             $table->timestamps();
         });

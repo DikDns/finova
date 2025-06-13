@@ -79,7 +79,6 @@ export interface Budget {
     id: string;
     name: string;
     description: string;
-    amount: string;
     currency_code: string;
     monthly_budgets: MonthlyBudget[];
     category_groups: CategoryGroup[];

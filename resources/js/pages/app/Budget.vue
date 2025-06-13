@@ -189,15 +189,6 @@ const saveAllocatedEdit = async () => {
     const amount = parseFloat(editingAllocatedAmount.value);
     if (isNaN(amount) || amount < 0) return;
 
-    // Add validation to check if amount exceeds budget amount
-    const budgetAmount = parseFloat(props.budget.amount);
-    if (amount > budgetAmount) {
-        alert(`Allocated amount cannot exceed budget amount (${formatCurrency(budgetAmount, props.budget.currency_code)})`);
-        return;
-    }
-
-    console.log('amount: ' + amount);
-
     isLoading.value = true;
     try {
         router.put(route('category-budgets.update', editingAllocatedBudgetId.value), {
@@ -425,7 +416,9 @@ const groupedCategories = computed(() => {
                         <div>
                             <div class="flex items-center space-x-2">
                                 <div class="h-2 w-2 rounded-full bg-green-500"></div>
-                                <span class="text-xl font-semibold">{{ formatCurrency(parseFloat(budget.amount), budget.currency_code) }}</span>
+                                <span class="text-xl font-semibold">{{
+                                    formatCurrency(parseFloat(currentMonthBudget?.total_income ?? '0'), budget.currency_code)
+                                }}</span>
                             </div>
                             <p class="text-muted-foreground text-sm">Siap dialokasikan</p>
                         </div>
