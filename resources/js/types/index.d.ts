@@ -53,6 +53,7 @@ export interface CategoryBudget {
     category_id: string;
     created_at: string;
     updated_at: string;
+    monthly_budget_id: string;
     monthly_budget: MonthlyBudget;
 }
 

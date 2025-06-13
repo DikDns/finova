@@ -35,8 +35,10 @@ const editingGroupId = ref<string | null>(null);
 const editingCategoryId = ref<string | null>(null);
 const editingGroupName = ref('');
 const editingCategoryName = ref('');
-const editingCategoryBudgetId = ref<string | null>(null);
+const editingAllocatedBudgetId = ref<string | null>(null);
 const editingAllocatedAmount = ref('');
+const editingTargetBudgetId = ref<string | null>(null);
+const editingTargetAmount = ref('');
 const isCreatingGroup = ref(false);
 const isCreatingCategory = ref<string | null>(null);
 const newGroupName = ref('');
@@ -90,31 +92,63 @@ console.log(props.budget);
 
 // CRUD Functions
 const startEditingGroup = (groupId: string, groupName: string) => {
+    editingCategoryId.value = null;
+    editingCategoryName.value = '';
+    editingAllocatedBudgetId.value = null;
+    editingAllocatedAmount.value = '';
+    editingTargetBudgetId.value = null;
+    editingTargetAmount.value = '';
+    isCreatingGroup.value = false;
+    isCreatingCategory.value = null;
+    newGroupName.value = '';
+    newCategoryName.value = '';
     editingGroupId.value = groupId;
     editingGroupName.value = groupName;
 };
 
 const startEditingCategory = (categoryId: string, categoryName: string) => {
+    editingGroupId.value = null;
+    editingGroupName.value = '';
+    editingAllocatedBudgetId.value = null;
+    editingAllocatedAmount.value = '';
+    editingTargetBudgetId.value = null;
+    editingTargetAmount.value = '';
+    isCreatingGroup.value = false;
+    isCreatingCategory.value = null;
+    newGroupName.value = '';
+    newCategoryName.value = '';
     editingCategoryId.value = categoryId;
     editingCategoryName.value = categoryName;
 };
 
 const startEditingAllocated = (categoryBudgetId: string, allocatedAmount: string) => {
-    editingCategoryBudgetId.value = categoryBudgetId;
+    editingGroupId.value = null;
+    editingGroupName.value = '';
+    editingCategoryId.value = null;
+    editingCategoryName.value = '';
+    editingTargetBudgetId.value = null;
+    editingTargetAmount.value = '';
+    isCreatingGroup.value = false;
+    isCreatingCategory.value = null;
+    newGroupName.value = '';
+    newCategoryName.value = '';
+    editingAllocatedBudgetId.value = categoryBudgetId;
     editingAllocatedAmount.value = allocatedAmount;
 };
 
-const cancelEditing = () => {
+const startEditingTarget = (categoryBudgetId: string, targetAmount: string) => {
     editingGroupId.value = null;
-    editingCategoryId.value = null;
     editingGroupName.value = '';
+    editingCategoryId.value = null;
     editingCategoryName.value = '';
-    editingCategoryBudgetId.value = null;
+    editingAllocatedBudgetId.value = null;
     editingAllocatedAmount.value = '';
     isCreatingGroup.value = false;
     isCreatingCategory.value = null;
     newGroupName.value = '';
     newCategoryName.value = '';
+    editingTargetBudgetId.value = categoryBudgetId;
+    editingTargetAmount.value = targetAmount;
 };
 
 const saveGroupEdit = async () => {
@@ -150,7 +184,7 @@ const saveCategoryEdit = async () => {
 };
 
 const saveAllocatedEdit = async () => {
-    if (!editingCategoryBudgetId.value) return;
+    if (!editingAllocatedBudgetId.value) return;
 
     const amount = parseFloat(editingAllocatedAmount.value);
     if (isNaN(amount) || amount < 0) return;
@@ -166,12 +200,40 @@ const saveAllocatedEdit = async () => {
 
     isLoading.value = true;
     try {
-        router.put(route('category-budgets.update', editingCategoryBudgetId.value), {
+        router.put(route('category-budgets.update', editingAllocatedBudgetId.value), {
             assigned: amount,
         });
         cancelEditing();
     } catch (error) {
         console.error('Error updating allocated amount:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const saveTargetEdit = async () => {
+    if (!editingTargetBudgetId.value) return;
+
+    const amount = parseFloat(editingTargetAmount.value);
+    if (isNaN(amount) || amount < 0) return;
+
+    // Add validation to check if amount exceeds budget amount
+    const budgetAmount = parseFloat(props.budget.amount);
+    if (amount > budgetAmount) {
+        alert(`Target amount cannot exceed budget amount (${formatCurrency(budgetAmount, props.budget.currency_code)})`);
+        return;
+    }
+
+    console.log('target amount: ' + amount);
+
+    isLoading.value = true;
+    try {
+        router.put(route('category-budgets.update', editingTargetBudgetId.value), {
+            available: amount,
+        });
+        cancelEditing();
+    } catch (error) {
+        console.error('Error updating target amount:', error);
     } finally {
         isLoading.value = false;
     }
@@ -223,6 +285,16 @@ const startCreatingGroup = () => {
 };
 
 const startCreatingCategory = (groupId: string) => {
+    editingGroupId.value = null;
+    editingGroupName.value = '';
+    editingCategoryId.value = null;
+    editingCategoryName.value = '';
+    editingAllocatedBudgetId.value = null;
+    editingAllocatedAmount.value = '';
+    editingTargetBudgetId.value = null;
+    editingTargetAmount.value = '';
+    isCreatingGroup.value = false;
+    newGroupName.value = '';
     isCreatingCategory.value = groupId;
     newCategoryName.value = '';
 };
@@ -261,6 +333,21 @@ const saveNewCategory = async () => {
     }
 };
 
+const cancelEditing = () => {
+    editingGroupId.value = null;
+    editingGroupName.value = '';
+    editingCategoryId.value = null;
+    editingCategoryName.value = '';
+    editingAllocatedBudgetId.value = null;
+    editingAllocatedAmount.value = '';
+    editingTargetBudgetId.value = null;
+    editingTargetAmount.value = '';
+    isCreatingGroup.value = false;
+    isCreatingCategory.value = null;
+    newGroupName.value = '';
+    newCategoryName.value = '';
+};
+
 // Get current month's budget data
 const currentMonthBudget = computed(() => {
     const currentMonthStr = currentMonth.value.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }); // Format: YYYY-MM
@@ -294,7 +381,7 @@ const groupedCategories = computed(() => {
                         allocated: categoryBudget ? parseFloat(categoryBudget.assigned) : 0,
                         spent: categoryBudget ? parseFloat(categoryBudget.activity) : 0,
                         target: categoryBudget ? parseFloat(categoryBudget.available) : 0,
-                        category_budgets: category.category_budgets,
+                        category_budget: categoryBudget,
                     };
                 })
                 .filter(Boolean);
@@ -356,8 +443,8 @@ const groupedCategories = computed(() => {
                     <div class="bg-muted/50 flex px-6 py-3 text-sm font-medium">
                         <div class="min-w-0 flex-1">KATEGORI</div>
                         <div class="w-32 flex-shrink-0 text-right">DIALOKASIKAN</div>
-                        <div class="w-32 flex-shrink-0 text-right">AKTIVITAS</div>
                         <div class="w-32 flex-shrink-0 text-right">TARGET</div>
+                        <div class="w-32 flex-shrink-0 text-right">AKTIVITAS</div>
                     </div>
 
                     <Accordion type="multiple" class="space-y-0">
@@ -387,7 +474,10 @@ const groupedCategories = computed(() => {
                         </div>
 
                         <AccordionItem v-for="group in groupedCategories" :key="group?.id" :value="group?.id ?? ''" class="border-0 border-b">
-                            <AccordionTrigger class="hover:bg-muted/50 group px-6 py-3 hover:no-underline" :disabled="editingGroupId === group?.id">
+                            <AccordionTrigger
+                                class="bg-muted/20 hover:bg-muted/50 group px-6 py-3 hover:no-underline"
+                                :disabled="editingGroupId === group?.id"
+                            >
                                 <div class="flex w-full" :class="editingGroupId === group?.id ? 'pointer-events-none' : ''">
                                     <div class="flex min-w-0 flex-1 items-center gap-2">
                                         <!-- Group Name Editing -->
@@ -414,7 +504,7 @@ const groupedCategories = computed(() => {
                                         </div>
                                         <!-- Group Name Display -->
                                         <div v-else class="flex flex-1 items-center gap-2">
-                                            <span class="font-medium">{{ group?.name }}</span>
+                                            <span class="font-semibold">{{ group?.name }}</span>
                                             <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                                 <Button
                                                     size="sm"
@@ -435,20 +525,21 @@ const groupedCategories = computed(() => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="w-32 flex-shrink-0 text-right font-medium">
+                                    <div class="w-32 flex-shrink-0 text-right font-semibold">
                                         {{ formatCurrency(group?.totalAllocated ?? 0, budget.currency_code) }}
                                     </div>
+                                    <div class="w-32 flex-shrink-0 text-right font-semibold">
+                                        {{ formatCurrency(group?.totalTarget ?? 0, budget.currency_code) }}
+                                    </div>
                                     <div
-                                        class="w-32 flex-shrink-0 text-right font-medium"
+                                        class="w-32 flex-shrink-0 text-right font-semibold"
                                         :class="(group?.totalSpent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'"
                                     >
                                         {{ formatCurrency(group?.totalSpent ?? 0, budget.currency_code) }}
                                     </div>
-                                    <div class="w-32 flex-shrink-0 text-right font-medium">
-                                        {{ formatCurrency(group?.totalTarget ?? 0, budget.currency_code) }}
-                                    </div>
                                 </div>
                             </AccordionTrigger>
+
                             <AccordionContent class="pt-0 pb-0">
                                 <!-- Add Category Button -->
                                 <div class="bg-muted/20 border-t px-6 py-2">
@@ -555,50 +646,77 @@ const groupedCategories = computed(() => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="w-32 flex-shrink-0 text-right">
-                                        <div v-if="editingCategoryBudgetId === category.category_budgets[0]?.id" class="flex items-center space-x-1">
-                                            <Input
-                                                v-model="editingAllocatedAmount"
-                                                class="h-8 min-w-32"
-                                                type="number"
-                                                :disabled="isLoading"
-                                                @keyup.enter="saveAllocatedEdit"
-                                                @keyup.escape="cancelEditing"
-                                            />
-
-                                            <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit">
-                                                <Check class="h-3 w-3" />
-                                            </Button>
-                                            <Button size="sm" variant="ghost" @click.stop="cancelEditing">
-                                                <X class="h-3 w-3" />
-                                            </Button>
+                                    <div class="flex w-32 flex-shrink-0 items-center justify-end">
+                                        <div
+                                            v-if="editingAllocatedBudgetId === category.category_budget?.id"
+                                            class="relative flex items-center space-x-1"
+                                        >
+                                            <div class="absolute -right-32 z-10 flex items-center gap-1">
+                                                <Input
+                                                    v-model="editingAllocatedAmount"
+                                                    class="h-8 min-w-32"
+                                                    type="number"
+                                                    :disabled="isLoading"
+                                                    @keyup.enter="saveAllocatedEdit"
+                                                    @keyup.escape="cancelEditing"
+                                                />
+                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit">
+                                                    <Check class="h-3 w-3" />
+                                                </Button>
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                    <X class="h-3 w-3" />
+                                                </Button>
+                                            </div>
                                         </div>
                                         <div
                                             v-else
-                                            class="flex items-center justify-end space-x-1"
-                                            @click="startEditingAllocated(category.category_budgets[0]?.id, category.allocated.toString())"
+                                            class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
+                                            @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
                                         >
                                             <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
-
-                                            <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click="startEditingAllocated(category.category_budgets[0]?.id, category.allocated.toString())"
+                                        </div>
+                                    </div>
+                                    <div class="flex w-32 flex-shrink-0 items-center justify-end">
+                                        <div
+                                            v-if="editingTargetBudgetId === category.category_budget?.id"
+                                            class="relative flex items-center space-x-1"
+                                        >
+                                            <div class="absolute -right-32 z-10 flex items-center gap-1">
+                                                <Input
+                                                    v-model="editingTargetAmount"
+                                                    class="h-8 min-w-32"
+                                                    type="number"
                                                     :disabled="isLoading"
-                                                >
-                                                    <Edit2 class="h-3 w-3" />
+                                                    @keyup.enter="saveTargetEdit"
+                                                    @keyup.escape="cancelEditing"
+                                                />
+                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit">
+                                                    <Check class="h-3 w-3" />
+                                                </Button>
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                    <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
+                                        </div>
+                                        <div
+                                            v-else
+                                            class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
+                                            @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
+                                        >
+                                            <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
+                                                formatCurrency(category.target, budget.currency_code)
+                                            }}</span>
                                         </div>
                                     </div>
                                     <div
                                         class="w-32 flex-shrink-0 text-right font-medium"
-                                        :class="category.spent >= 0 ? 'text-green-500' : 'text-red-500'"
+                                        :class="[
+                                            category.spent >= 0 ? 'text-green-500' : 'text-red-500',
+                                            category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
+                                        ]"
                                     >
                                         {{ formatCurrency(category.spent, budget.currency_code) }}
                                     </div>
-                                    <div class="w-32 flex-shrink-0 text-right">{{ formatCurrency(category.target, budget.currency_code) }}</div>
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
