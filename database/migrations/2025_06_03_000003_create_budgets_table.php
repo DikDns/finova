@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('budgets', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->index();
+            $table->foreignUuid('user_id')->index()->constrained()->onDelete('cascade');
             $table->string('name', 255);
             $table->text('description');
-            $table->decimal('amount', 19, 4)->default(0);
             $table->string('currency_code', 3)->default('IDR');
             $table->timestamps();
         });

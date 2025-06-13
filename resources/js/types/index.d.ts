@@ -53,6 +53,7 @@ export interface CategoryBudget {
     category_id: string;
     created_at: string;
     updated_at: string;
+    monthly_budget_id: string;
     monthly_budget: MonthlyBudget;
 }
 
@@ -78,7 +79,6 @@ export interface Budget {
     id: string;
     name: string;
     description: string;
-    amount: string;
     currency_code: string;
     monthly_budgets: MonthlyBudget[];
     category_groups: CategoryGroup[];

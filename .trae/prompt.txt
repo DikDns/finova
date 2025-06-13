@@ -2,15 +2,9 @@
 Analyze the current UI Composition in #File:Budget.vue file.
 
 Based on the model in #Folder:Models, I want to implement some create, update, and delete features for the following data:
-1. Create a new group category which should utilize the 'Tambah Kategori' button.
-2. Create a new category inside the group category
-3. Edit group category name
-4. Edit category name
-5. Delete group category
-6. Delete category
-7. Edit allocated amount to the category
-8. Edit available (in indonesia it's on purpose name 'target' column) amount to the category
-9. Add new monthly_budget to the budget when the user click the next/previous month button that doesn't have monthly_budget with the initial value of allocated same as previous/next (depending on the button click) month for all categories
+1. Edit allocated amount to the category
+2. Edit available (in indonesia it's on purpose name 'target' column) amount to the category
+3. Add new monthly_budget to the budget when the user click the next/previous month button that doesn't have monthly_budget with the initial value of allocated same as previous/next (depending on the button click) month for all categories
 
 For this specific request, what solution can you suggest and provide for the desktop layout?
 Explains the pros and cons!
