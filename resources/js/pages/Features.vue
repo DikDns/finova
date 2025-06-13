@@ -54,8 +54,8 @@ const changeSlide = (index) => {
       Fitur yang bikin keuanganmu lebih teratur dan terkontrol.
     </p>
 
-    <!-- Carousel Implementation -->
-    <Carousel class="w-full max-w-4xl mx-auto">
+    <!-- Carousel Section -->
+    <Carousel :opts="{ loop: true }" class="w-full max-w-4xl mx-auto">
       <CarouselContent>
         <CarouselItem>
           <div class="rounded-lg bg-white p-6 shadow-md">
