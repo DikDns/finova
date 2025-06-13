@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('account_id');
             $table->foreignUuid('category_id');
-            $table->foreignUuid('budget_id');
+            $table->foreignUuid('budget_id')->constrained()->onDelete('cascade');
             $table->string('payee', 255);
             $table->dateTime('date');
             $table->decimal('amount', 19, 4);

@@ -25,14 +25,20 @@ class CategoryBudgetController extends Controller
             'available' => 'nullable|numeric',
         ]);
 
+        // Store old values before update
+        $oldAssigned = $categoryBudget->assigned;
+
         // Update the category budget
         $categoryBudget->update([
             'assigned' => $validated['assigned'] ?? $categoryBudget->assigned,
             'available' => $validated['available'] ?? $categoryBudget->available,
         ]);
 
-        // Update the monthly budget totals
+        // Calculate the difference to adjust total_income
+        $assignedDifference = $categoryBudget->assigned - $oldAssigned;
+
         $this->updateMonthlyBudgetTotals($categoryBudget->monthlyBudget);
+        $this->updateTotalIncome($categoryBudget->monthlyBudget, $assignedDifference);
 
         return redirect()->back()->with('success', 'Anggaran kategori berhasil diperbarui.');
     }
@@ -52,6 +58,18 @@ class CategoryBudgetController extends Controller
             'total_assigned' => $totalAssigned,
             'total_activity' => $totalActivity,
             'total_available' => $totalAvailable,
+        ]);
+    }
+
+    private function updateTotalIncome(MonthlyBudget $monthlyBudget, $assignedDifference = 0)
+    {
+        // Adjust total_income by subtracting the difference in assigned and available amounts
+        // When assigned/available increases, total_income decreases
+        // When assigned/available decreases, total_income increases
+        $totalDifference = $assignedDifference;
+
+        $monthlyBudget->update([
+            'total_income' => $monthlyBudget->total_income - $totalDifference,
         ]);
     }
 }

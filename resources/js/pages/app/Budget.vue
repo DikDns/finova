@@ -208,15 +208,6 @@ const saveTargetEdit = async () => {
     const amount = parseFloat(editingTargetAmount.value);
     if (isNaN(amount) || amount < 0) return;
 
-    // Add validation to check if amount exceeds budget amount
-    const budgetAmount = parseFloat(props.budget.amount);
-    if (amount > budgetAmount) {
-        alert(`Target amount cannot exceed budget amount (${formatCurrency(budgetAmount, props.budget.currency_code)})`);
-        return;
-    }
-
-    console.log('target amount: ' + amount);
-
     isLoading.value = true;
     try {
         router.put(route('category-budgets.update', editingTargetBudgetId.value), {
@@ -315,6 +306,7 @@ const saveNewCategory = async () => {
         router.post(route('categories.store'), {
             name: newCategoryName.value.trim(),
             category_group_id: isCreatingCategory.value,
+            monthly_budget_ids: props.budget.monthly_budgets.map((mb) => mb.id),
         });
         cancelEditing();
     } catch (error) {
