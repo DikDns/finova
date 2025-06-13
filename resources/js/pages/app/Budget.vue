@@ -29,6 +29,9 @@ const props = defineProps<Props>();
 
 // Current month state
 const currentMonth = ref(new Date());
+const showMonthlyBudgetDialog = ref(false);
+const newMonthDate = ref<Date | null>(null);
+const isNextMonth = ref(false);
 
 // Editing states
 const editingGroupId = ref<string | null>(null);
@@ -61,25 +64,77 @@ const formatCurrency = (amount: number, currencyCode = 'IDR') => {
     }).format(amount);
 };
 
-// Format month
+// Format month for display
 const formattedMonth = computed(() => {
     return currentMonth.value.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 });
+
+// Format month for API
+const formatMonthForAPI = (date: Date) => {
+    return date.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' });
+};
+
+// Check if monthly budget exists
+const hasMonthlyBudget = (date: Date) => {
+    const monthStr = formatMonthForAPI(date);
+    return props.budget.monthly_budgets?.some((mb) => mb.month === monthStr) ?? false;
+};
 
 // Navigate to previous month
 const goToPrevMonth = () => {
     const newDate = new Date(currentMonth.value);
     newDate.setMonth(newDate.getMonth() - 1);
-    currentMonth.value = newDate;
+
+    if (!hasMonthlyBudget(newDate)) {
+        newMonthDate.value = newDate;
+        isNextMonth.value = false;
+        showMonthlyBudgetDialog.value = true;
+    } else {
+        currentMonth.value = newDate;
+    }
 };
 
 // Navigate to next month
 const goToNextMonth = () => {
     const newDate = new Date(currentMonth.value);
     newDate.setMonth(newDate.getMonth() + 1);
-    currentMonth.value = newDate;
+
+    if (!hasMonthlyBudget(newDate)) {
+        newMonthDate.value = newDate;
+        isNextMonth.value = true;
+        showMonthlyBudgetDialog.value = true;
+    } else {
+        currentMonth.value = newDate;
+    }
 };
-console.log(props.budget);
+
+// Create new monthly budget
+const createMonthlyBudget = async () => {
+    if (!newMonthDate.value) return;
+
+    isLoading.value = true;
+    try {
+        router.post(route('monthly-budgets.store'), {
+            budget_id: props.budget.id,
+            month: newMonthDate.value,
+            reference_month: currentMonth.value,
+        });
+
+        currentMonth.value = newMonthDate.value;
+        showMonthlyBudgetDialog.value = false;
+        newMonthDate.value = null;
+    } catch (error) {
+        console.error('Error creating monthly budget:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// Cancel monthly budget creation
+const cancelMonthlyBudget = () => {
+    showMonthlyBudgetDialog.value = false;
+    newMonthDate.value = null;
+};
 
 // CRUD Functions
 const startEditingGroup = (groupId: string, groupName: string) => {
@@ -734,6 +789,24 @@ const groupedCategories = computed(() => {
                     <AlertDialogAction @click="confirmDeleteCategory" :disabled="isLoading" variant="destructive">
                         {{ isLoading ? 'Menghapus...' : 'Hapus' }}
                     </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <!-- Monthly Budget Creation Dialog -->
+        <AlertDialog :open="showMonthlyBudgetDialog" @update:open="showMonthlyBudgetDialog = $event">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Buat Budget Bulanan Baru</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Budget untuk bulan {{ newMonthDate?.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }} belum tersedia. Apakah
+                        Anda ingin membuat budget baru dengan menggunakan alokasi dari bulan
+                        {{ currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }}?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="cancelMonthlyBudget">Batal</AlertDialogCancel>
+                    <AlertDialogAction @click="createMonthlyBudget">Buat Budget</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
