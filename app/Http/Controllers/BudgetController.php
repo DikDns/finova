@@ -95,4 +95,18 @@ class BudgetController extends Controller
 
         return redirect()->route('budgets');
     }
+
+    public function recent()
+    {
+        $latestBudget = Budget::where('user_id', Auth::id())
+            ->latest()
+            ->first();
+
+        if ($latestBudget) {
+            return redirect()->intended(route('budget', $latestBudget, absolute: false));
+        }
+
+        // @rafi_zamzami handle to create new budget with paramater of user_plan: true
+        return redirect()->intended(route('budgets', absolute: false));
+    }
 }

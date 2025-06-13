@@ -16,5 +16,5 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('budgets', absolute: false));
+    $response->assertRedirect(route('budget.recent', absolute: false));
 });
