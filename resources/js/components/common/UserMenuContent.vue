@@ -3,7 +3,7 @@ import UserInfo from '@/components/common/UserInfo.vue';
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, LayoutDashboard, LogOut, Settings } from 'lucide-vue-next';
+import { ArrowLeft, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -38,6 +38,12 @@ defineProps<Props>();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
+        <DropdownMenuItem :as-child="true">
+            <Link class="block w-full" :href="route('budgets')" prefetch as="button">
+                <Wallet class="mr-2 h-4 w-4" />
+                Kelola Budget
+            </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="route('profile.edit')" prefetch as="button">
                 <Settings class="mr-2 h-4 w-4" />

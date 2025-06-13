@@ -34,18 +34,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Find the most recently updated budget for the authenticated user
-        $latestBudget = Budget::where('user_id', Auth::id())
-            ->orderBy('updated_at', 'desc')
-            ->first();
-
-        // If user has a budget, redirect to the most recent one's detail page
-        // Otherwise, redirect to the budgets index page
-        if ($latestBudget) {
-            return redirect()->intended(route('budget', $latestBudget, absolute: false));
-        }
-
-        return redirect()->intended(route('budgets', absolute: false));
+        return redirect()->intended(route('budget.recent', absolute: false));
     }
 
     /**

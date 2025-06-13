@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->route('budgets');
-    }
-
     return Inertia::render('Home');
 })->name('home');
 
@@ -24,8 +20,9 @@ Route::get('/pricing', function () {
 })->name('pricing');
 
 // Main routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
+    Route::get('/budgets/recent', [BudgetController::class, 'recent'])->name('budget.recent');
     Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->name('budget');
 
     // Category Group Routes

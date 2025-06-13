@@ -48,7 +48,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // @rafi_zamzami handle to create new budget with paramater of user_plan: true
-        return to_route('budgets');
+        return to_route('budget.recent');
     }
 }
