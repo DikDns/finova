@@ -186,8 +186,10 @@ class AccountController extends Controller
 
             if ($transactionCount > 0) {
                 return redirect()->back()
-                    ->withErrors(['error' => 'Tidak dapat menghapus rekening yang memiliki transaksi. Hapus transaksi terkait terlebih dahulu.']);
+                    ->withErrors(['error' => 'Tidak dapat menghapus rekening yang memiliki transaksi.']);
             }
+
+            print_r("Transaction Count: $transactionCount");
 
             // Delete the account
             $account->delete();

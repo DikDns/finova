@@ -139,7 +139,10 @@ const createAccount = () => {
             showCreateAccountDialog.value = false;
             resetForm();
             toast.success('Rekening berhasil dibuat');
-            router.reload();
+            router.visit(window.location.href, {
+                preserveScroll: true,
+                preserveState: false,
+            });
         },
         onError: (errors) => {
             console.error('Error creating account:', errors);
@@ -178,7 +181,10 @@ const updateAccount = () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil diperbarui');
-            router.reload();
+            router.visit(window.location.href, {
+                preserveScroll: true,
+                preserveState: false,
+            });
         },
         onError: (errors) => {
             console.error('Error updating account:', errors);
@@ -210,8 +216,9 @@ const confirmDeleteAccount = () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil dihapus');
-            router.reload({
-                fresh: true,
+            router.visit(window.location.href, {
+                preserveScroll: true,
+                preserveState: false,
             });
         },
         onError: (errors) => {
