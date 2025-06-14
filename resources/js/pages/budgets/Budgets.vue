@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import BudgetsSidebarLayout from '@/layouts/budgets/BudgetsSidebarLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Edit2, Plus, Trash2, Wallet } from 'lucide-vue-next';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ref } from 'vue';
 
 interface Budget {
@@ -225,14 +226,22 @@ const cancelEdit = () => {
                         <Input id="description" v-model="form.description" type="text" placeholder="Deskripsi budget" />
                     </div>
 
-                    <div class="space-y-2">
+                     <div class="space-y-2">
                         <Label for="currency_code">Mata Uang</Label>
-                        <select v-model="form.currency_code" class="w-full rounded-md border border-gray-300 px-3 py-2">
-                        <option disabled value="">Pilih mata uang</option>
-                        <option v-for="currency in currencyOptions" :key="currency" :value="currency">
+                        <Select v-model="form.currency_code">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Pilih mata uang" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                            v-for="currency in currencyOptions"
+                            :key="currency"
+                            :value="currency"
+                            >
                             {{ currency }}
-                        </option>
-                        </select>
+                            </SelectItem>
+                        </SelectContent>
+                        </Select>
                     </div>
 
                     <DialogFooter>

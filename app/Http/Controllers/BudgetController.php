@@ -80,7 +80,7 @@ class BudgetController extends Controller
         $budget->currency_code = $validated['currency_code'];
         $budget->save();
 
-        return redirect()->route('budget', $budget);
+        return redirect()->back();
     }
 
     /**
@@ -95,7 +95,7 @@ class BudgetController extends Controller
 
         $budget->delete();
 
-        return redirect()->route('budgets');
+        return redirect()->back();
     }
 
     public function recent()
