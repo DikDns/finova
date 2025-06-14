@@ -20,6 +20,7 @@ import { type Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Props {
     budget: Budget;
@@ -113,21 +114,28 @@ const createMonthlyBudget = async () => {
     if (!newMonthDate.value) return;
 
     isLoading.value = true;
-    try {
-        router.post(route('monthly-budgets.store'), {
+    router.post(
+        route('monthly-budgets.store'),
+        {
             budget_id: props.budget.id,
             month: newMonthDate.value,
             reference_month: currentMonth.value,
-        });
-
-        currentMonth.value = newMonthDate.value;
-        showMonthlyBudgetDialog.value = false;
-        newMonthDate.value = null;
-    } catch (error) {
-        console.error('Error creating monthly budget:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                showMonthlyBudgetDialog.value = false;
+                newMonthDate.value = null;
+                toast.success('Budget bulanan berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating monthly budget:', errors);
+                toast.error('Gagal membuat budget bulanan', { description: errors.error[0] });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 // Cancel monthly budget creation
@@ -201,32 +209,54 @@ const saveGroupEdit = async () => {
     if (!editingGroupId.value || !editingGroupName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-groups.update', editingGroupId.value), {
+    router.put(
+        route('category-groups.update', editingGroupId.value),
+        {
             name: editingGroupName.value.trim(),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Grup kategori berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating group:', errors);
+                toast.error('Gagal memperbarui grup kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveCategoryEdit = async () => {
     if (!editingCategoryId.value || !editingCategoryName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('categories.update', editingCategoryId.value), {
+    router.put(
+        route('categories.update', editingCategoryId.value),
+        {
             name: editingCategoryName.value.trim(),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Kategori berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating category:', errors);
+                toast.error('Gagal memperbarui kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveAllocatedEdit = async () => {
@@ -236,16 +266,27 @@ const saveAllocatedEdit = async () => {
     if (isNaN(amount) || amount < 0) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-budgets.update', editingAllocatedBudgetId.value), {
+    router.put(
+        route('category-budgets.update', editingAllocatedBudgetId.value),
+        {
             assigned: amount,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating allocated amount:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Jumlah alokasi berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating allocated amount:', errors);
+                toast.error('Gagal memperbarui jumlah alokasi', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveTargetEdit = async () => {
@@ -255,16 +296,27 @@ const saveTargetEdit = async () => {
     if (isNaN(amount) || amount < 0) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-budgets.update', editingTargetBudgetId.value), {
+    router.put(
+        route('category-budgets.update', editingTargetBudgetId.value),
+        {
             available: amount,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating target amount:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Target budget berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating target amount:', errors);
+                toast.error('Gagal memperbarui target budget', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const deleteGroup = (groupId: string, groupName: string) => {
@@ -276,15 +328,22 @@ const confirmDeleteGroup = async () => {
     if (!groupToDelete.value) return;
 
     isLoading.value = true;
-    try {
-        router.delete(route('category-groups.destroy', groupToDelete.value.id));
-        showDeleteGroupDialog.value = false;
-        groupToDelete.value = null;
-    } catch (error) {
-        console.error('Error deleting group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    router.delete(route('category-groups.destroy', groupToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteGroupDialog.value = false;
+            groupToDelete.value = null;
+            toast.success('Grup kategori berhasil dihapus');
+        },
+        onError: (errors) => {
+            console.error('Error deleting group:', errors);
+            toast.error('Gagal menghapus grup kategori', {
+                description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
 };
 
 const deleteCategory = (categoryId: string, categoryName: string) => {
@@ -296,15 +355,22 @@ const confirmDeleteCategory = async () => {
     if (!categoryToDelete.value) return;
 
     isLoading.value = true;
-    try {
-        router.delete(route('categories.destroy', categoryToDelete.value.id));
-        showDeleteCategoryDialog.value = false;
-        categoryToDelete.value = null;
-    } catch (error) {
-        console.error('Error deleting category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    router.delete(route('categories.destroy', categoryToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteCategoryDialog.value = false;
+            categoryToDelete.value = null;
+            toast.success('Kategori berhasil dihapus');
+        },
+        onError: (errors) => {
+            console.error('Error deleting category:', errors);
+            toast.error('Gagal menghapus kategori', {
+                description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
 };
 
 const startCreatingGroup = () => {
@@ -331,35 +397,57 @@ const saveNewGroup = async () => {
     if (!newGroupName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.post(route('category-groups.store'), {
+    router.post(
+        route('category-groups.store'),
+        {
             name: newGroupName.value.trim(),
             budget_id: props.budget.id,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error creating group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Grup kategori berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating group:', errors);
+                toast.error('Gagal membuat grup kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveNewCategory = async () => {
     if (!newCategoryName.value.trim() || !isCreatingCategory.value) return;
 
     isLoading.value = true;
-    try {
-        router.post(route('categories.store'), {
+    router.post(
+        route('categories.store'),
+        {
             name: newCategoryName.value.trim(),
             category_group_id: isCreatingCategory.value,
             monthly_budget_ids: props.budget.monthly_budgets.map((mb) => mb.id),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error creating category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Kategori berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating category:', errors);
+                toast.error('Gagal membuat kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const cancelEditing = () => {
