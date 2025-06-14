@@ -28,28 +28,30 @@ class MonthlyBudgetController extends Controller
 
             $budget = Budget::findOrFail($validated['budget_id']);
 
+            // debug the budget
+
             // Format the month to match the model's expected format (Y-m-01)
             $monthFormatted = date('Y-m-01', strtotime($validated['month']));
             $referenceMonthFormatted = date('Y-m-01', strtotime($validated['reference_month']));
 
             // Check if monthly budget already exists
-            if ($budget->monthly_budgets()->where('month', $monthFormatted)->exists()) {
+            if ($budget->monthlyBudgets()->where('month', $monthFormatted)->exists()) {
                 throw ValidationException::withMessages([
                     'month' => ['Budget untuk bulan ini sudah ada.'],
                 ]);
             }
 
             // Create new monthly budget
-            $monthlyBudget = $budget->monthly_budgets()->create([
+            $monthlyBudget = $budget->monthlyBudgets()->create([
                 'month' => $monthFormatted,
-                'total_income' => 0,
+                'total_balance' => 0,
                 'total_assigned' => 0,
                 'total_activity' => 0,
                 'total_available' => 0,
             ]);
 
             // Get reference monthly budget
-            $referenceMonthlyBudget = $budget->monthly_budgets()
+            $referenceMonthlyBudget = $budget->monthlyBudgets()
                 ->where('month', $referenceMonthFormatted)
                 ->first();
 

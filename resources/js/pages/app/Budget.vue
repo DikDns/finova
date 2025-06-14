@@ -740,13 +740,13 @@ const groupedCategories = computed(() => {
                                         </div>
                                     </div>
                                     <div
-                                        class="w-32 flex-shrink-0 text-right font-medium"
+                                        class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
                                         :class="[
                                             category.spent >= 0 ? 'text-green-500' : 'text-red-500',
                                             category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
                                         ]"
                                     >
-                                        {{ formatCurrency(category.spent, budget.currency_code) }}
+                                        <span> {{ formatCurrency(category.spent, budget.currency_code) }}</span>
                                     </div>
                                 </div>
                             </AccordionContent>
