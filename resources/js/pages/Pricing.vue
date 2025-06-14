@@ -6,7 +6,9 @@ import RadioGroupItem from '@/components/ui/radio-group/RadioGroupItem.vue';
 import { Separator } from '@/components/ui/separator';
 import { Link } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted } from 'vue';
+import Navbar from '@/components/common/NavBar.vue';
 import NavBar from '@/components/common/NavBar.vue';
+
 
 const isMobile = ref(false);
 
@@ -74,7 +76,7 @@ const pricingPlans: PricingPlan[] = [
 
 <template>
     <div class="bg-background text-foreground min-h-screen">
-        <AppNavbar />
+        <NavBar />
         <Separator />
 
         <main class="py-16">
@@ -107,9 +109,13 @@ const pricingPlans: PricingPlan[] = [
                             <div
                                 v-for="plan in pricingPlans"
                                 :key="plan.id"
-                                class="border-muted hover:border-primary  data-[state=checked]:border-primary rounded-lg border-2 p-4 transition-all relative"
+                                :class="[
+                                    'rounded-lg border-2 p-4 transition-all relative',
+                                    selectedPlan === plan.id ? 'border-primary' : 'border-muted',
+                                    'hover:border-primary'
+                                ]"      
                             >
-                                <RadioGroupItem :value="plan.id" :id="plan.id" :class="['absolute left-4', isMobile ? 'top-1/2 -translate-y-1/2' : 'top-4']" />
+                                <RadioGroupItem :value="plan.id" :id="plan.id" class="sr-only" />
                                 <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1 pl-8">
                                     <div :class="['flex items-center', isMobile ? 'flex-col space-y-2' : 'justify-between']">
                                         <span class="font-extrabold">{{ plan.name }}</span>
