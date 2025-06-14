@@ -18,7 +18,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ChevronRight, PlusIcon } from 'lucide-vue-next';
+import { ChevronRight, Edit, PlusIcon } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -47,10 +47,21 @@ const getThePathOnly = (href: string) => {
 
 // Dialog state
 const showCreateAccountDialog = ref(false);
+const showEditAccountDialog = ref(false);
 const isLoading = ref(false);
+const editingAccount = ref<any>(null);
 
 // Form data
 const accountForm = ref({
+    name: '',
+    type: '',
+    balance: '',
+    interest: '',
+    minimum_payment_monthly: '',
+});
+
+const editAccountForm = ref({
+    id: '',
     name: '',
     type: '',
     balance: '',
@@ -66,6 +77,30 @@ const resetForm = () => {
         interest: '',
         minimum_payment_monthly: '',
     };
+};
+
+const resetEditForm = () => {
+    editAccountForm.value = {
+        id: '',
+        name: '',
+        type: '',
+        balance: '',
+        interest: '',
+        minimum_payment_monthly: '',
+    };
+};
+
+const openEditDialog = (account: any, accountType: string) => {
+    editingAccount.value = account;
+    editAccountForm.value = {
+        id: account.id,
+        name: account.name,
+        type: accountType,
+        balance: account.balance.toString(),
+        interest: account.interest?.toString() || '',
+        minimum_payment_monthly: account.minimum_payment_monthly?.toString() || '',
+    };
+    showEditAccountDialog.value = true;
 };
 
 const createAccount = () => {
@@ -96,7 +131,47 @@ const createAccount = () => {
         },
         onError: (errors) => {
             console.error('Error creating account:', errors);
-            toast.error('Gagal membuat rekening');
+            toast.error('Gagal membuat rekening', {
+                description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
+};
+
+const updateAccount = () => {
+    if (!editAccountForm.value.name || !editAccountForm.value.type || !editAccountForm.value.balance) {
+        toast.error('Mohon lengkapi semua field yang diperlukan');
+        return;
+    }
+
+    isLoading.value = true;
+
+    const formData: any = {
+        name: editAccountForm.value.name,
+        type: editAccountForm.value.type,
+        balance: parseFloat(editAccountForm.value.balance),
+        budget_id: props.budget_id,
+    };
+
+    if (editAccountForm.value.type === 'loan') {
+        formData.interest = parseFloat(editAccountForm.value.interest) || 0;
+        formData.minimum_payment_monthly = parseFloat(editAccountForm.value.minimum_payment_monthly) || 0;
+    }
+
+    router.put(route('accounts.update', editAccountForm.value.id), formData, {
+        onSuccess: () => {
+            showEditAccountDialog.value = false;
+            resetEditForm();
+            toast.success('Rekening berhasil diperbarui');
+        },
+        onError: (errors) => {
+            console.error('Error updating account:', errors);
+            toast.error('Gagal memperbarui rekening', {
+                description: errors.error[0],
+            });
         },
         onFinish: () => {
             isLoading.value = false;
@@ -133,12 +208,22 @@ const createAccount = () => {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarMenuSub>
-                            <SidebarMenuSubItem v-for="subItem in item.accounts" :key="subItem.name">
+                            <SidebarMenuSubItem v-for="subItem in item.accounts" :key="subItem.name" class="group/account">
                                 <SidebarMenuSubButton as-child>
-                                    <a :href="subItem.url" class="flex justify-between">
-                                        <span class="capitalize"> {{ subItem.name }}</span>
-                                        <span class="text-xs text-gray-500">{{ formatCurrency(subItem.balance, currency_code) }}</span>
-                                    </a>
+                                    <div class="flex w-full items-center justify-between">
+                                        <a :href="subItem.url" class="flex min-w-0 flex-1 justify-between">
+                                            <span class="truncate capitalize"> {{ subItem.name }}</span>
+                                            <span class="ml-2 text-xs text-gray-500">{{ formatCurrency(subItem.balance, currency_code) }}</span>
+                                        </a>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="ml-1 h-6 w-6 flex-shrink-0 p-0 opacity-0 transition-opacity group-hover/account:opacity-100"
+                                            @click.prevent="openEditDialog(subItem, item.type)"
+                                        >
+                                            <Edit class="h-3 w-3" />
+                                        </Button>
+                                    </div>
                                 </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                         </SidebarMenuSub>
@@ -222,6 +307,80 @@ const createAccount = () => {
                     <Button type="button" variant="outline" @click="showCreateAccountDialog = false"> Batal </Button>
                     <Button type="button" @click="createAccount" :disabled="isLoading">
                         {{ isLoading ? 'Membuat...' : 'Buat Rekening' }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Edit Account Dialog -->
+        <Dialog v-model:open="showEditAccountDialog">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Edit Rekening</DialogTitle>
+                    <DialogDescription> Perbarui informasi rekening Anda. </DialogDescription>
+                </DialogHeader>
+                <div class="grid gap-4 py-4">
+                    <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="edit-name" class="text-right"> Nama </Label>
+                        <Input id="edit-name" v-model="editAccountForm.name" placeholder="Nama rekening" class="col-span-3" />
+                    </div>
+                    <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="edit-type" class="text-right"> Jenis </Label>
+                        <Select v-model="editAccountForm.type">
+                            <SelectTrigger class="col-span-3 w-full">
+                                <SelectValue placeholder="Pilih jenis rekening" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="cash">Cash (Kas, Tabungan)</SelectItem>
+                                <SelectItem value="loan">Loan (Utang)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="edit-balance" class="text-right">
+                            {{ editAccountForm.type === 'loan' ? 'Total Utang' : 'Saldo' }}
+                        </Label>
+                        <Input
+                            id="edit-balance"
+                            v-model="editAccountForm.balance"
+                            type="number"
+                            step="500"
+                            :placeholder="editAccountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
+                            class="col-span-3"
+                        />
+                    </div>
+                    <!-- Additional fields for loan type -->
+                    <template v-if="editAccountForm.type === 'loan'">
+                        <div class="grid grid-cols-4 items-center gap-4">
+                            <Label for="edit-interest" class="text-right"> Bunga/Bulan (%) </Label>
+                            <Input
+                                id="edit-interest"
+                                v-model="editAccountForm.interest"
+                                type="number"
+                                step="1"
+                                max="100"
+                                min="0"
+                                placeholder="Bunga per bulan"
+                                class="col-span-3"
+                            />
+                        </div>
+                        <div class="grid grid-cols-4 items-center gap-4">
+                            <Label for="edit-minimum-payment" class="text-right"> Bayar Minimum </Label>
+                            <Input
+                                id="edit-minimum-payment"
+                                v-model="editAccountForm.minimum_payment_monthly"
+                                type="number"
+                                step="500"
+                                placeholder="Pembayaran minimum bulanan"
+                                class="col-span-3"
+                            />
+                        </div>
+                    </template>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" @click="showEditAccountDialog = false"> Batal </Button>
+                    <Button type="button" @click="updateAccount" :disabled="isLoading">
+                        {{ isLoading ? 'Memperbarui...' : 'Perbarui Rekening' }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -112,4 +112,62 @@ class AccountController extends Controller
 
         return $accountTypes;
     }
+
+    public function update(Request $request, Account $account)
+    {
+        // Ensure the user can only update their own accounts
+        if ($account->budget->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => ['required', Rule::in(['cash', 'loan'])],
+            'balance' => 'required|numeric|min:0',
+            'interest' => 'nullable|numeric|min:0',
+            'minimum_payment_monthly' => 'nullable|numeric|min:0'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Store the old balance for comparison
+            $oldBalance = $account->balance;
+            $oldType = $account->type;
+
+            // Update the account
+            $account->update([
+                'name' => $validated['name'],
+                'type' => $validated['type'],
+                'balance' => $validated['balance'],
+                'interest' => $validated['interest'] ?? 0,
+                'minimum_payment_monthly' => $validated['minimum_payment_monthly'] ?? 0
+            ]);
+
+            // If balance changed and it's a cash account, create adjustment transaction
+            if ($validated['type'] === 'cash' && $oldBalance != $validated['balance']) {
+                $balanceDifference = $validated['balance'] - $oldBalance;
+                
+                Transaction::create([
+                    'account_id' => $account->id,
+                    'budget_id' => $account->budget_id,
+                    'category_id' => null,
+                    'payee' => 'Penyesuaian Saldo',
+                    'date' => now(),
+                    'amount' => $balanceDifference,
+                    'memo' => 'Penyesuaian saldo rekening ' . $validated['name']
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Rekening berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal memperbarui rekening: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
 }
