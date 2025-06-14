@@ -16,7 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type Budget } from '@/types';
+import { formatCurrency } from '@/lib/utils';
+import type {  AccountType, Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -24,6 +25,7 @@ import { toast } from 'vue-sonner';
 
 interface Props {
     budget: Budget;
+    account_types: AccountType[];
 }
 
 const props = defineProps<Props>();
@@ -54,16 +56,6 @@ const showDeleteGroupDialog = ref(false);
 const showDeleteCategoryDialog = ref(false);
 const groupToDelete = ref<{ id: string; name: string } | null>(null);
 const categoryToDelete = ref<{ id: string; name: string } | null>(null);
-
-// Format currency
-const formatCurrency = (amount: number, currencyCode = 'IDR') => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
 
 // Format month for display
 const formattedMonth = computed(() => {
@@ -519,7 +511,7 @@ const groupedCategories = computed(() => {
 <template>
     <Head :title="`${props.budget.name}`" />
 
-    <AppLayout :budget_id="props.budget.id">
+    <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
         <div class="p-6">
             <div class="flex flex-col gap-6">
                 <!-- Header with month selector -->
@@ -779,10 +771,10 @@ const groupedCategories = computed(() => {
                                                     @keyup.enter="saveAllocatedEdit"
                                                     @keyup.escape="cancelEditing"
                                                 />
-                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit">
+                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit" :disabled="isLoading">
                                                     <Check class="h-3 w-3" />
                                                 </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
                                                     <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -791,6 +783,7 @@ const groupedCategories = computed(() => {
                                             v-else
                                             class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
                                             @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
+                                            :disabled="isLoading"
                                         >
                                             <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
                                         </div>
@@ -809,10 +802,10 @@ const groupedCategories = computed(() => {
                                                     @keyup.enter="saveTargetEdit"
                                                     @keyup.escape="cancelEditing"
                                                 />
-                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit">
+                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit" :disabled="isLoading">
                                                     <Check class="h-3 w-3" />
                                                 </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
                                                     <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -821,6 +814,7 @@ const groupedCategories = computed(() => {
                                             v-else
                                             class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
                                             @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
+                                            :disabled="isLoading"
                                         >
                                             <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
                                                 formatCurrency(category.target, budget.currency_code)

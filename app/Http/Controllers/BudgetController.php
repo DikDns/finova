@@ -37,10 +37,16 @@ class BudgetController extends Controller
                 $query->orderBy('month', 'desc');
             },
             'categoryGroups.categories.categoryBudgets.monthlyBudget',
+            'accounts'
         ]);
 
+        // Get accounts grouped by type
+        $accounts = $budget->accounts;
+        $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
+
         return Inertia::render('app/Budget', [
-            'budget' => $budget
+            'budget' => $budget,
+            'account_types' => $accountTypes
         ]);
     }
 
@@ -94,6 +100,35 @@ class BudgetController extends Controller
         $budget->delete();
 
         return redirect()->route('budgets');
+    }
+
+    /**
+     * Format accounts data for the sidebar component
+     */
+    private function formatAccountTypes($accounts, $budgetId)
+    {
+        $groupedAccounts = $accounts->groupBy('type');
+        $accountTypes = [];
+
+        foreach ($groupedAccounts as $type => $typeAccounts) {
+            $formattedAccounts = $typeAccounts->map(function ($account) use ($budgetId) {
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'url' => "/budgets/{$budgetId}/accounts/{$account->id}",
+                    'balance' => (float) $account->balance
+                ];
+            })->toArray();
+
+            $accountTypes[] = [
+                'id' => $type,
+                'type' => $type,
+                'isActive' => false,
+                'accounts' => $formattedAccounts
+            ];
+        }
+
+        return $accountTypes;
     }
 
     public function recent()

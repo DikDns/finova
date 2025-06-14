@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
     Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
+    
+    // Account Routes
+    Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');
