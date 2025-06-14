@@ -87,3 +87,25 @@ export interface Budget {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface Budget {
+  id: number;
+  name: string;
+  amount: number;
+  // Add other budget properties as needed
+}
+
+export interface ExpenseData {
+  category: string;
+  amount: number;
+  percentage: number;
+  color: string;
+  icon: string;
+}
+
+export interface ExpenseStats {
+  monthlyAverage: number;
+  dailyAverage: number;
+  mostActiveCategory: string;
+  largestExpense: number;
+}
