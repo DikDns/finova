@@ -72,10 +72,12 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'currency_code' => 'required|string|in:IDR,USD,JPY,GBP',
         ]);
 
         $budget->name = $validated['name'];
         $budget->description = $validated['description'] ?? $budget->description;
+        $budget->currency_code = $validated['currency_code'];
         $budget->save();
 
         return redirect()->route('budget', $budget);
