@@ -3,7 +3,7 @@ import { ref, type Component } from 'vue';
 import FinovaLogo from '@/components/common/FinovaLogo.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Wallet, LayoutDashboard, ChevronUp, LogOut, Settings, Menu, X, Receipt } from 'lucide-vue-next';
+import { LayoutDashboard, ChevronUp, LogOut, Settings, Menu, X, Receipt, WalletCards } from 'lucide-vue-next';
 
 // Sidebar Item Type
 type SidebarItem = {
@@ -15,7 +15,7 @@ type SidebarItem = {
 // Sidebar Menu Items
 const items: SidebarItem[] = [
   { title: 'Dashboard', href: '/admin/admindashboard', icon: LayoutDashboard },
-  { title: 'Account', href: '/admin/adminaccount', icon: Wallet },
+  { title: 'Account', href: '/admin/adminaccount', icon: WalletCards },
   { title: 'Subscription', href: '/admin/adminsubscription', icon: Receipt },
 ];
 
