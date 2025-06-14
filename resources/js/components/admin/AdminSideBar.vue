@@ -1,40 +1,9 @@
 <script setup lang="ts">
 import { ref, type Component } from 'vue';
 import FinovaLogo from '@/components/common/FinovaLogo.vue';
-
-// Sidebar Components
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-
-// Dropdown Components
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
-// Icons
-import {
-  Users,
-  CreditCard,
-  LayoutDashboard,
-  ChevronUp,
-  LogOut,
-  Settings,
-  Menu,
-  X,
-} from 'lucide-vue-next';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Wallet, LayoutDashboard, ChevronUp, LogOut, Settings, Menu, X, Receipt } from 'lucide-vue-next';
 
 // Sidebar Item Type
 type SidebarItem = {
@@ -46,8 +15,8 @@ type SidebarItem = {
 // Sidebar Menu Items
 const items: SidebarItem[] = [
   { title: 'Dashboard', href: '/admin/admindashboard', icon: LayoutDashboard },
-  { title: 'Users', href: '/admin/users', icon: Users },
-  { title: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
+  { title: 'Account', href: '/admin/adminaccount', icon: Wallet },
+  { title: 'Subscription', href: '/admin/adminsubscription', icon: Receipt },
 ];
 
 // Admin Profile
