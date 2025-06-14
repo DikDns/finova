@@ -888,7 +888,7 @@ const groupedCategories = computed(() => {
                     <AlertDialogTitle>Buat Budget Bulanan Baru</AlertDialogTitle>
                     <AlertDialogDescription>
                         Budget untuk bulan {{ newMonthDate?.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }} belum tersedia. Apakah
-                        Anda ingin membuat budget baru dengan menggunakan alokasi dari bulan
+                        Anda ingin membuat budget baru dengan menggunakan target dari bulan
                         {{ currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }}?
                     </AlertDialogDescription>
                 </AlertDialogHeader>

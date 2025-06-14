@@ -60,7 +60,7 @@ class MonthlyBudgetController extends Controller
                         CategoryBudget::create([
                             'monthly_budget_id' => $monthlyBudget->id,
                             'category_id' => $referenceBudget->category_id,
-                            'assigned' => $referenceBudget->assigned,
+                            'assigned' => 0,
                             'available' => $referenceBudget->available,
                             'activity' => 0,
                         ]);
