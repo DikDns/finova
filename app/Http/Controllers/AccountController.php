@@ -185,11 +185,8 @@ class AccountController extends Controller
             $transactionCount = Transaction::where('account_id', $account->id)->count();
 
             if ($transactionCount > 0) {
-                return redirect()->back()
-                    ->withErrors(['error' => 'Tidak dapat menghapus rekening yang memiliki transaksi.']);
+                throw new \Exception('Tidak dapat menghapus rekening yang memiliki transaksi.');
             }
-
-            print_r("Transaction Count: $transactionCount");
 
             // Delete the account
             $account->delete();
@@ -201,7 +198,7 @@ class AccountController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->withErrors(['error' => 'Gagal menghapus rekening: ' . $e->getMessage()]);
+                ->withErrors(['error' =>  $e->getMessage()]);
         }
     }
 }
