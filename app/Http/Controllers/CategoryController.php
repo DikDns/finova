@@ -79,8 +79,43 @@ class CategoryController extends Controller
             abort(403);
         }
 
+        // Before deleting, restore the assigned amounts back to monthly budgets
+        $categoryBudgets = $category->categoryBudgets;
+        
+        foreach ($categoryBudgets as $categoryBudget) {
+            $monthlyBudget = $categoryBudget->monthlyBudget;
+            
+            // Restore the assigned amount back to total_balance
+            $monthlyBudget->update([
+                'total_balance' => $monthlyBudget->total_balance + $categoryBudget->assigned
+            ]);
+        }
+
         $category->delete();
 
+        // Update monthly budget totals after deletion
+        foreach ($categoryBudgets as $categoryBudget) {
+            $this->updateMonthlyBudgetTotals($categoryBudget->monthlyBudget);
+        }
+
         return redirect()->back()->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    /**
+     * Update the monthly budget totals based on all category budgets.
+     */
+    private function updateMonthlyBudgetTotals($monthlyBudget)
+    {
+        $categoryBudgets = $monthlyBudget->categoryBudgets;
+
+        $totalAssigned = $categoryBudgets->sum('assigned');
+        $totalActivity = $categoryBudgets->sum('activity');
+        $totalAvailable = $categoryBudgets->sum('available');
+
+        $monthlyBudget->update([
+            'total_assigned' => $totalAssigned,
+            'total_activity' => $totalActivity,
+            'total_available' => $totalAvailable,
+        ]);
     }
 }

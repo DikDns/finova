@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     // Account Routes
     Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::put('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
+    Route::delete('/accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');

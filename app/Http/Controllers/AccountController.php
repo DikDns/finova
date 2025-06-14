@@ -147,7 +147,7 @@ class AccountController extends Controller
             // If balance changed and it's a cash account, create adjustment transaction
             if ($validated['type'] === 'cash' && $oldBalance != $validated['balance']) {
                 $balanceDifference = $validated['balance'] - $oldBalance;
-                
+
                 Transaction::create([
                     'account_id' => $account->id,
                     'budget_id' => $account->budget_id,
@@ -168,6 +168,38 @@ class AccountController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => 'Gagal memperbarui rekening: ' . $e->getMessage()])
                 ->withInput();
+        }
+    }
+
+    public function destroy(Account $account)
+    {
+        // Ensure the user can only delete their own accounts
+        if ($account->budget->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Check if account has any transactions
+            $transactionCount = Transaction::where('account_id', $account->id)->count();
+
+            if ($transactionCount > 0) {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Tidak dapat menghapus rekening yang memiliki transaksi. Hapus transaksi terkait terlebih dahulu.']);
+            }
+
+            // Delete the account
+            $account->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Rekening berhasil dihapus');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal menghapus rekening: ' . $e->getMessage()]);
         }
     }
 }

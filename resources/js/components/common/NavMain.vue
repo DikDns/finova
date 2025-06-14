@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -18,7 +28,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ChevronRight, Edit, PlusIcon } from 'lucide-vue-next';
+import { ChevronRight, Edit, PlusIcon, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -48,6 +58,7 @@ const getThePathOnly = (href: string) => {
 // Dialog state
 const showCreateAccountDialog = ref(false);
 const showEditAccountDialog = ref(false);
+const showDeleteConfirmDialog = ref(false);
 const isLoading = ref(false);
 const editingAccount = ref<any>(null);
 
@@ -128,6 +139,7 @@ const createAccount = () => {
             showCreateAccountDialog.value = false;
             resetForm();
             toast.success('Rekening berhasil dibuat');
+            router.reload();
         },
         onError: (errors) => {
             console.error('Error creating account:', errors);
@@ -166,11 +178,46 @@ const updateAccount = () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil diperbarui');
+            router.reload();
         },
         onError: (errors) => {
             console.error('Error updating account:', errors);
             toast.error('Gagal memperbarui rekening', {
                 description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
+};
+
+const deleteAccount = () => {
+    if (!editAccountForm.value.id) {
+        toast.error('ID rekening tidak valid');
+        return;
+    }
+
+    showDeleteConfirmDialog.value = true;
+};
+
+const confirmDeleteAccount = () => {
+    isLoading.value = true;
+    showDeleteConfirmDialog.value = false;
+
+    router.delete(route('accounts.destroy', editAccountForm.value.id), {
+        onSuccess: () => {
+            showEditAccountDialog.value = false;
+            resetEditForm();
+            toast.success('Rekening berhasil dihapus');
+            router.reload({
+                fresh: true,
+            });
+        },
+        onError: (errors) => {
+            console.error('Error deleting account:', errors);
+            toast.error('Gagal menghapus rekening', {
+                description: errors.error[0] ?? 'Terjadi kesalahan saat menghapus rekening',
             });
         },
         onFinish: () => {
@@ -207,7 +254,7 @@ const updateAccount = () => {
                         </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                        <SidebarMenuSub>
+                        <SidebarMenuSub class="mr-0 pr-0">
                             <SidebarMenuSubItem v-for="subItem in item.accounts" :key="subItem.name" class="group/account">
                                 <SidebarMenuSubButton as-child>
                                     <div class="flex w-full items-center justify-between">
@@ -304,7 +351,7 @@ const updateAccount = () => {
                     </template>
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" @click="showCreateAccountDialog = false"> Batal </Button>
+                    <Button type="button" variant="outline" @click="showCreateAccountDialog = false" :disabled="isLoading"> Batal </Button>
                     <Button type="button" @click="createAccount" :disabled="isLoading">
                         {{ isLoading ? 'Membuat...' : 'Buat Rekening' }}
                     </Button>
@@ -377,13 +424,34 @@ const updateAccount = () => {
                         </div>
                     </template>
                 </div>
-                <DialogFooter>
-                    <Button type="button" variant="outline" @click="showEditAccountDialog = false"> Batal </Button>
-                    <Button type="button" @click="updateAccount" :disabled="isLoading">
-                        {{ isLoading ? 'Memperbarui...' : 'Perbarui Rekening' }}
+                <DialogFooter class="flex justify-between">
+                    <Button type="button" variant="destructive" @click="deleteAccount" :disabled="isLoading" class="mr-auto">
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Hapus
                     </Button>
+                    <div class="flex gap-2">
+                        <Button type="button" variant="outline" @click="showEditAccountDialog = false" :disabled="isLoading"> Batal </Button>
+                        <Button type="button" @click="updateAccount" :disabled="isLoading"> Simpan </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Delete Confirmation Dialog -->
+        <AlertDialog v-model:open="showDeleteConfirmDialog">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Konfirmasi Hapus Rekening</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Apakah Anda yakin ingin menghapus rekening ini? Aksi ini tidak dapat dibatalkan. Rekening dapat dihapus jika rekening tidak
+                        memiliki transaksi.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction @click="confirmDeleteAccount" variant="destructive"> Hapus Rekening </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </SidebarGroup>
 </template>

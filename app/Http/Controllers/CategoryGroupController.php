@@ -65,8 +65,53 @@ class CategoryGroupController extends Controller
             abort(403);
         }
 
+        // Before deleting, restore the assigned amounts back to monthly budgets
+        $categories = $categoryGroup->categories;
+        $monthlyBudgetsToUpdate = collect();
+        
+        foreach ($categories as $category) {
+            $categoryBudgets = $category->categoryBudgets;
+            
+            foreach ($categoryBudgets as $categoryBudget) {
+                $monthlyBudget = $categoryBudget->monthlyBudget;
+                
+                // Restore the assigned amount back to total_balance
+                $monthlyBudget->update([
+                    'total_balance' => $monthlyBudget->total_balance + $categoryBudget->assigned
+                ]);
+                
+                // Collect monthly budgets that need total updates
+                if (!$monthlyBudgetsToUpdate->contains('id', $monthlyBudget->id)) {
+                    $monthlyBudgetsToUpdate->push($monthlyBudget);
+                }
+            }
+        }
+
         $categoryGroup->delete();
 
+        // Update monthly budget totals after deletion
+        foreach ($monthlyBudgetsToUpdate as $monthlyBudget) {
+            $this->updateMonthlyBudgetTotals($monthlyBudget);
+        }
+
         return redirect()->back()->with('success', 'Grup kategori berhasil dihapus.');
+    }
+
+    /**
+     * Update the monthly budget totals based on all category budgets.
+     */
+    private function updateMonthlyBudgetTotals($monthlyBudget)
+    {
+        $categoryBudgets = $monthlyBudget->categoryBudgets;
+
+        $totalAssigned = $categoryBudgets->sum('assigned');
+        $totalActivity = $categoryBudgets->sum('activity');
+        $totalAvailable = $categoryBudgets->sum('available');
+
+        $monthlyBudget->update([
+            'total_assigned' => $totalAssigned,
+            'total_activity' => $totalActivity,
+            'total_available' => $totalAvailable,
+        ]);
     }
 }
