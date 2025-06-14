@@ -9,8 +9,16 @@ import AdminSideBarLayout from '@/components/admin/AdminSideBarLayout.vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent} from '@/components/ui/card'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from '@/components/ui/select'
 import { Search, ChevronLeft, ChevronRight, Users, Receipt } from 'lucide-vue-next'
+import Badge from '@/components/ui/badge/Badge.vue'
 
 // Define interfaces for type safety
 interface UserLogEntry {
@@ -175,16 +183,17 @@ const formatJsonValues = (value: any) => {
               class="pl-10 w-full text-xs sm:text-sm"
             />
           </div>
-          <select
-            v-model="perPage"
-            @change="search"
-            class="w-full sm:w-auto text-xs sm:text-sm px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
-          >
-            <option value="10">10 per page</option>
-            <option value="25">25 per page</option>
-            <option value="50">50 per page</option>
-            <option value="100">100 per page</option>
-          </select>
+          <Select v-model="perPage" @update:modelValue="search">
+            <SelectTrigger class="w-full sm:w-auto text-xs sm:text-sm">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="25">25 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
+              <SelectItem value="100">100 per page</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <!-- Table Section -->
@@ -224,7 +233,7 @@ const formatJsonValues = (value: any) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span
+                        <Badge
                           class="px-2 py-1 text-xs rounded-full"
                           :class="{
                             'bg-green-100 text-green-800': log.action === 'Login',
@@ -235,7 +244,7 @@ const formatJsonValues = (value: any) => {
                           }"
                         >
                           {{ log.action }}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell class="truncate max-w-[12rem]" :title="log.description">
                         {{ log.description }}
@@ -277,16 +286,25 @@ const formatJsonValues = (value: any) => {
 
                         <div class="mt-4">
                           <div class="font-semibold text-red-700 mb-1">Old Values:</div>
-                          <pre class="bg-red-50 text-red-900 text-xs p-2 rounded overflow-x-auto whitespace-pre-wrap">
-{{ formatJsonValues(log.oldValues) }}
-                          </pre>
+                            <Card class="bg-red-50">
+                              <CardContent class=text-[10px] text-red-900 whitespace-pre-wrap p-2>
+                                  <code>
+                                    {{ formatJsonValues(log.oldValues) }}
+                                  </code>
+                              </CardContent>
+                            </Card>
                         </div>
 
                         <div class="mt-4">
                           <div class="font-semibold text-green-700 mb-1">New Values:</div>
-                          <pre class="bg-green-50 text-green-900 text-xs p-2 rounded overflow-x-auto whitespace-pre-wrap">
-{{ formatJsonValues(log.newValues) }}
-                          </pre>
+                          <Card class="bg-red-50">
+                            <CardContent class="text-[10px] text-green-900 whitespace-pre-wrap p-2">
+                                <code>
+                                  {{ formatJsonValues(log.newValues) }}
+                                </code>
+                            </CardContent>
+                          </Card>
+
                         </div>
                       </TableCell>
                     </TableRow>
@@ -305,7 +323,7 @@ const formatJsonValues = (value: any) => {
                 >
                   <div class="flex items-center justify-between">
                     <div class="font-semibold text-xs truncate">{{ log.user }}</div>
-                    <span
+                    <Badge
                       class="px-2 py-1 text-xs rounded-full ml-2"
                       :class="{
                         'bg-green-100 text-green-800': log.action === 'Login',
@@ -316,19 +334,19 @@ const formatJsonValues = (value: any) => {
                       }"
                     >
                       {{ log.action }}
-                    </span>
+                    </Badge>
                   </div>
                   <div class="text-xs text-muted-foreground truncate">{{ log.user_name }}</div>
                   <div class="text-xs mt-1 truncate" :title="log.description">
-                    <span class="font-medium">Desc:</span> {{ log.description }}
+                    <Badge class="font-medium">Desc:</Badge> {{ log.description }}
                   </div>
                   <div class="flex flex-wrap gap-x-2 text-xs mt-1">
-                    <span class="truncate"><span class="font-medium">IP:</span> {{ log.ipAddress }}</span>
-                    <span class="truncate"><span class="font-medium">UA:</span> {{ formatUserAgent(log.userAgent) }}</span>
+                    <Badge class="truncate"><Badge class="font-medium">IP:</Badge> {{ log.ipAddress }}</Badge>
+                    <Badge class="truncate"><Badge class="font-medium">UA:</Badge> {{ formatUserAgent(log.userAgent) }}</Badge>
                   </div>
                   <div class="flex flex-wrap gap-x-2 text-xs mt-1">
-                    <span><span class="font-medium">Created:</span> {{ log.createdAt }}</span>
-                    <span><span class="font-medium">Updated:</span> {{ log.updatedAt }}</span>
+                    <Badge><Badge class="font-medium">Created:</Badge> {{ log.createdAt }}</Badge>
+                    <Badge><Badge class="font-medium">Updated:</Badge> {{ log.updatedAt }}</Badge>
                   </div>
                 </div>
               </div>
@@ -349,7 +367,7 @@ const formatJsonValues = (value: any) => {
               @click="goToPage(userLogs.current_page - 1)"
             >
               <ChevronLeft class="h-4 w-4 mr-1" />
-              <span class="hidden xs:inline">Previous</span>
+              <Badge class="hidden xs:inline">Previous</Badge>
             </Button>
             <Button
               variant="outline"
@@ -357,7 +375,7 @@ const formatJsonValues = (value: any) => {
               :disabled="userLogs.current_page === userLogs.last_page"
               @click="goToPage(userLogs.current_page + 1)"
             >
-              <span class="hidden xs:inline">Next</span>
+              <Badge class="hidden xs:inline">Next</Badge>
               <ChevronRight class="h-4 w-4 ml-1" />
             </Button>
           </div>
