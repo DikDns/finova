@@ -26,7 +26,7 @@ const submit = () => {
 
 <template>
     <div class="flex h-screen w-screen flex-col bg-[#f0f4f8] md:flex-row">
-        <div class="relative h-[50vh] w-full sm:h-1/2 md:h-full md:w-1/2">
+        <div class="relative h-[50vh] w-full sm:h-1/2 md:h-full md:w-1/2 hidden md:block">
             <img src="womanLaptop.webp" alt="woman-laptop" class="h-full w-full object-cover" />
             <div class="absolute left-4 right-4 bottom-4 rounded-[10px] bg-[#ffffff] p-4 sm:right-5 sm:left-5 sm:rounded-[10px] sm:bottom-5 md:right-10 md:bottom-10 md:left-10 md:p-10">
                 <p class="mb-2 text-lg font-bold text-[#000000] sm:text-[20px] md:text-3xl">Coba demo secara gratis</p>
@@ -42,9 +42,9 @@ const submit = () => {
             </div>
         </div>
         <div class="flex w-full items-center justify-center bg-[#ffffff] p-4 md:w-1/2 md:pt-50 md:pr-0 md:pb-50 md:pl-0">
-            <div class="w-full max-w-lg md:p-7 p-10">
-                <h1 class="mb-2.5 text-center text-2xl text-[#000000] md:text-4xl md:px-5">Lanjut, atur keuanganmu!</h1>
-                <p class="mb-4 text-center text-[#000000] md:mb-8 md:px-5">Masuk menggunakan email dan password yang telah terdaftar</p>
+            <div class="w-full max-w-lg md:p-7 p-10 shadow-2xl rounded-2xl items-center justify-center flex-row md:bg-transparent md:rounded-0 md:shadow-none">
+                <h1 class="mb-2.5 text-center text-3xl text-[#000000] md:text-4xl md:px-5 sm:text-3xl">Lanjut, atur keuanganmu!</h1>
+                <p class="mb-4 text-center text-[#000000] md:mb-8 md:px-5 sm:text-md">Masuk menggunakan email dan password yang telah terdaftar</p>
                 <form @submit.prevent="submit" class="p-2 px-10 md:p-4 md:px-8">
                     <div class="mb-5">
                         <label class="mb-1.5 block text-[#000000]">Email</label>
