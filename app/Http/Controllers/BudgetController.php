@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Budget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
@@ -72,7 +73,7 @@ class BudgetController extends Controller
     {
         // Ensure the user can only update their own budgets
         if ($budget->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki izin untuk mengakses budget ini.');
         }
 
         $validated = $request->validate([
@@ -80,11 +81,23 @@ class BudgetController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $budget->name = $validated['name'];
-        $budget->description = $validated['description'] ?? $budget->description;
-        $budget->save();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('budget', $budget);
+            $budget->name = $validated['name'];
+            $budget->description = $validated['description'] ?? $budget->description;
+            $budget->save();
+
+            DB::commit();
+
+            return redirect()->route('budget', $budget)->with('success', 'Budget berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal memperbarui budget: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     /**
@@ -94,12 +107,32 @@ class BudgetController extends Controller
     {
         // Ensure the user can only delete their own budgets
         if ($budget->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki izin untuk mengakses budget ini.');
         }
 
-        $budget->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('budgets');
+            // Check if budget has any related data
+            $hasAccounts = $budget->accounts()->exists();
+            $hasCategories = $budget->categoryGroups()->exists();
+            $hasMonthlyBudgets = $budget->monthlyBudgets()->exists();
+
+            if ($hasAccounts || $hasCategories || $hasMonthlyBudgets) {
+                throw new \Exception('Tidak dapat menghapus budget yang memiliki data terkait (akun, kategori, atau budget bulanan).');
+            }
+
+            $budget->delete();
+
+            DB::commit();
+
+            return redirect()->route('budgets')->with('success', 'budget berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     /**

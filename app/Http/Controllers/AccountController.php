@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\Account;
+use App\Models\Category;
+use App\Models\CategoryGroup;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +27,22 @@ class AccountController extends Controller
         $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
 
         $transactions = Transaction::where('budget_id', $budget->id)
+            ->orderBy('date', 'desc')
+            ->paginate(10);
+
+        $categoryGroups = CategoryGroup::where('budget_id', $budget->id)
+            ->with('categories')
             ->get();
+
+        $categories = $categoryGroups->flatMap(function ($group) {
+            return $group->categories;
+        });
 
         return Inertia::render('app/Accounts', [
             'budget' => $budget,
             'account_types' => $accountTypes,
+            'accounts' => $accounts,
+            'categories' => $categories,
             'transactions' => $transactions
         ]);
     }

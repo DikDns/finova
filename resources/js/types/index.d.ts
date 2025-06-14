@@ -117,7 +117,7 @@ export interface Account {
     balance: number;
     interest: number;
     minimum_payment_monthly: number;
-    transactions: Transaction[];
+    transactions?: Transaction[];
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
