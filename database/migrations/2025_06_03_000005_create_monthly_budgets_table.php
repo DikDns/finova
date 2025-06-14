@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('budget_id')->constrained()->onDelete('cascade');
             $table->date('month');
-            $table->decimal('total_income', 19, 2);
+            $table->decimal('total_balance', 19, 2);
             $table->decimal('total_assigned', 19, 2);
             $table->decimal('total_activity', 19, 2);
             $table->decimal('total_available', 19, 2);

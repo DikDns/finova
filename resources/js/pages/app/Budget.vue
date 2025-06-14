@@ -455,7 +455,7 @@ const groupedCategories = computed(() => {
                             <div class="flex items-center space-x-2">
                                 <div class="h-2 w-2 rounded-full bg-green-500"></div>
                                 <span class="text-xl font-semibold">{{
-                                    formatCurrency(parseFloat(currentMonthBudget?.total_income ?? '0'), budget.currency_code)
+                                    formatCurrency(parseFloat(currentMonthBudget?.total_balance ?? '0'), budget.currency_code)
                                 }}</span>
                             </div>
                             <p class="text-muted-foreground text-sm">Siap dialokasikan</p>
