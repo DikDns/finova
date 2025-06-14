@@ -3,6 +3,7 @@ import Accordion from '@/components/ui/accordion/Accordion.vue';
 import AccordionContent from '@/components/ui/accordion/AccordionContent.vue';
 import AccordionItem from '@/components/ui/accordion/AccordionItem.vue';
 import AccordionTrigger from '@/components/ui/accordion/AccordionTrigger.vue';
+import AISideBar from '@/components/budgets/AISideBar.vue';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const showSidebar = ref(false);
 
 // Current month state
 const currentMonth = ref(new Date());
@@ -377,6 +379,14 @@ const groupedCategories = computed(() => {
     <Head :title="`${props.budget.name}`" />
 
     <AppLayout :budget_id="props.budget.id">
+        <div class="absolute top-4 right-4 z-40">
+            <button
+                @click="showSidebar = true"
+                class="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full shadow"
+            >
+                AI Assistant
+            </button>
+        </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">
                 <!-- Header with month selector -->
@@ -698,6 +708,9 @@ const groupedCategories = computed(() => {
                         </AccordionItem>
                     </Accordion>
                 </main>
+
+                <!-- AI Sidebar -->
+                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
             </div>
         </div>
 
