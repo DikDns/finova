@@ -67,7 +67,7 @@ export interface CategoryGroup {
 export interface MonthlyBudget {
     id: string;
     month: string;
-    total_income: string;
+    total_balance: string;
     total_assigned: string;
     total_activity: string;
     total_available: string;
