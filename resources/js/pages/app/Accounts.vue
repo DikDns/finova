@@ -8,7 +8,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import Calendar from '@/components/ui/calendar/Calendar.vue';
@@ -22,7 +21,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
 import type { Account, AccountType, Budget, Category, Transaction } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { DateFormatter, DateValue, fromDate, getLocalTimeZone } from '@internationalized/date';
+import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
 import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -90,7 +89,11 @@ const resetForm = () => {
 // Set form for editing
 const setEditForm = (transaction: Transaction) => {
     editingTransaction.value = transaction;
-    dateValue.value = fromDate(new Date(transaction.date), getLocalTimeZone());
+    dateValue.value = new CalendarDate(
+        new Date(transaction.date).getFullYear(),
+        new Date(transaction.date).getMonth() + 1,
+        new Date(transaction.date).getDate(),
+    );
     form.value = {
         payee: transaction.payee,
         amount: transaction.amount,
@@ -384,10 +387,7 @@ const formatAmount = (amount: number) => {
                                     <TableCell>{{ transaction.category?.name || 'Tanpa Kategori' }}</TableCell>
                                     <TableCell>{{ transaction.payee }}</TableCell>
                                     <TableCell>{{ transaction.memo || '-' }}</TableCell>
-                                    <TableCell
-                                        class="text-right font-medium"
-                                        :class="transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'"
-                                    >
+                                    <TableCell class="text-right font-medium" :class="transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ formatAmount(transaction.amount) }}
                                     </TableCell>
                                     <TableCell>
