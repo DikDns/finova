@@ -1,27 +1,13 @@
--- GetAccountRank Procedure
-DELIMITER //
-CREATE PROCEDURE GetAccountRank()
-BEGIN
-    SELECT 
-        u.id as uuid,
-        u.name,
-        u.username,
-        u.email,
-        a.name as account_name,
-        a.balance,
-        DENSE_RANK() OVER (ORDER BY a.balance DESC) as account_rank
-    FROM users u
-    INNER JOIN budgets b ON b.user_id = u.id
-    INNER JOIN accounts a ON a.budget_id = b.id
-    WHERE a.type = 'cash'
-    ORDER BY account_rank, u.name;
-END //
-DELIMITER ;
-
 -- User Log
 DELIMITER //
 CREATE TRIGGER trigger_user_logs_after_insert
-
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_logs (id, user_id, action, description, ip_address, user_agent, old_values, new_values)
+    VALUES (UUID(), (SELECT id FROM users WHERE id = NEW.id), 'User Created', (SELECT ), 'Mozilla/5.0', NULL, NULL);
+END; //
+DELIMITER ;
 
 -- Transaction Insert Trigger
 DELIMITER //
@@ -50,6 +36,7 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Transaction Insert Trigger
 DELIMITER //
 CREATE TRIGGER trigger_transactions_after_insert
 AFTER INSERT ON transactions
@@ -72,38 +59,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- Connect using the command from Step 1 first!
-
--- Drop the trigger we were experimenting with
-DROP TRIGGER IF EXISTS trigger_transactions_after_insert;
-
--- Recreate the original trigger WITHOUT any COLLATE clauses
-DELIMITER //
-CREATE TRIGGER trigger_transactions_after_insert
-AFTER INSERT ON transactions
-FOR EACH ROW
-BEGIN
-    DECLARE v_monthly_budget_id VARCHAR(36);
-
-    SELECT id INTO v_monthly_budget_id
-    FROM monthly_budgets 
-    WHERE budget_id = NEW.budget_id 
-    AND DATE_FORMAT(month, '%Y-%m') = DATE_FORMAT(NEW.date, '%Y-%m');
-    
-    IF v_monthly_budget_id IS NOT NULL THEN
-        UPDATE category_budgets 
-        SET activity = activity + NEW.amount,
-            available = assigned - (activity + NEW.amount)
-        WHERE monthly_budget_id = v_monthly_budget_id 
-        AND category_id = NEW.category_id;
-    END IF;
-END //
-DELIMITER ;
-
--- Step 1: Drop the old trigger
-DROP TRIGGER IF EXISTS trigger_transactions_after_insert;
-
--- Step 2: Create the fully corrected trigger
+-- Collate Transaction Insert Trigger
 DELIMITER //
 CREATE TRIGGER trigger_transactions_after_insert
 AFTER INSERT ON transactions
@@ -193,7 +149,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- Test
+-- Trigger Test
 INSERT INTO budgets (id, user_id, name) VALUES
 ('BUD12345', '019772e2-85f9-739d-be2d-543ff40342ba', 'Test Budget 2023');
 
@@ -255,41 +211,76 @@ JOIN categories c ON c.id = cb.category_id
 JOIN monthly_budgets mb ON mb.id = cb.monthly_budget_id
 WHERE c.name = 'Groceries' AND DATE_FORMAT(mb.month, '%Y-%m') = '2023-10';
 
--- -- Monthly Budget Totals Trigger
--- DELIMITER //
--- CREATE TRIGGER trigger_update_monthly_totals
--- AFTER UPDATE ON category_budgets
--- FOR EACH ROW
--- BEGIN
---     -- Get the monthly budget details
---     SET @monthly_budget_id = NEW.monthly_budget_id;
---     SET @budget_id = (SELECT budget_id FROM monthly_budgets WHERE id = @monthly_budget_id);
---     SET @month = (SELECT month FROM monthly_budgets WHERE id = @monthly_budget_id);
-    
---     -- Calculate totals with proper rounding
---     SET @total_assigned = (SELECT ROUND(SUM(assigned), 2) FROM category_budgets WHERE monthly_budget_id = @monthly_budget_id);
---     SET @total_activity = (SELECT ROUND(SUM(activity), 2) FROM category_budgets WHERE monthly_budget_id = @monthly_budget_id);
---     SET @total_available = (SELECT ROUND(SUM(available), 2) FROM category_budgets WHERE monthly_budget_id = @monthly_budget_id);
-    
---     -- Get income and rollover with proper date handling
---     SET @current_income = (SELECT COALESCE(ROUND(SUM(amount), 2), 0) 
---         FROM transactions 
---         WHERE budget_id = @budget_id 
---         AND DATE_FORMAT(date, '%Y-%m-01') = DATE_FORMAT(@month, '%Y-%m-01') 
---         AND amount > 0);
-    
---     SET @rollover = (SELECT COALESCE(total_available, 0) 
---         FROM monthly_budgets 
---         WHERE budget_id = @budget_id 
---         AND month = DATE_SUB(@month, INTERVAL 1 MONTH));
-    
---     -- Update monthly budget totals
---     UPDATE monthly_budgets
---     SET
---         total_assigned = @total_assigned,
---         total_activity = @total_activity,
---         total_available = @total_available,
---         total_balance = ROUND(@rollover + @current_income - @total_assigned, 2)
---     WHERE id = @monthly_budget_id;
--- END //
--- DELIMITER ;
+-- Category Budgets Insert Trigger
+DELIMITER //
+CREATE TRIGGER trigger_category_budgets_after_insert
+AFTER INSERT ON category_budgets
+FOR EACH ROW
+BEGIN
+    UPDATE monthly_budgets
+    SET
+        total_assigned = total_assigned + NEW.assigned,
+        total_activity = total_activity + NEW.activity,
+        total_available = total_available + NEW.available,
+        -- The balance is reduced by what's newly assigned and adjusted by any initial activity
+        total_balance = total_balance - NEW.assigned + NEW.activity
+    WHERE id = NEW.monthly_budget_id;
+END; //
+DELIMITER ;
+
+-- Category Budgets Update Trigger
+DELIMITER //
+CREATE TRIGGER trigger_category_budgets_after_update
+AFTER UPDATE ON category_budgets
+FOR EACH ROW
+BEGIN
+    -- Calculate the change (delta) for each column
+    DECLARE delta_assigned DECIMAL(19, 4);
+    DECLARE delta_activity DECIMAL(19, 4);
+    DECLARE delta_available DECIMAL(19, 4);
+
+    SET delta_assigned = NEW.assigned - OLD.assigned;
+    SET delta_activity = NEW.activity - OLD.activity;
+    SET delta_available = NEW.available - OLD.available;
+
+    UPDATE monthly_budgets
+    SET
+        total_assigned = total_assigned + delta_assigned,
+        total_activity = total_activity + delta_activity,
+        total_available = total_available + delta_available,
+        -- The balance is adjusted by the change in assignments and activity
+        total_balance = total_balance - delta_assigned + delta_activity
+    WHERE id = NEW.monthly_budget_id;
+END; //
+DELIMITER ;
+
+-- Category Budgets Delete Trigger
+DELIMITER //
+CREATE TRIGGER trigger_category_budgets_after_delete
+AFTER DELETE ON category_budgets
+FOR EACH ROW
+BEGIN
+    UPDATE monthly_budgets
+    SET
+        total_assigned = total_assigned - OLD.assigned,
+        total_activity = total_activity - OLD.activity,
+        total_available = total_available - OLD.available,
+        -- The balance is increased by the de-allocated funds and adjusted by the removed activity
+        total_balance = total_balance + OLD.assigned - OLD.activity
+    WHERE id = OLD.monthly_budget_id;
+END; //
+DELIMITER ;
+
+-- Check Collation
+SHOW FULL COLUMNS FROM transactions;
+SHOW FULL COLUMNS FROM monthly_budgets;
+SHOW FULL COLUMNS FROM category_budgets;
+SHOW FULL COLUMNS FROM users;
+SHOW FULL COLUMNS FROM budgets;
+SHOW FULL COLUMNS FROM category_groups;
+SHOW FULL COLUMNS FROM categories;
+SHOW FULL COLUMNS FROM accounts;
+SHOW FULL COLUMNS FROM user_logs;
+SHOW FULL COLUMNS FROM export_reports;
+SHOW FULL COLUMNS FROM subscriptions;
+SHOW FULL COLUMNS FROM ai_chats;
