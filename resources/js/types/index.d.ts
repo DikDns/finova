@@ -18,6 +18,18 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface AccountType {
+    id: string;
+    type: string;
+    isActive: boolean;
+    accounts: {
+        id: string;
+        name: string;
+        url: string;
+        balance: number;
+    }[];
+}
+
 export interface SharedData extends PageProps {
     name: string;
     quote: { message: string; author: string };
@@ -86,4 +98,49 @@ export interface Budget {
     updated_at: string;
 }
 
+export interface Transaction {
+    id: string;
+    account_id: string;
+    category_id?: string;
+    budget_id: string;
+    payee: string;
+    date: string;
+    amount: number;
+    memo: string;
+    category?: Category;
+}
+
+export interface Account {
+    id: string;
+    budget_id: string;
+    name: string;
+    type: string;
+    balance: number;
+    interest: number;
+    minimum_payment_monthly: number;
+    transactions?: Transaction[];
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface Budget {
+  id: number;
+  name: string;
+  amount: number;
+  // Add other budget properties as needed
+}
+
+export interface ExpenseData {
+  category: string;
+  amount: number;
+  percentage: number;
+  color: string;
+  icon: string;
+}
+
+export interface ExpenseStats {
+  monthlyAverage: number;
+  dailyAverage: number;
+  mostActiveCategory: string;
+  largestExpense: number;
+}

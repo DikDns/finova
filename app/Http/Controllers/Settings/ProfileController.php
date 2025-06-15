@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,15 +30,23 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        try {
+            return DB::transaction(function () use ($request) {
+                $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+                if ($request->user()->isDirty('email')) {
+                    $request->user()->email_verified_at = null;
+                }
+
+                $request->user()->save();
+
+                return to_route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
+            });
+        } catch (\Exception $e) {
+            return to_route('profile.edit')->withErrors([
+                'error' => 'Terjadi kesalahan saat memperbarui profil: ' . $e->getMessage(),
+            ]);
         }
-
-        $request->user()->save();
-
-        return to_route('profile.edit');
     }
 
     /**
@@ -45,19 +54,27 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
+        try {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
 
-        $user = $request->user();
+            return DB::transaction(function () use ($request) {
+                $user = $request->user();
 
-        Auth::logout();
+                Auth::logout();
 
-        $user->delete();
+                $user->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-        return redirect('/');
+                return redirect('/')->with('success', 'Akun berhasil dihapus.');
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'error' => 'Terjadi kesalahan saat menghapus akun: ' . $e->getMessage(),
+            ]);
+        }
     }
 }

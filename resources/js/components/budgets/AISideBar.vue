@@ -24,10 +24,10 @@ const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 
 const suggestions = [
-    'Berikan rekomendasi /kategori berdasarkan profil aku',
-    'Buatkan /target berdasarkan dana yang aku punya sekarang',
-    'Perbarui /target berdasarkan transaksi rekening bulan lalu',
-    'Perbarui /grup-kategori dan /kategori berdasarkan prinsip money game',
+    'Berikan rekomendasi kategori berdasarkan profil aku',
+    'Buatkan target berdasarkan dana yang aku punya sekarang',
+    'Perbarui target berdasarkan transaksi rekening bulan lalu',
+    'Perbarui grup kategori dan kategori berdasarkan prinsip money game',
 ];
 
 const handleSuggestionClick = (suggestion: string) => {

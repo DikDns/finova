@@ -1,119 +1,109 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import Navbar from '@/components/common/NavBar.vue';
+import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+const activeSlide = ref(0);
+
+const changeSlide = (index) => {
+  activeSlide.value = index;
+};
+
 </script>
 
-<template>
-    <!-- Main Content -->
-    <div class="min-h-screen bg-white">
-        <!-- Header Navigation -->
-        <header class="bg-background border-border sticky top-0 z-50 border-b py-4 shadow-sm">
-            <div class="container mx-auto flex items-center px-4">
-                <!-- Logo -->
-                <Link :href="route('home')" class="me-12 text-2xl font-bold text-blue-600">
-                    <img src="../../../public/finova-logo.svg" alt="Finova Logo" class="h-12" />
-                </Link>
+<template>  
+  <!-- Main Content -->
+    <div class="flex min-h-screen flex-col">
+    <Head title="Finova - Features" />
 
-                <!-- Navigation Menu -->
-                <nav class="align-items-start me-auto flex space-x-12">
-                    <Link :href="route('features')" class="text-1xl font-bold text-gray-900 hover:text-[#284A63]">Features</Link>
-                    <Link :href="route('pricing')" class="text-1xl font-medium text-gray-700 hover:text-[#284A63]">Pricing</Link>
-                </nav>
-                <Link :href="route('login')" class="text-1xl me-12 font-medium text-gray-700 hover:text-[#284A63]">Login</Link>
-                <Link
-                    :href="route('register')"
-                    class="rounded-[16px] bg-[#284A63] px-4 py-2 text-sm font-medium text-white hover:bg-white hover:text-[#284A63]"
-                    >Begin Planning</Link
-                >
-            </div>
-        </header>
-        <hr class="border-2 border-[#D9D9D9]" />
+    <!-- Import Navbar Component -->
+    <Navbar />
 
         <!-- Hero Section -->
-        <section class="bg-white py-16">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col items-center md:flex-row">
-                    <div class="md:w-1/2">
-                        <h1 class="mb-4 font-serif text-5xl font-bold text-black">
-                            Atur Keuangan <span class="text-[#284A63]">Jadi Lebih Mudah!</span>
+        <section class="bg-background flex-grow py-16">
+            <div class="container mx-auto px-4 sm:px-6 md:px-12">
+                <div class="flex flex-col-reverse items-center gap-12 md:grid md:grid-cols-2 md:items-center">
+                    <div class="space-y-5 text-center md:text-left">
+                        <h1 class="text-4xl leading-tight font-bold sm:text-5xl md:text-6xl">
+                            <span class="text-muted-foreground font-serif">Atur Keuangan</span><br />
+                            <span class="text-primary font-serif">Jadi Lebih Mudah!</span>
                         </h1>
-                        <p class="mb-6 text-gray-600">
-                            Pantau pemasukan dan pengeluaran, dapatkan rekomendasi keuangan berbasis AI, dan buat laporan otomatis dalam satu
-                            platform.
-                        </p>
-                        <Link :href="route('register')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Begin Planning</Link>
-                    </div>
-                    <div class="text-right md:w-1/2">
-                        <img src="../../../public/atur-keuangan.png" alt="peeps" class="mx-auto max-w-md" />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="bg-white py-16">
-            <div class="container mx-auto px-4 text-center">
-                <h1 class="mb-4 font-serif text-3xl font-bold">Fitur Andalan Kami</h1>
-                <p class="mb-12 text-gray-600">Fitur yang bikin keuanganmu lebih teratur dan terkontrol.</p>
-
-                <div class="relative">
-                    <!-- Features Slider -->
-                    <div class="overflow-hidden">
-                        <!-- Slides -->
-                        <div class="flex transition-transform duration-300">
-                            <!-- Slide 1 -->
-                            <div class="w-full flex-shrink-0 px-4">
-                                <div class="rounded-lg bg-white p-6 shadow-md">
-                                    <img src="../../../public/management.png" alt="Manajemen Keuangan" class="mx-auto mb-4 h-48" />
-                                    <h5 class="text-xl font-bold">Manajemen Keuangan</h5>
-                                </div>
-                            </div>
-
-                            <!-- Slide 2 -->
-                            <div class="w-full flex-shrink-0 px-4">
-                                <div class="rounded-lg bg-white p-6 shadow-md">
-                                    <img src="../../../public/rekomendasi-ai.png" alt="Rekomendasi AI" class="mx-auto mb-4 h-48" />
-                                    <h5 class="text-xl font-bold">Rekomendasi AI</h5>
-                                </div>
-                            </div>
-
-                            <!-- Slide 3 -->
-                            <div class="w-full flex-shrink-0 px-4">
-                                <div class="rounded-lg bg-white p-6 shadow-md">
-                                    <img src="../../../public/alert.png" alt="Alert Batas Bulanan" class="mx-auto mb-4 h-48" />
-                                    <h5 class="text-xl font-bold">Alert Batas Bulanan</h5>
-                                </div>
-                            </div>
+                        <p class="text-muted-foreground">Pantau pemasukan dan pengeluaran, dapatkan rekomendasi keuangan berbasis AI, dan buat laporan otomatis dalam satu platform.</p>
+                        <div class="flex justify-center pt-6 md:justify-start">
+                            <Button as-child class="w-full md:w-auto bg-primary hover:bg-primary/90 text-background rounded-full">
+                                <Link href="/register">Mulai Sekarang</Link>
+                            </Button>
                         </div>
                     </div>
-
-                    <!-- Pagination Dots
-                    <div class="mt-8 flex justify-center gap-2">
-                        <button
-                            v-for="index in 3"
-                            :key="index - 1"
-                            @click="changeSlide(index - 1)"
-                            class="h-3 w-3 rounded-full"
-                            :class="activeSlide === index - 1 ? 'bg-[#284A63]' : 'bg-gray-300'"
-                            aria-label="Change slide"
-                        ></button>
-                    </div> -->
+                    <div class="flex justify-center">
+                        <img src="../../../public/atur-keuangan.png" alt="Hero Image" class="h-auto w-full max-w-md" />
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Zero Cost Budgeting Section -->
-        <section class="bg-[#f8f9fa] py-16">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col-reverse items-center md:flex-row">
-                    <div class="md:w-1/2">
-                        <img src="../../../public/zero-cost.jpg" alt="Zero Cost Budgeting" class="mx-auto max-w-md" />
+ <!-- Features Section -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto space-y-6 px-4 text-center sm:px-6 md:px-12">
+    <h1 class="text-foreground font-serif text-4xl leading-tight font-bold sm:text-5xl md:text-6xl">
+      Fitur Andalan Kami
+    </h1>
+    <p class="mb-12 text-gray-600">
+      Fitur yang bikin keuanganmu lebih teratur dan terkontrol.
+    </p>
+
+    <!-- Carousel Section -->
+    <Carousel :opts="{ loop: true }" class="w-full max-w-4xl mx-auto">
+      <CarouselContent>
+        <CarouselItem>
+          <div class="rounded-lg bg-white p-6 shadow-md">
+            <img src="../../../public/management.png" alt="Manajemen Keuangan" class="mx-auto mb-4 h-48" />
+            <h5 class="text-xl font-bold">Manajemen Keuangan</h5>
+          </div>
+        </CarouselItem>
+        <CarouselItem>
+          <div class="rounded-lg bg-white p-6 shadow-md">
+            <img src="../../../public/rekomendasi-ai.png" alt="Rekomendasi AI" class="mx-auto mb-4 h-48" />
+            <h5 class="text-xl font-bold">Rekomendasi AI</h5>
+          </div>
+        </CarouselItem>
+        <CarouselItem>
+          <div class="rounded-lg bg-white p-6 shadow-md">
+            <img src="../../../public/alert.png" alt="Alert Batas Bulanan" class="mx-auto mb-4 h-48" />
+            <h5 class="text-xl font-bold">Alert Batas Bulanan</h5>
+          </div>
+        </CarouselItem>
+      </CarouselContent>
+      <div class="mt-8 flex justify-center gap-4">
+        <CarouselPrevious class="rounded-full border bg-muted text-foreground" />
+        <CarouselNext class="rounded-full border bg-muted text-foreground" />
+      </div>
+    </Carousel>
+  </div>
+</section>
+
+    <!-- Zero Cost Budgeting Section -->
+        <section class="bg-background py-16">
+            <div class="container mx-auto px-4 sm:px-6 md:px-12">
+                <div class="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
+                    <div class="flex justify-center">
+                        <img src="../../../public/zero-cost.jpg" alt="Notification Bell" class="h-auto w-full max-w-md" />
                     </div>
-                    <div class="md:w-1/2 md:pl-12">
-                        <h1 class="mb-4 font-serif text-3xl font-bold">Apa itu Zero <span class="text-[#284A63]">Cost Budgeting Method?</span></h1>
-                        <p class="mb-6 text-gray-600">
+                    <div class="space-y-6 text-center md:text-left">
+                        <h1 class="text-foreground font-serif text-4xl leading-tight font-bold sm:text-5xl md:text-6xl">
+                            <span class="text-muted-foreground font-serif">Apa itu Zero</span><br />
+                            <span class="text-primary font-serif">Cost Budgeting Method?</span>
+                        </h1>
+                        <p class="text-muted-foreground text-lg">
                             Cara ngatur uang biar tiap pemasukan punya tujuan jelas. AI bantu kamu bikin rencana pengeluaran yang pas.
                         </p>
-                        <Link :href="route('features')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Learn More</Link>
+                        <div class="flex justify-center pt-6 md:justify-start">
+                            <Button as-child class="w-full md:w-auto bg-primary hover:bg-primary/90 text-background rounded-full">
+                                <Link href="/features/expense-alert">Pelajari Lebih Lanjut</Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,35 +111,34 @@ import { Link } from '@inertiajs/vue3';
 
         <!-- Kelola Uang Section -->
         <section class="bg-white py-16">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col items-center md:flex-row">
-                    <div class="md:w-1/2">
-                        <h1 class="mb-4 font-serif text-3xl font-bold">Waktunya Kelola <span class="text-[#284A63]">Uang Lebih Baik!</span></h1>
-                        <p class="mb-6 text-gray-600">
-                            Bergabung dengan platform kami untuk mendapatkan perencanaan keuangan berbasis AI, notifikasi batas anggaran, dan laporan
-                            keuangan otomatis. Yuk mulai atur keuanganmu sekarang. Gratis & gampang!
-                        </p>
-                        <div class="flex flex-wrap gap-4">
-                            <Link :href="route('register')" class="rounded-md bg-[#284A63] px-6 py-2 font-medium text-white">Begin Planning</Link>
-                            <Link
-                                :href="route('pricing')"
-                                class="rounded-md border border-gray-300 px-6 py-2 font-medium text-gray-700 hover:bg-[#284A63] hover:text-white"
-                                >See Pricing</Link
-                            >
+            <div class="container mx-auto px-4 sm:px-6 md:px-12">
+                <div class="flex flex-col-reverse items-center gap-12 md:grid md:grid-cols-2">
+                    <div class="space-y-6 text-center md:text-left">
+                        <h1 class="text-foreground font-serif text-4xl leading-tight font-bold sm:text-5xl md:text-6xl">
+                          <span class="text-muted-foreground font-serif">Waktunya Kelola Uang</span>
+                            <span class="text-primary font-serif"> Lebih Baik!</span></h1>
+                        <p class="text-muted-foreground text-lg">Bergabung dengan platform kami untuk mendapatkan perencanaan keuangan berbasis AI, notifikasi batas anggaran, dan laporan keuangan otomatis. Yuk mulai atur keuanganmu sekarang!</p>
+                        <div class="flex flex-col items-center gap-4 pt-4 md:flex-row md:justify-start">
+                            <Button as-child class="w-full md:w-auto bg-primary/90 text-background hover:bg-primary rounded-full">
+                                <Link href="/register">Mulai Gratis</Link>
+                            </Button>
+                            <Button as-child class="w-full md:w-auto bg-primary/90 text-background hover:bg-primary rounded-full">
+                                <Link href="/pricing">Lihat Harga</Link>
+                            </Button>
                         </div>
                     </div>
-                    <div class="text-right md:w-1/2">
-                        <img src="../../../public/hand-money.png" alt="Money" class="mx-auto max-w-md" />
+                    <div class="flex justify-center">
+                        <img src="../../../public/hand-money.png" alt="Hand money" class="h-auto w-full max-w-md" />
                     </div>
                 </div>
             </div>
         </section>
 
-        <hr class="border-2 border-[#D9D9D9]" />
-
         <!-- Footer -->
-        <footer class="bg-white py-8">
-            <div class="container mx-auto px-4 text-center text-sm text-gray-600">Copyright © 2025, Finova. All Rights Reserved.</div>
+        <footer class="bg-transparent py-8">
+            <div class="container mx-auto px-4 text-center sm:px-6 md:px-12">
+                <p class="text-muted-foreground">© 2025 Finova. All Rights Reserved.</p>
+            </div>
         </footer>
     </div>
 </template>
