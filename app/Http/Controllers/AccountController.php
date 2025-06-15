@@ -48,6 +48,39 @@ class AccountController extends Controller
         ]);
     }
 
+    public function show(Budget $budget, Account $account)
+    {
+        // Ensure the user can only view their own accounts
+        if ($account->budget->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $accountTypes = $this->formatAccountTypes($budget->accounts, $budget->id);
+
+        $transactions = Transaction::where('budget_id', $budget->id)
+            ->where('account_id', $account->id)
+            ->with('category')
+            ->orderBy('date', 'desc')
+            ->paginate(10);
+
+        $categoryGroups = CategoryGroup::where('budget_id', $budget->id)
+            ->with('categories')
+            ->get();
+
+        $categories = $categoryGroups->flatMap(function ($group) {
+            return $group->categories;
+        });
+
+        return Inertia::render('app/Accounts', [
+            'budget' => $budget,
+            'account_types' => $accountTypes,
+            'accounts' => $budget->accounts,
+            'current_account' => $account,
+            'transactions' => $transactions,
+            'categories' => $categories,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -97,35 +130,6 @@ class AccountController extends Controller
         }
     }
 
-    /**
-     * Format accounts data for the sidebar component
-     */
-    private function formatAccountTypes($accounts, $budgetId)
-    {
-        $groupedAccounts = $accounts->groupBy('type');
-        $accountTypes = [];
-
-        foreach ($groupedAccounts as $type => $typeAccounts) {
-            $formattedAccounts = $typeAccounts->map(function ($account) use ($budgetId) {
-                return [
-                    'id' => $account->id,
-                    'name' => $account->name,
-                    'url' => "/budgets/{$budgetId}/accounts/{$account->id}",
-                    'balance' => (float) $account->balance
-                ];
-            })->toArray();
-
-
-            $accountTypes[] = [
-                'id' => $type,
-                'type' => $type,
-                'isActive' => false,
-                'accounts' => $formattedAccounts
-            ];
-        }
-
-        return $accountTypes;
-    }
 
     public function update(Request $request, Account $account)
     {
@@ -214,5 +218,32 @@ class AccountController extends Controller
             return redirect()->back()
                 ->withErrors(['error' =>  $e->getMessage()]);
         }
+    }
+
+    private function formatAccountTypes($accounts, $budgetId)
+    {
+        $groupedAccounts = $accounts->groupBy('type');
+        $accountTypes = [];
+
+        foreach ($groupedAccounts as $type => $typeAccounts) {
+            $formattedAccounts = $typeAccounts->map(function ($account) use ($budgetId) {
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'url' => "/budgets/{$budgetId}/accounts/{$account->id}",
+                    'balance' => (float) $account->balance
+                ];
+            })->toArray();
+
+
+            $accountTypes[] = [
+                'id' => $type,
+                'type' => $type,
+                'isActive' => true,
+                'accounts' => $formattedAccounts
+            ];
+        }
+
+        return $accountTypes;
     }
 }

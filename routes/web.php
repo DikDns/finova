@@ -32,6 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
     Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
 
+    Route::get('/budgets/{budget}/accounts/{account}', [AccountController::class, 'show'])->name('budget.accounts.show');
+
+
     // Account Routes
     Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::put('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');

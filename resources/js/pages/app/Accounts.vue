@@ -23,7 +23,7 @@ import type { Account, AccountType, Budget, Category, Transaction } from '@/type
 import { Head, router } from '@inertiajs/vue3';
 import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
 import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 interface Props {
@@ -38,6 +38,7 @@ interface Props {
     account_types: AccountType[];
     accounts: Account[];
     categories: Category[];
+    current_account?: Account;
 }
 
 const props = defineProps<Props>();
@@ -68,6 +69,13 @@ const dateValue = ref<DateValue>();
 const errors = ref<Record<string, string>>({});
 const isLoading = ref(false);
 const deleteTransactionId = ref<string | null>(null);
+
+const currentAccountName = computed(() => {
+    if (props.current_account) {
+        return props.current_account.name;
+    }
+    return 'Semua Rekening';
+});
 
 // Reset form
 const resetForm = () => {
@@ -220,13 +228,13 @@ const formatAmount = (amount: number) => {
 </script>
 
 <template>
-    <Head title="Semua Rekening" />
+    <Head :title="currentAccountName" />
 
     <AppLayout :budget_id="props.budget.id" :currency_code="props.budget.currency_code" :account_types="props.account_types">
         <div class="p-6">
             <!-- Header  -->
             <div class="mb-6 flex items-center justify-between">
-                <h1 class="font-serif text-2xl font-semibold tracking-tight">Semua Rekening</h1>
+                <h1 class="font-serif text-2xl font-semibold tracking-tight">{{ currentAccountName }}</h1>
             </div>
 
             <!-- Transactions Section -->

@@ -256,7 +256,7 @@ const confirmDeleteAccount = () => {
             <Collapsible v-for="item in account_types" :key="item.id" as-child :default-open="item.isActive" class="group/collapsible">
                 <SidebarMenuItem>
                     <CollapsibleTrigger as-child>
-                        <SidebarMenuButton :tooltip="item.type">
+                        <SidebarMenuButton :tooltip="item.type" class="cursor-pointer">
                             <span class="capitalize">{{ item.type }}</span>
                             <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                         </SidebarMenuButton>
