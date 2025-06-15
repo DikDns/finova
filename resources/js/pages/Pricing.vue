@@ -1,14 +1,12 @@
 <script setup lang="ts">
+import NavBar from '@/components/common/NavBar.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import RadioGroup from '@/components/ui/radio-group/RadioGroup.vue';
 import RadioGroupItem from '@/components/ui/radio-group/RadioGroupItem.vue';
 import { Separator } from '@/components/ui/separator';
 import { Link } from '@inertiajs/vue3';
-import { ref, onMounted, onUnmounted } from 'vue';
-import Navbar from '@/components/common/NavBar.vue';
-import NavBar from '@/components/common/NavBar.vue';
-
+import { onMounted, onUnmounted, ref } from 'vue';
 
 const isMobile = ref(false);
 
@@ -110,10 +108,10 @@ const pricingPlans: PricingPlan[] = [
                                 v-for="plan in pricingPlans"
                                 :key="plan.id"
                                 :class="[
-                                    'rounded-lg border-2 p-4 transition-all relative',
+                                    'relative rounded-lg border-2 p-4 transition-all',
                                     selectedPlan === plan.id ? 'border-primary' : 'border-muted',
-                                    'hover:border-primary'
-                                ]"      
+                                    'hover:border-primary',
+                                ]"
                             >
                                 <RadioGroupItem :value="plan.id" :id="plan.id" class="sr-only" />
                                 <label :for="plan.id" class="flex cursor-pointer flex-col space-y-1 pl-8">
