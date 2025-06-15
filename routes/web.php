@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryBudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryGroupController;
 use App\Http\Controllers\MonthlyBudgetController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,11 +31,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
     Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
-    
+
+    Route::get('/budgets/{budget}/accounts/{account}', [AccountController::class, 'show'])->name('budget.accounts.show');
+
+
     // Account Routes
     Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::put('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
     Route::delete('/accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
+
+    // Transaction Routes
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');

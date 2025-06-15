@@ -107,6 +107,7 @@ export interface Transaction {
     date: string;
     amount: number;
     memo: string;
+    category?: Category;
 }
 
 export interface Account {

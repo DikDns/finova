@@ -35,17 +35,6 @@ class TransactionController extends Controller
             'transactions' => $transactions,
         ]);
     }
-
-    /**
-     * Show the form for creating a new transaction.
-     *
-     * @return \Inertia\Response
-     */
-    public function create()
-    {
-        return Inertia::render('users/TransactionForm');
-    }
-
     /**
      * Store a newly created transaction in storage.
      *
@@ -55,7 +44,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'payee' => 'required|string|max:255',
+            'payee' => 'nullable|string|max:255',
             'amount' => 'required|numeric',
             'date' => 'required|date',
             'category_id' => 'nullable|exists:categories,id',
@@ -74,9 +63,23 @@ class TransactionController extends Controller
                 ->where('budget_id', $budget->id)
                 ->firstOrFail();
 
-           
+            $payee = $validated['payee'] ?? '';
+            $memo = $validated['memo'] ?? '';
 
-            Transaction::create($validated);
+            // Create the transaction
+            $transaction = Transaction::create([
+                'payee' => $payee,
+                'memo' => $memo,
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'category_id' => $validated['category_id'],
+                'account_id' => $validated['account_id'],
+                'budget_id' => $validated['budget_id'],
+            ]);
+
+            // Update account balance
+            $account->balance = $account->balance + $validated['amount'];
+            $account->save();
 
             DB::commit();
 
@@ -88,23 +91,6 @@ class TransactionController extends Controller
                 ->withErrors(['error' => 'Gagal membuat transaksi: ' . $e->getMessage()])
                 ->withInput();
         }
-    }
-
-
-    /**
-     * Show the form for editing the specified transaction.
-     *
-     * @param  \App\Models\Transaction  $transaction
-     * @return \Inertia\Response
-     */
-    public function edit(Transaction $transaction)
-    {
-        // Ensure the transaction belongs to the authenticated user through account -> budget -> user
-        $this->authorizeTransaction($transaction);
-
-        return Inertia::render('users/TransactionForm', [
-            'transaction' => $transaction->load(['category', 'account']),
-        ]);
     }
 
     /**
@@ -120,7 +106,7 @@ class TransactionController extends Controller
         $this->authorizeTransaction($transaction);
 
         $validated = $request->validate([
-            'payee' => 'required|string|max:255',
+            'payee' => 'nullable|string|max:255',
             'amount' => 'required|numeric',
             'date' => 'required|date',
             'category_id' => 'nullable|exists:categories,id',
@@ -139,8 +125,38 @@ class TransactionController extends Controller
                 ->where('budget_id', $budget->id)
                 ->firstOrFail();
 
+            $payee = $validated['payee'] ?? '';
+            $memo = $validated['memo'] ?? '';
 
-            $transaction->update($validated);
+            // Get the old transaction data to calculate balance adjustment
+            $oldAmount = $transaction->amount;
+            $oldAccountId = $transaction->account_id;
+
+            // If account changed, adjust both old and new account balances
+            if ($oldAccountId !== $validated['account_id']) {
+                // Subtract amount from old account
+                $oldAccount = Account::findOrFail($oldAccountId);
+                $oldAccount->balance = $oldAccount->balance - $oldAmount;
+                $oldAccount->save();
+
+                // Add amount to new account
+                $account->balance = $account->balance + $validated['amount'];
+                $account->save();
+            } else {
+                // Same account, just adjust the difference
+                $account->balance = $account->balance - $oldAmount + $validated['amount'];
+                $account->save();
+            }
+
+            // Update the transaction
+            $transaction->update([
+                'payee' => $payee,
+                'memo' => $memo,
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'category_id' => $validated['category_id'],
+                'account_id' => $validated['account_id'],
+            ]);
 
             DB::commit();
 
@@ -168,6 +184,16 @@ class TransactionController extends Controller
         try {
             DB::beginTransaction();
 
+            // Get transaction details before deletion
+            $amount = $transaction->amount;
+            $accountId = $transaction->account_id;
+
+            // Update account balance
+            $account = Account::findOrFail($accountId);
+            $account->balance = $account->balance - $amount;
+            $account->save();
+
+            // Delete the transaction
             $transaction->delete();
 
             DB::commit();
