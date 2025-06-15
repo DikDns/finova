@@ -2,8 +2,8 @@
 import { ref, type Component } from 'vue';
 import FinovaLogo from '@/components/common/FinovaLogo.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { LayoutDashboard, ChevronUp, LogOut, Settings, Menu, X, Receipt, WalletCards } from 'lucide-vue-next';
+import NavUser from '@/components/common/NavUser.vue';
+import { LayoutDashboard, Menu, X, Receipt, WalletCards } from 'lucide-vue-next';
 
 // Sidebar Item Type
 type SidebarItem = {
@@ -14,17 +14,10 @@ type SidebarItem = {
 
 // Sidebar Menu Items
 const items: SidebarItem[] = [
-  { title: 'Dashboard', href: '/admin/admindashboard', icon: LayoutDashboard },
-  { title: 'Account', href: '/admin/adminaccount', icon: WalletCards },
-  { title: 'Subscription', href: '/admin/adminsubscription', icon: Receipt },
+  { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Account', href: '/admin/account', icon: WalletCards },
+  { title: 'Subscription', href: '/admin/subscription', icon: Receipt },
 ];
-
-// Admin Profile
-const adminProfile = {
-  name: 'Administrator',
-  email: 'admin@finova.com',
-  avatar: 'A',
-};
 
 // Sidebar State
 const isMobileSidebarOpen = ref(false);
@@ -38,10 +31,6 @@ const closeMobileSidebar = () => {
   isMobileSidebarOpen.value = false;
 };
 
-const handleLogout = () => {
-  console.log('Logging out...');
-  closeMobileSidebar();
-};
 </script>
 
 <template>
@@ -109,45 +98,7 @@ const handleLogout = () => {
       <SidebarFooter class="flex-shrink-0 border-t border-gray-200 bg-white">
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <SidebarMenuButton
-                  size="lg"
-                  class="hover:bg-neutral-100 transition-colors duration-200"
-                >
-                  <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-neutral-600 text-white text-sm font-medium">
-                    {{ adminProfile.avatar }}
-                  </div>
-                  <div class="grid flex-1 text-left text-sm leading-tight">
-                    <span class="truncate font-semibold">{{ adminProfile.name }}</span>
-                    <span class="truncate text-xs text-neutral-500">{{ adminProfile.email }}</span>
-                  </div>
-                  <ChevronUp class="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-lg"
-                side="top"
-                align="end"
-                :sideOffset="4"
-              >
-                <DropdownMenuItem class="cursor-pointer" @click="closeMobileSidebar">
-                  <Settings class="mr-2 h-4 w-4" />
-                  <span>Account Settings</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  @click="handleLogout"
-                  class="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                >
-                  <LogOut class="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <NavUser />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
