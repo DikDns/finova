@@ -34,7 +34,7 @@ class CategoryBudgetController extends Controller
             'available' => $validated['available'] ?? $categoryBudget->available,
         ]);
 
-        // Calculate the difference to adjust total_income
+        // Calculate the difference to adjust total_balance
         $assignedDifference = $categoryBudget->assigned - $oldAssigned;
 
         $this->updateMonthlyBudgetTotals($categoryBudget->monthlyBudget);
@@ -63,13 +63,10 @@ class CategoryBudgetController extends Controller
 
     private function updateTotalIncome(MonthlyBudget $monthlyBudget, $assignedDifference = 0)
     {
-        // Adjust total_income by subtracting the difference in assigned and available amounts
-        // When assigned/available increases, total_income decreases
-        // When assigned/available decreases, total_income increases
         $totalDifference = $assignedDifference;
 
         $monthlyBudget->update([
-            'total_income' => $monthlyBudget->total_income - $totalDifference,
+            'total_balance' => $monthlyBudget->total_balance - $totalDifference,
         ]);
     }
 }
