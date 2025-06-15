@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Head, router } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, CreditCard, PiggyBank, Search, TrendingUp, Wallet } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ChevronLeft, ChevronRight, CreditCard, PiggyBank, Search, TrendingUp, Wallet, Banknote } from 'lucide-vue-next';
+import { ref, watch, computed } from 'vue';
 
-// Define interfaces for type safety
 interface Account {
     id: string;
     budget_id: string;
@@ -50,13 +49,36 @@ const props = defineProps<{
         savings: number;
         credit: number;
         investment: number;
+        loan: number;
     };
+    availableTypes?: string[];
 }>();
 
 // State variables
 const searchQuery = ref(props.filters.search || '');
-const perPage = ref(props.filters.per_page || 10);
+const perPage = ref(String(props.filters.per_page || 10));
 const typeFilter = ref(props.filters.type || '');
+
+// Computed property for corrected total balance (loans should be negative)
+const correctedTotalBalance = computed(() => {
+    return props.accounts.data.reduce((total, account) => {
+        // For loan accounts, treat balance as negative in the total
+        if (account.type.toLowerCase() === 'loan') {
+            return total - Math.abs(account.balance);
+        }
+        // For credit accounts, if balance is positive, it means debt (negative for net worth)
+        if (account.type.toLowerCase().includes('credit')) {
+            return total - Math.abs(account.balance);
+        }
+        // For other account types (cash, savings, investment), balance is positive
+        return total + account.balance;
+    }, 0);
+});
+
+// Computed property for corrected average balance
+const correctedAverageBalance = computed(() => {
+    return props.totalAccounts > 0 ? correctedTotalBalance.value / props.totalAccounts : 0;
+});
 
 // Perform a search and update the view
 const search = () => {
@@ -116,8 +138,16 @@ watch(searchQuery, () => {
     }, 500);
 });
 
-// Watch type filter changes
-watch(typeFilter, () => {
+// Watch type filter changes - Fixed to properly trigger search
+watch(typeFilter, (newValue, oldValue) => {
+    // Only search if the value actually changed
+    if (newValue !== oldValue) {
+        search();
+    }
+});
+
+// Watch per page changes
+watch(perPage, () => {
     search();
 });
 
@@ -141,6 +171,8 @@ const getAccountTypeBadgeClass = (type: string) => {
             return 'bg-red-100 text-red-800';
         case 'investment':
             return 'bg-purple-100 text-purple-800';
+        case 'loan':
+            return 'bg-orange-100 text-orange-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
@@ -158,9 +190,51 @@ const getAccountTypeIcon = (type: string) => {
             return CreditCard;
         case 'investment':
             return TrendingUp;
+        case 'loan':
+            return Banknote;
         default:
             return Wallet;
     }
+};
+
+// Get available types for dropdown (fallback if not provided from backend)
+const getAvailableTypes = () => {
+    if (props.availableTypes && props.availableTypes.length > 0) {
+        return props.availableTypes;
+    }
+    // Fallback types
+    return ['cash', 'savings', 'credit', 'investment', 'loan'];
+};
+
+// Helper function to display balance with proper sign for different account types
+const displayBalance = (account: Account) => {
+    const balance = account.balance;
+    const type = account.type.toLowerCase();
+    
+    // For loan accounts, display as debt (positive numbers represent money owed)
+    if (type === 'loan') {
+        return {
+            amount: Math.abs(balance),
+            isPositive: false,
+            label: 'Debt'
+        };
+    }
+    
+    // For credit accounts, positive balance means debt
+    if (type.includes('credit')) {
+        return {
+            amount: Math.abs(balance),
+            isPositive: balance <= 0, // Negative balance in credit means credit available
+            label: balance > 0 ? 'Debt' : 'Available Credit'
+        };
+    }
+    
+    // For other accounts (cash, savings, investment)
+    return {
+        amount: Math.abs(balance),
+        isPositive: balance >= 0,
+        label: 'Balance'
+    };
 };
 </script>
 
@@ -194,8 +268,11 @@ const getAccountTypeIcon = (type: string) => {
                     <Card class="p-2 sm:p-6">
                         <div class="flex flex-row items-center justify-between space-x-2 text-left sm:space-x-3">
                             <div>
-                                <p class="text-muted-foreground text-xs font-medium">Total Balance</p>
-                                <p class="text-lg font-bold text-gray-900 sm:text-2xl">{{ formatCurrency(totalBalance) }}</p>
+                                <p class="text-muted-foreground text-xs font-medium">Net Worth</p>
+                                <p class="text-lg font-bold sm:text-2xl" :class="correctedTotalBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                                    {{ formatCurrency(correctedTotalBalance) }}
+                                </p>
+                                <p class="text-xs text-gray-500">Raw Total: {{ formatCurrency(totalBalance) }}</p>
                             </div>
                             <div class="flex-shrink-0 rounded-full bg-green-100 p-2 sm:p-3">
                                 <PiggyBank class="h-5 w-5 text-green-600 sm:h-8 sm:w-8" />
@@ -206,8 +283,11 @@ const getAccountTypeIcon = (type: string) => {
                     <Card class="p-2 sm:p-6">
                         <div class="flex flex-row items-center justify-between space-x-2 text-left sm:space-x-3">
                             <div>
-                                <p class="text-muted-foreground text-xs font-medium">Average Balance</p>
-                                <p class="text-lg font-bold text-gray-900 sm:text-2xl">{{ formatCurrency(averageBalance) }}</p>
+                                <p class="text-muted-foreground text-xs font-medium">Average Net Worth</p>
+                                <p class="text-lg font-bold sm:text-2xl" :class="correctedAverageBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                                    {{ formatCurrency(correctedAverageBalance) }}
+                                </p>
+                                <p class="text-xs text-gray-500">Raw Avg: {{ formatCurrency(averageBalance) }}</p>
                             </div>
                             <div class="flex-shrink-0 rounded-full bg-purple-100 p-2 sm:p-3">
                                 <TrendingUp class="h-5 w-5 text-purple-600 sm:h-8 sm:w-8" />
@@ -235,6 +315,10 @@ const getAccountTypeIcon = (type: string) => {
                                     <span>Investment:</span>
                                     <span class="font-medium">{{ accountsByType.investment }}</span>
                                 </div>
+                                <div class="flex justify-between text-xs">
+                                    <span>Loan:</span>
+                                    <span class="font-medium">{{ accountsByType.loan }}</span>
+                                </div>
                             </div>
                         </div>
                     </Card>
@@ -256,13 +340,16 @@ const getAccountTypeIcon = (type: string) => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="">All Types</SelectItem>
-                            <SelectItem value="cash">Cash</SelectItem>
-                            <SelectItem value="savings">Savings</SelectItem>
-                            <SelectItem value="credit">Credit</SelectItem>
-                            <SelectItem value="investment">Investment</SelectItem>
+                            <SelectItem 
+                                v-for="accountType in getAvailableTypes()" 
+                                :key="accountType" 
+                                :value="accountType"
+                            >
+                                {{ accountType.charAt(0).toUpperCase() + accountType.slice(1).replace('_', ' ') }}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select v-model="perPage" @update:modelValue="search">
+                    <Select v-model="perPage">
                         <SelectTrigger class="w-full text-xs sm:w-auto sm:text-sm">
                             <SelectValue placeholder="Per page" />
                         </SelectTrigger>
@@ -282,6 +369,9 @@ const getAccountTypeIcon = (type: string) => {
                             <h2 class="font-serif text-base sm:text-lg">Accounts</h2>
                             <p class="text-muted-foreground mt-1 text-xs sm:text-sm">
                                 Showing {{ accounts.data.length }} of {{ accounts.total }} accounts
+                                <span v-if="typeFilter" class="ml-2 font-medium">
+                                    (Filtered by: {{ typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1).replace('_', ' ') }})
+                                </span>
                             </p>
                         </div>
 
@@ -324,9 +414,12 @@ const getAccountTypeIcon = (type: string) => {
                                                 {{ account.budget_name }}
                                             </TableCell>
                                             <TableCell class="font-semibold">
-                                                <span :class="account.balance >= 0 ? 'text-green-600' : 'text-red-600'">
-                                                    {{ formatCurrency(account.balance) }}
-                                                </span>
+                                                <div>
+                                                    <span :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'">
+                                                        {{ formatCurrency(displayBalance(account).amount) }}
+                                                    </span>
+                                                    <div class="text-xs text-gray-500">{{ displayBalance(account).label }}</div>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 {{ account.interest > 0 ? formatPercentage(account.interest) : '-' }}
@@ -358,13 +451,16 @@ const getAccountTypeIcon = (type: string) => {
                                                     </div>
                                                     <div class="space-y-2">
                                                         <div>
-                                                            <strong>Balance:</strong>
+                                                            <strong>{{ displayBalance(account).label }}:</strong>
                                                             <span
-                                                                :class="account.balance >= 0 ? 'text-green-600' : 'text-red-600'"
-                                                                class="font-semibold"
+                                                                :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'"
+                                                                class="font-semibold ml-2"
                                                             >
-                                                                {{ formatCurrency(account.balance) }}
+                                                                {{ formatCurrency(displayBalance(account).amount) }}
                                                             </span>
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                Raw Balance: {{ formatCurrency(account.balance) }}
+                                                            </div>
                                                         </div>
                                                         <div>
                                                             <strong>Interest Rate:</strong>
@@ -412,9 +508,9 @@ const getAccountTypeIcon = (type: string) => {
 
                                     <div class="flex items-center justify-between">
                                         <div class="text-xs">
-                                            <Badge class="font-medium">Balance:</Badge>
-                                            <span :class="account.balance >= 0 ? 'text-green-600' : 'text-red-600'" class="ml-1 font-semibold">
-                                                {{ formatCurrency(account.balance) }}
+                                            <Badge class="font-medium">{{ displayBalance(account).label }}:</Badge>
+                                            <span :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'" class="ml-1 font-semibold">
+                                                {{ formatCurrency(displayBalance(account).amount) }}
                                             </span>
                                         </div>
                                         <div class="text-muted-foreground text-xs">

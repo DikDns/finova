@@ -58,14 +58,35 @@ class AccountsController extends Controller
         });
 
         $totalAccounts = Account::count();
-        $totalBalance = Account::sum('balance') ?: 0;
+        
+        // Calculate total balance correctly - subtract loan balances
+        $assetsBalance = Account::whereIn('type', ['cash', 'savings', 'investment'])
+            ->sum('balance') ?: 0;
+        $creditBalance = Account::where('type', 'like', '%credit%')
+            ->sum('balance') ?: 0; // Credit balances are usually negative
+        $loanBalance = Account::where('type', 'loan')
+            ->sum('balance') ?: 0; // Loan balances are usually negative
+        
+        // Net worth calculation: Assets - Liabilities
+        $totalBalance = $assetsBalance + $creditBalance + $loanBalance; // Since credit and loan are negative, adding them subtracts
+        
         $averageBalance = $totalAccounts > 0 ? $totalBalance / $totalAccounts : 0;
+
+        // Get all unique account types from database
+        $availableTypes = Account::distinct()
+            ->pluck('type')
+            ->filter() // Remove null values
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
         $accountsByType = [
             'cash' => Account::where('type', 'cash')->count(),
             'savings' => Account::where('type', 'savings')->count(),
             'credit' => Account::where('type', 'like', '%credit%')->count(),
             'investment' => Account::where('type', 'investment')->count(),
+            'loan' => Account::where('type', 'loan')->count(),
         ];
 
         return Inertia::render('admin/AdminAccount', [
@@ -85,6 +106,7 @@ class AccountsController extends Controller
             'totalBalance' => $totalBalance,
             'averageBalance' => $averageBalance,
             'accountsByType' => $accountsByType,
+            'availableTypes' => $availableTypes,
         ]);
     }
 
@@ -123,7 +145,16 @@ class AccountsController extends Controller
     public function getAccountStats()
     {
         $totalAccounts = Account::count();
-        $totalBalance = Account::sum('balance') ?: 0;
+        
+        // Calculate net worth correctly
+        $assetsBalance = Account::whereIn('type', ['cash', 'savings', 'investment'])
+            ->sum('balance') ?: 0;
+        $creditBalance = Account::where('type', 'like', '%credit%')
+            ->sum('balance') ?: 0;
+        $loanBalance = Account::where('type', 'loan')
+            ->sum('balance') ?: 0;
+        
+        $totalBalance = $assetsBalance + $creditBalance + $loanBalance;
         $averageBalance = $totalAccounts > 0 ? $totalBalance / $totalAccounts : 0;
 
         $accountsByType = [
@@ -131,6 +162,7 @@ class AccountsController extends Controller
             'savings' => Account::where('type', 'savings')->count(),
             'credit' => Account::where('type', 'like', '%credit%')->count(),
             'investment' => Account::where('type', 'investment')->count(),
+            'loan' => Account::where('type', 'loan')->count(),
         ];
 
         $balanceByType = [
@@ -138,22 +170,8 @@ class AccountsController extends Controller
             'savings' => Account::where('type', 'savings')->sum('balance') ?: 0,
             'credit' => Account::where('type', 'like', '%credit%')->sum('balance') ?: 0,
             'investment' => Account::where('type', 'investment')->sum('balance') ?: 0,
+            'loan' => Account::where('type', 'loan')->sum('balance') ?: 0,
         ];
-
-        $topAccounts = Account::with(['budget.user'])
-            ->orderBy('balance', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($account) {
-                return [
-                    'id' => (string) $account->id,
-                    'name' => $account->name,
-                    'type' => $account->type,
-                    'balance' => (float) $account->balance,
-                    'user_name' => $account->budget && $account->budget->user ? $account->budget->user->name : 'Unknown User',
-                    'budget_name' => $account->budget ? $account->budget->name : 'Unknown Budget',
-                ];
-            });
 
         return response()->json([
             'totalAccounts' => $totalAccounts,
@@ -161,7 +179,6 @@ class AccountsController extends Controller
             'averageBalance' => $averageBalance,
             'accountsByType' => $accountsByType,
             'balanceByType' => $balanceByType,
-            'topAccounts' => $topAccounts,
         ]);
     }
 }
