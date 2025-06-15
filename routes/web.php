@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryBudgetController;
@@ -61,6 +62,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/category-budgets/{categoryBudget}', [CategoryBudgetController::class, 'update'])->name('category-budgets.update');
 
     Route::post('/monthly-budgets/store', [MonthlyBudgetController::class, 'store'])->name('monthly-budgets.store');
+
+    Route::post('/ai/chat', [AIController::class, 'chat'])->name('ai.chat');
 });
 
 require __DIR__ . '/settings.php';
