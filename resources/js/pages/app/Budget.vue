@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AISideBar from '@/components/budgets/AISideBar.vue';
 import Accordion from '@/components/ui/accordion/Accordion.vue';
 import AccordionContent from '@/components/ui/accordion/AccordionContent.vue';
 import AccordionItem from '@/components/ui/accordion/AccordionItem.vue';
@@ -16,19 +17,26 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type Budget } from '@/types';
+import { formatCurrency } from '@/lib/utils';
+import type { AccountType, Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Props {
     budget: Budget;
+    account_types: AccountType[];
 }
 
 const props = defineProps<Props>();
+const showSidebar = ref(false);
 
 // Current month state
 const currentMonth = ref(new Date());
+const showMonthlyBudgetDialog = ref(false);
+const newMonthDate = ref<Date | null>(null);
+const isNextMonth = ref(false);
 
 // Editing states
 const editingGroupId = ref<string | null>(null);
@@ -51,35 +59,84 @@ const showDeleteCategoryDialog = ref(false);
 const groupToDelete = ref<{ id: string; name: string } | null>(null);
 const categoryToDelete = ref<{ id: string; name: string } | null>(null);
 
-// Format currency
-const formatCurrency = (amount: number, currencyCode = 'IDR') => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
-
-// Format month
+// Format month for display
 const formattedMonth = computed(() => {
     return currentMonth.value.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 });
+
+// Format month for API
+const formatMonthForAPI = (date: Date) => {
+    return date.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' });
+};
+
+// Check if monthly budget exists
+const hasMonthlyBudget = (date: Date) => {
+    const monthStr = formatMonthForAPI(date);
+    return props.budget.monthly_budgets?.some((mb) => mb.month === monthStr) ?? false;
+};
 
 // Navigate to previous month
 const goToPrevMonth = () => {
     const newDate = new Date(currentMonth.value);
     newDate.setMonth(newDate.getMonth() - 1);
-    currentMonth.value = newDate;
+
+    if (!hasMonthlyBudget(newDate)) {
+        newMonthDate.value = newDate;
+        isNextMonth.value = false;
+        showMonthlyBudgetDialog.value = true;
+    } else {
+        currentMonth.value = newDate;
+    }
 };
 
 // Navigate to next month
 const goToNextMonth = () => {
     const newDate = new Date(currentMonth.value);
     newDate.setMonth(newDate.getMonth() + 1);
-    currentMonth.value = newDate;
+
+    if (!hasMonthlyBudget(newDate)) {
+        newMonthDate.value = newDate;
+        isNextMonth.value = true;
+        showMonthlyBudgetDialog.value = true;
+    } else {
+        currentMonth.value = newDate;
+    }
 };
-console.log(props.budget);
+
+// Create new monthly budget
+const createMonthlyBudget = async () => {
+    if (!newMonthDate.value) return;
+
+    isLoading.value = true;
+    router.post(
+        route('monthly-budgets.store'),
+        {
+            budget_id: props.budget.id,
+            month: newMonthDate.value,
+            reference_month: currentMonth.value,
+        },
+        {
+            onSuccess: () => {
+                showMonthlyBudgetDialog.value = false;
+                newMonthDate.value = null;
+                toast.success('Budget bulanan berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating monthly budget:', errors);
+                toast.error('Gagal membuat budget bulanan', { description: errors.error[0] });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
+};
+
+// Cancel monthly budget creation
+const cancelMonthlyBudget = () => {
+    showMonthlyBudgetDialog.value = false;
+    newMonthDate.value = null;
+};
 
 // CRUD Functions
 const startEditingGroup = (groupId: string, groupName: string) => {
@@ -146,32 +203,54 @@ const saveGroupEdit = async () => {
     if (!editingGroupId.value || !editingGroupName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-groups.update', editingGroupId.value), {
+    router.put(
+        route('category-groups.update', editingGroupId.value),
+        {
             name: editingGroupName.value.trim(),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Grup kategori berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating group:', errors);
+                toast.error('Gagal memperbarui grup kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveCategoryEdit = async () => {
     if (!editingCategoryId.value || !editingCategoryName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('categories.update', editingCategoryId.value), {
+    router.put(
+        route('categories.update', editingCategoryId.value),
+        {
             name: editingCategoryName.value.trim(),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Kategori berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating category:', errors);
+                toast.error('Gagal memperbarui kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveAllocatedEdit = async () => {
@@ -181,16 +260,27 @@ const saveAllocatedEdit = async () => {
     if (isNaN(amount) || amount < 0) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-budgets.update', editingAllocatedBudgetId.value), {
+    router.put(
+        route('category-budgets.update', editingAllocatedBudgetId.value),
+        {
             assigned: amount,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating allocated amount:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Jumlah alokasi berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating allocated amount:', errors);
+                toast.error('Gagal memperbarui jumlah alokasi', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveTargetEdit = async () => {
@@ -200,16 +290,27 @@ const saveTargetEdit = async () => {
     if (isNaN(amount) || amount < 0) return;
 
     isLoading.value = true;
-    try {
-        router.put(route('category-budgets.update', editingTargetBudgetId.value), {
+    router.put(
+        route('category-budgets.update', editingTargetBudgetId.value),
+        {
             available: amount,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error updating target amount:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Target budget berhasil diperbarui');
+            },
+            onError: (errors) => {
+                console.error('Error updating target amount:', errors);
+                toast.error('Gagal memperbarui target budget', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const deleteGroup = (groupId: string, groupName: string) => {
@@ -221,15 +322,22 @@ const confirmDeleteGroup = async () => {
     if (!groupToDelete.value) return;
 
     isLoading.value = true;
-    try {
-        router.delete(route('category-groups.destroy', groupToDelete.value.id));
-        showDeleteGroupDialog.value = false;
-        groupToDelete.value = null;
-    } catch (error) {
-        console.error('Error deleting group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    router.delete(route('category-groups.destroy', groupToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteGroupDialog.value = false;
+            groupToDelete.value = null;
+            toast.success('Grup kategori berhasil dihapus');
+        },
+        onError: (errors) => {
+            console.error('Error deleting group:', errors);
+            toast.error('Gagal menghapus grup kategori', {
+                description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
 };
 
 const deleteCategory = (categoryId: string, categoryName: string) => {
@@ -241,15 +349,22 @@ const confirmDeleteCategory = async () => {
     if (!categoryToDelete.value) return;
 
     isLoading.value = true;
-    try {
-        router.delete(route('categories.destroy', categoryToDelete.value.id));
-        showDeleteCategoryDialog.value = false;
-        categoryToDelete.value = null;
-    } catch (error) {
-        console.error('Error deleting category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    router.delete(route('categories.destroy', categoryToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteCategoryDialog.value = false;
+            categoryToDelete.value = null;
+            toast.success('Kategori berhasil dihapus');
+        },
+        onError: (errors) => {
+            console.error('Error deleting category:', errors);
+            toast.error('Gagal menghapus kategori', {
+                description: errors.error[0],
+            });
+        },
+        onFinish: () => {
+            isLoading.value = false;
+        },
+    });
 };
 
 const startCreatingGroup = () => {
@@ -276,35 +391,57 @@ const saveNewGroup = async () => {
     if (!newGroupName.value.trim()) return;
 
     isLoading.value = true;
-    try {
-        router.post(route('category-groups.store'), {
+    router.post(
+        route('category-groups.store'),
+        {
             name: newGroupName.value.trim(),
             budget_id: props.budget.id,
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error creating group:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Grup kategori berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating group:', errors);
+                toast.error('Gagal membuat grup kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const saveNewCategory = async () => {
     if (!newCategoryName.value.trim() || !isCreatingCategory.value) return;
 
     isLoading.value = true;
-    try {
-        router.post(route('categories.store'), {
+    router.post(
+        route('categories.store'),
+        {
             name: newCategoryName.value.trim(),
             category_group_id: isCreatingCategory.value,
             monthly_budget_ids: props.budget.monthly_budgets.map((mb) => mb.id),
-        });
-        cancelEditing();
-    } catch (error) {
-        console.error('Error creating category:', error);
-    } finally {
-        isLoading.value = false;
-    }
+        },
+        {
+            onSuccess: () => {
+                cancelEditing();
+                toast.success('Kategori berhasil dibuat');
+            },
+            onError: (errors) => {
+                console.error('Error creating category:', errors);
+                toast.error('Gagal membuat kategori', {
+                    description: errors.error[0],
+                });
+            },
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 const cancelEditing = () => {
@@ -376,7 +513,12 @@ const groupedCategories = computed(() => {
 <template>
     <Head :title="`${props.budget.name}`" />
 
-    <AppLayout :budget_id="props.budget.id">
+    <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
+        <div class="absolute top-4 right-4 z-40">
+            <button @click="showSidebar = true" class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 text-white shadow">
+                AI Assistant
+            </button>
+        </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">
                 <!-- Header with month selector -->
@@ -636,10 +778,10 @@ const groupedCategories = computed(() => {
                                                     @keyup.enter="saveAllocatedEdit"
                                                     @keyup.escape="cancelEditing"
                                                 />
-                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit">
+                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit" :disabled="isLoading">
                                                     <Check class="h-3 w-3" />
                                                 </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
                                                     <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -648,6 +790,7 @@ const groupedCategories = computed(() => {
                                             v-else
                                             class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
                                             @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
+                                            :disabled="isLoading"
                                         >
                                             <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
                                         </div>
@@ -666,10 +809,10 @@ const groupedCategories = computed(() => {
                                                     @keyup.enter="saveTargetEdit"
                                                     @keyup.escape="cancelEditing"
                                                 />
-                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit">
+                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit" :disabled="isLoading">
                                                     <Check class="h-3 w-3" />
                                                 </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing">
+                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
                                                     <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -678,6 +821,7 @@ const groupedCategories = computed(() => {
                                             v-else
                                             class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
                                             @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
+                                            :disabled="isLoading"
                                         >
                                             <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
                                                 formatCurrency(category.target, budget.currency_code)
@@ -685,19 +829,22 @@ const groupedCategories = computed(() => {
                                         </div>
                                     </div>
                                     <div
-                                        class="w-32 flex-shrink-0 text-right font-medium"
+                                        class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
                                         :class="[
                                             category.spent >= 0 ? 'text-green-500' : 'text-red-500',
                                             category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
                                         ]"
                                     >
-                                        {{ formatCurrency(category.spent, budget.currency_code) }}
+                                        <span> {{ formatCurrency(category.spent, budget.currency_code) }}</span>
                                     </div>
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
                 </main>
+
+                <!-- AI Sidebar -->
+                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
             </div>
         </div>
 
@@ -734,6 +881,24 @@ const groupedCategories = computed(() => {
                     <AlertDialogAction @click="confirmDeleteCategory" :disabled="isLoading" variant="destructive">
                         {{ isLoading ? 'Menghapus...' : 'Hapus' }}
                     </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <!-- Monthly Budget Creation Dialog -->
+        <AlertDialog :open="showMonthlyBudgetDialog" @update:open="showMonthlyBudgetDialog = $event">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Buat Budget Bulanan Baru</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Budget untuk bulan {{ newMonthDate?.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }} belum tersedia. Apakah
+                        Anda ingin membuat budget baru dengan menggunakan target dari bulan
+                        {{ currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) }}?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="cancelMonthlyBudget">Batal</AlertDialogCancel>
+                    <AlertDialogAction @click="createMonthlyBudget">Buat Budget</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

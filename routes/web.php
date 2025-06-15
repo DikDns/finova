@@ -1,11 +1,13 @@
 <?php
 
-use App\Http\Controllers\AccountsController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryBudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryGroupController;
+use App\Http\Controllers\MonthlyBudgetController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,7 +32,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
-    Route::get('/budgets/{budget}/accounts', [AccountsController::class, 'index'])->name('budget.accounts');
+    Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
+
+    Route::get('/budgets/{budget}/accounts/{account}', [AccountController::class, 'show'])->name('budget.accounts.show');
+
+
+    // Account Routes
+    Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+    Route::put('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
+    Route::delete('/accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
+
+    // Transaction Routes
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');
@@ -44,6 +59,8 @@ Route::middleware('auth')->group(function () {
 
     // Category Budget Routes
     Route::put('/category-budgets/{categoryBudget}', [CategoryBudgetController::class, 'update'])->name('category-budgets.update');
+
+    Route::post('/monthly-budgets/store', [MonthlyBudgetController::class, 'store'])->name('monthly-budgets.store');
 });
 
 require __DIR__ . '/settings.php';

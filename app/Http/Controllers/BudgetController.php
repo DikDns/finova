@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Budget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
@@ -37,10 +38,16 @@ class BudgetController extends Controller
                 $query->orderBy('month', 'desc');
             },
             'categoryGroups.categories.categoryBudgets.monthlyBudget',
+            'accounts'
         ]);
 
+        // Get accounts grouped by type
+        $accounts = $budget->accounts;
+        $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
+
         return Inertia::render('app/Budget', [
-            'budget' => $budget
+            'budget' => $budget,
+            'account_types' => $accountTypes
         ]);
     }
 
@@ -66,7 +73,7 @@ class BudgetController extends Controller
     {
         // Ensure the user can only update their own budgets
         if ($budget->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki izin untuk mengakses budget ini.');
         }
 
         $validated = $request->validate([
@@ -75,12 +82,23 @@ class BudgetController extends Controller
             'currency_code' => 'required|string|in:IDR,USD,JPY,GBP',
         ]);
 
-        $budget->name = $validated['name'];
-        $budget->description = $validated['description'] ?? $budget->description;
-        $budget->currency_code = $validated['currency_code'];
-        $budget->save();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->back();
+            $budget->name = $validated['name'];
+            $budget->description = $validated['description'] ?? $budget->description;
+            $budget->save();
+
+            DB::commit();
+
+            return redirect()->route('budget', $budget)->with('success', 'Budget berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal memperbarui budget: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     /**
@@ -90,12 +108,61 @@ class BudgetController extends Controller
     {
         // Ensure the user can only delete their own budgets
         if ($budget->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki izin untuk mengakses budget ini.');
         }
 
-        $budget->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->back();
+            // Check if budget has any related data
+            $hasAccounts = $budget->accounts()->exists();
+            $hasCategories = $budget->categoryGroups()->exists();
+            $hasMonthlyBudgets = $budget->monthlyBudgets()->exists();
+
+            if ($hasAccounts || $hasCategories || $hasMonthlyBudgets) {
+                throw new \Exception('Tidak dapat menghapus budget yang memiliki data terkait (akun, kategori, atau budget bulanan).');
+            }
+
+            $budget->delete();
+
+            DB::commit();
+
+            return redirect()->route('budgets')->with('success', 'budget berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Format accounts data for the sidebar component
+     */
+    private function formatAccountTypes($accounts, $budgetId)
+    {
+        $groupedAccounts = $accounts->groupBy('type');
+        $accountTypes = [];
+
+        foreach ($groupedAccounts as $type => $typeAccounts) {
+            $formattedAccounts = $typeAccounts->map(function ($account) use ($budgetId) {
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'url' => "/budgets/{$budgetId}/accounts/{$account->id}",
+                    'balance' => (float) $account->balance
+                ];
+            })->toArray();
+
+            $accountTypes[] = [
+                'id' => $type,
+                'type' => $type,
+                'isActive' => false,
+                'accounts' => $formattedAccounts
+            ];
+        }
+
+        return $accountTypes;
     }
 
     public function recent()

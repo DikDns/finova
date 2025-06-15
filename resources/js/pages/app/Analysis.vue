@@ -1,101 +1,95 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import DonutChart from '@/components/ui/chart/DonutChart.vue';
 import ButtonAi from '@/components/ui/button/ButtonAi.vue';
-import { type Budget } from '@/types';
+import DonutChart from '@/components/ui/chart/DonutChart.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { AccountType, Budget } from '@/types';
 import { Head } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface Props {
     budget: Budget;
+    account_types: AccountType[];
 }
 
 const props = defineProps<Props>();
 
-// Sample data 
+// Sample data
 const expenseData = ref([
-  {
-    category: 'KPR',
-    amount: 250000,
-    percentage: 77,
-    color: '#2563eb',
-    icon: '🏠'
-  },
-  {
-    category: 'Listrik',
-    amount: 100000,
-    percentage: 22,
-    color: '#16a34a',
-    icon: '⚡'
-  },
-  {
-    category: 'Belanja',
-    amount: 150000,
-    percentage: 34,
-    color: '#dc2626',
-    icon: '🛒'
-  },
-  {
-    category: 'Bensin',
-    amount: 80000,
-    percentage: 22,
-    color: '#ea580c',
-    icon: '⛽'
-  }
+    {
+        category: 'KPR',
+        amount: 250000,
+        percentage: 77,
+        color: '#2563eb',
+        icon: '🏠',
+    },
+    {
+        category: 'Listrik',
+        amount: 100000,
+        percentage: 22,
+        color: '#16a34a',
+        icon: '⚡',
+    },
+    {
+        category: 'Belanja',
+        amount: 150000,
+        percentage: 34,
+        color: '#dc2626',
+        icon: '🛒',
+    },
+    {
+        category: 'Bensin',
+        amount: 80000,
+        percentage: 22,
+        color: '#ea580c',
+        icon: '⛽',
+    },
 ]);
 
 const totalExpense = computed(() => {
-  return expenseData.value.reduce((total, item) => total + item.amount, 0);
+    return expenseData.value.reduce((total, item) => total + item.amount, 0);
 });
 
 const monthlyAverage = computed(() => {
-  return Math.round(totalExpense.value / 12);
+    return Math.round(totalExpense.value / 12);
 });
 
 const dailyAverage = computed(() => {
-  return Math.round(totalExpense.value / 30);
+    return Math.round(totalExpense.value / 30);
 });
 
 const mostActiveCategory = computed(() => {
-  return expenseData.value.reduce((prev, current) => 
-    prev.percentage > current.percentage ? prev : current
-  );
+    return expenseData.value.reduce((prev, current) => (prev.percentage > current.percentage ? prev : current));
 });
 
 const largestExpense = computed(() => {
-  return Math.max(...expenseData.value.map(item => item.amount));
+    return Math.max(...expenseData.value.map((item) => item.amount));
 });
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
 };
 
 // AI Assistant functionality
 const handleAIAssistant = () => {
-  // Handle AI Assistant logic here
-  console.log('AI Assistant clicked');
+    // Handle AI Assistant logic here
+    console.log('AI Assistant clicked');
 };
 </script>
 
 <template>
     <Head title="Analisis Keuangan" />
 
-    <AppLayout :budget_id="props.budget.id">
+    <AppLayout :budget_id="props.budget.id" :currency_code="props.budget.currency_code" :account_types="props.account_types">
         <div class="analysis-page">
             <!-- Header -->
             <div class="header">
                 <h1 class="title">Analisa</h1>
-                <ButtonAi 
-                    @click="handleAIAssistant"
-                    class="ai-assistant-btn"
-                >
-                    AI Assistant
-                </ButtonAi>
+                <ButtonAi @click="handleAIAssistant" class="ai-assistant-btn"> AI Assistant </ButtonAi>
             </div>
 
             <!-- Analysis Container -->
@@ -108,24 +102,17 @@ const handleAIAssistant = () => {
                             <p class="chart-subtitle">{{ formatCurrency(totalExpense) }}</p>
                         </div>
                     </div>
-                    
+
                     <DonutChart :data="expenseData" />
-                    
+
                     <!-- Chart Legend -->
                     <div class="chart-legend">
-                        <div 
-                            v-for="item in expenseData" 
-                            :key="item.category"
-                            class="legend-item"
-                        >
-                            <div 
-                                class="legend-color" 
-                                :style="{ backgroundColor: item.color }"
-                            ></div>
+                        <div v-for="item in expenseData" :key="item.category" class="legend-item">
+                            <div class="legend-color" :style="{ backgroundColor: item.color }"></div>
                             <span class="legend-text">{{ item.category }}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Stats Grid -->
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -155,13 +142,9 @@ const handleAIAssistant = () => {
                             <p class="chart-subtitle">Berdasarkan Persentase</p>
                         </div>
                     </div>
-                    
+
                     <div class="category-list">
-                        <div 
-                            v-for="item in expenseData" 
-                            :key="item.category"
-                            class="category-item"
-                        >
+                        <div v-for="item in expenseData" :key="item.category" class="category-item">
                             <div class="category-info">
                                 <span class="category-icon">{{ item.icon }}</span>
                                 <span class="category-name">{{ item.category }}</span>
@@ -197,7 +180,6 @@ const handleAIAssistant = () => {
     font-weight: 600;
     color: #1f2937;
 }
-
 
 .ai-assistant-btn:hover {
     transform: translateY(-1px);
@@ -332,17 +314,16 @@ const handleAIAssistant = () => {
     color: #6b7280;
 }
 
-
 /* Responsive */
 @media (max-width: 768px) {
     .analysis-container {
         grid-template-columns: 1fr;
     }
-    
+
     .ai-assistant-sidebar {
         width: 100%;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
