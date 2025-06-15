@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
-import AdminSideBar from '@/components/admin/AdminSideBar.vue'
+import AdminSideBarLayout from '@/components/admin/AdminSideBarLayout.vue'
 import {
   Table,
   TableBody,
@@ -80,15 +80,14 @@ watch(searchQuery, () => {
 
 <template>
   <div class="flex min-h-screen">
-    <Head title="Finova - Admin - User Log" />
+    <!-- <Head title="Finova - Admin - User Log" /> -->
+    <Head title="Finova - Admin - Subscription Log" />
 
     <!-- Import SideBar Component -->
-    <AdminSideBar />
+    <AdminSideBarLayout />
     
     <!-- Main Content -->
-    <main class="flex-1 lg:ml-52 pt-16 px-4 sm:px-6 lg:px-10 pb-10">
-      <Head title="Finova - Admin - Subscription Log" />
-
+    <main class="flex-1 pt-16 px-4 sm:px-6 lg:px-10 pb-10">
       <!-- Header Section -->
       <h1 class="text-primary text-2xl lg:text-4xl font-bold mb-2 font-serif">Subscription Log</h1>
       <p class="text-muted-foreground text-sm lg:text-base">Daftar aktivitas subscription pengguna dalam sistem</p>

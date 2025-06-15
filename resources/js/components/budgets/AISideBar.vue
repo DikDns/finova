@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { type SharedData, type User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { History, Plus, Send, X } from 'lucide-vue-next';
+import { marked } from 'marked';
 import { ref } from 'vue';
 
 defineProps({
     isOpen: Boolean,
+    reply: String,
 });
 
 const emit = defineEmits(['close']);
@@ -32,9 +35,8 @@ const handleSuggestionClick = (suggestion: string) => {
     handleSendMessage();
 };
 
-const handleSendMessage = () => {
+const handleSendMessage = async () => {
     if (message.value.trim()) {
-        // Hide suggestions after first message
         showSuggestions.value = false;
 
         if (!currentChatId.value) {
@@ -46,6 +48,7 @@ const handleSendMessage = () => {
                 messages: [],
             });
         }
+
         const userMessage = {
             id: Date.now(),
             text: message.value,
@@ -54,34 +57,30 @@ const handleSendMessage = () => {
 
         messages.value.push(userMessage);
 
-        // Add to current chat history
         const currentChat = chatHistory.value.find((chat) => chat.id === currentChatId.value);
-        if (currentChat) {
-            currentChat.messages.push(userMessage);
-        }
+        if (currentChat) currentChat.messages.push(userMessage);
 
+        const userInput = message.value;
         message.value = '';
 
-        // Simulate AI response with delay
-        setTimeout(() => {
+        try {
+            const res = await axios.post('/ai/chat', { message: userInput });
             const aiMessage = {
                 id: Date.now() + 1,
-                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                text: res.data.reply,
                 isUser: false,
             };
 
             messages.value.push(aiMessage);
-            // Add AI response to history
-            if (currentChat) {
-                currentChat.messages.push(aiMessage);
-            }
-        }, 1000);
-    }
-};
-
-const handleKeyPress = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-        handleSendMessage();
+            if (currentChat) currentChat.messages.push(aiMessage);
+        } catch (err) {
+            console.error(err);
+            messages.value.push({
+                id: Date.now() + 1,
+                text: 'Terjadi kesalahan saat menghubungi AI.',
+                isUser: false,
+            });
+        }
     }
 };
 
@@ -237,11 +236,12 @@ const deleteChatFromHistory = (chatId: number) => {
                             <div
                                 :class="[
                                     'max-w-xs rounded-lg px-3 py-2 text-sm lg:max-w-md',
-                                    msg.isUser ? 'rounded-br-none bg-blue-600 text-white' : 'rounded-bl-none bg-gray-100 text-gray-800',
+                                    msg.isUser
+                                        ? 'rounded-br-none bg-blue-600 text-white'
+                                        : 'prose max-w-full rounded-bl-none bg-gray-100 text-gray-800',
                                 ]"
-                            >
-                                {{ msg.text }}
-                            </div>
+                                v-html="msg.isUser ? msg.text : marked.parse(msg.text)"
+                            ></div>
                         </div>
                     </div>
                 </div>
@@ -255,7 +255,7 @@ const deleteChatFromHistory = (chatId: number) => {
                         type="text"
                         placeholder="Ketik / untuk memberikan konteks"
                         class="flex-1 border-none bg-transparent px-2 py-1 text-sm outline-none"
-                        @keypress="handleKeyPress"
+                        @keydown.enter="handleSendMessage"
                     />
                     <button
                         @click="handleSendMessage"
