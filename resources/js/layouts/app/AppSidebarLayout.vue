@@ -1,24 +1,23 @@
 <script setup lang="ts">
-import AppContent from '@/components/AppContent.vue';
-import AppShell from '@/components/AppShell.vue';
-import AppSidebar from '@/components/AppSidebar.vue';
-import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
-import type { BreadcrumbItemType } from '@/types';
+import AppContent from '@/components/common/AppContent.vue';
+import AppShell from '@/components/common/AppShell.vue';
+import AppSidebar from '@/components/common/AppSidebar.vue';
+import AppSidebarHeader from '@/components/common/AppSidebarHeader.vue';
+import type { AccountType } from '@/types';
+import { defineProps } from 'vue';
 
-interface Props {
-    breadcrumbs?: BreadcrumbItemType[];
-}
-
-withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
+defineProps<{
+    budget_id: string;
+    currency_code: string;
+    account_types?: AccountType[];
+}>();
 </script>
 
 <template>
     <AppShell variant="sidebar">
-        <AppSidebar />
+        <AppSidebar :budget_id="budget_id" :currency_code="currency_code" :account_types="account_types" />
         <AppContent variant="sidebar">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+            <AppSidebarHeader />
             <slot />
         </AppContent>
     </AppShell>

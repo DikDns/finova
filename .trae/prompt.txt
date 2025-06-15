@@ -1,0 +1,27 @@
+
+Analyze the current UI Composition in #File:Accounts.vue file.
+
+Based on the model in #File:Account, #File:Transaction, #Folder:Models, I want to implement some create, update, and delete features for the following data:
+1. Transaction data with table components in #Folder:table with pagination and limit
+2. Create transaction from the button above the table like in #File:Budget.vue, after click, it will pop up some dialog that the user needs to fill in the form and submit it.
+3. Edit transaction from the table with the same dialog mechanism
+4. Delete transaction from the table with alert dialog confirmation #Folder:alert-dialog
+5. Use select for the account_id and category_id selection, account_id is a must but category_id can be null
+
+For this specific request, what solution can you suggest and do it!
+
+
+Analyze the current UI Composition in #File:Accounts.vue file.
+
+Based on the current UI, there is a lot of problems including:
+1. The table is rendered all of the transactions, add some pagination and limit by analyzing #File:AccountController.php
+2. A lot of issues with the dialog component being used here, including:
+a. The dialog is not closed when clicked outside the dialog
+b. The dialog is rendered multiple? idk?
+c. Other issue you need to check the #Docs
+3. Change the 'add transaction' button into left analyzing
+4. the page is not in bahasa indonesia, translate the content into bahasa indonesia!
+5. The date input picker is not using date picker from shadcn-vue #Docs
+6. I can't click the account and category select component
+
+Fix the issues step by step

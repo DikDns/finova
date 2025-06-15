@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -25,15 +26,23 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'current_password' => ['required', 'current_password'],
+                'password' => ['required', Password::defaults(), 'confirmed'],
+            ]);
 
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+            return DB::transaction(function () use ($request, $validated) {
+                $request->user()->update([
+                    'password' => Hash::make($validated['password']),
+                ]);
 
-        return back();
+                return back()->with('success', 'Password berhasil diperbarui.');
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'error' => 'Terjadi kesalahan saat memperbarui password: ' . $e->getMessage(),
+            ]);
+        }
     }
 }
