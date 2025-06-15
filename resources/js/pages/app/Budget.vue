@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AISideBar from '@/components/budgets/AISideBar.vue';
 import Accordion from '@/components/ui/accordion/Accordion.vue';
 import AccordionContent from '@/components/ui/accordion/AccordionContent.vue';
 import AccordionItem from '@/components/ui/accordion/AccordionItem.vue';
@@ -17,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/lib/utils';
-import type {  AccountType, Budget } from '@/types';
+import type { AccountType, Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const showSidebar = ref(false);
 
 // Current month state
 const currentMonth = ref(new Date());
@@ -512,6 +514,11 @@ const groupedCategories = computed(() => {
     <Head :title="`${props.budget.name}`" />
 
     <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
+        <div class="absolute top-4 right-4 z-40">
+            <button @click="showSidebar = true" class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 text-white shadow">
+                AI Assistant
+            </button>
+        </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">
                 <!-- Header with month selector -->
@@ -835,6 +842,9 @@ const groupedCategories = computed(() => {
                         </AccordionItem>
                     </Accordion>
                 </main>
+
+                <!-- AI Sidebar -->
+                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
             </div>
         </div>
 

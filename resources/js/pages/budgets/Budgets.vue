@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import BudgetsSidebarLayout from '@/layouts/budgets/BudgetsSidebarLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Edit2, Plus, Trash2, Wallet } from 'lucide-vue-next';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ref } from 'vue';
 
 interface Budget {
     id: string;
     name: string;
     description: string;
+    currency_code: string;
     created_at: string;
     updated_at: string;
 }
@@ -34,6 +36,7 @@ const budgetToEdit = ref<Budget | null>(null);
 const form = useForm({
     name: '',
     description: '',
+    currency_code: '',
 });
 
 // Format the last used time
@@ -85,8 +88,12 @@ const openEditDialog = (budget: Budget) => {
     budgetToEdit.value = budget;
     form.name = budget.name;
     form.description = budget.description;
+    form.currency_code = budget.currency_code;
     showEditDialog.value = true;
 };
+
+// dropdown options for currency code
+const currencyOptions = ['IDR', 'USD'];
 
 // Function to update the budget
 const updateBudget = () => {
@@ -145,6 +152,13 @@ const cancelEdit = () => {
                                 <Trash2 class="h-5 w-5" />
                             </Button>
                         </div>
+                        <!-- Edit button (desktop) -->
+                        <div class="absolute top-2 right-11 hidden md:hidden group-hover:md:block">
+                            <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-primary" @click="openEditDialog(budget)">
+                                <Edit2 class="h-5 w-5" />
+                            </Button>
+                        </div>
+
                         <!-- Mobile actions -->
                         <div class="flex flex-col gap-2 border-t p-4 md:hidden">
                             <Button variant="outline" size="sm" @click="openEditDialog(budget)">
@@ -210,6 +224,24 @@ const cancelEdit = () => {
                     <div class="space-y-2">
                         <Label for="description">Deskripsi</Label>
                         <Input id="description" v-model="form.description" type="text" placeholder="Deskripsi budget" />
+                    </div>
+
+                     <div class="space-y-2">
+                        <Label for="currency_code">Mata Uang</Label>
+                        <Select v-model="form.currency_code">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Pilih mata uang" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                            v-for="currency in currencyOptions"
+                            :key="currency"
+                            :value="currency"
+                            >
+                            {{ currency }}
+                            </SelectItem>
+                        </SelectContent>
+                        </Select>
                     </div>
 
                     <DialogFooter>

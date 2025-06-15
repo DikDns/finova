@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserLog;
+use App\Models\User;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class UserLogController extends Controller
+class DashboardController extends Controller
 {
     public function index(Request $request)
     {
@@ -48,7 +50,24 @@ class UserLogController extends Controller
             ];
         });
 
-        return Inertia::render('admin/UserLog', [
+        // Hitung total users dan subscriptions dari database
+        $totalUsers = User::count();
+        $totalSubscriptions = Subscription::count();
+
+        // Hitung pertumbuhan dari bulan sebelumnya
+        $currentMonth = now()->startOfMonth();
+        $lastMonth = now()->subMonth()->startOfMonth();
+        $lastMonthEnd = now()->subMonth()->endOfMonth();
+
+        // Users bulan lalu
+        $usersLastMonth = User::where('created_at', '<=', $lastMonthEnd)->count();
+        $usersGrowth = $usersLastMonth > 0 ? round((($totalUsers - $usersLastMonth) / $usersLastMonth) * 100, 1) : 0;
+
+        // Subscriptions bulan lalu
+        $subscriptionsLastMonth = Subscription::where('created_at', '<=', $lastMonthEnd)->count();
+        $subscriptionsGrowth = $subscriptionsLastMonth > 0 ? round((($totalSubscriptions - $subscriptionsLastMonth) / $subscriptionsLastMonth) * 100, 1) : 0;
+
+        return Inertia::render('admin/AdminDashboard', [
             'userLogs' => [
                 'data' => $transformedLogs,
                 'current_page' => $userLogs->currentPage(),
@@ -59,7 +78,11 @@ class UserLogController extends Controller
             'filters' => [
                 'search' => $search,
                 'per_page' => $perPage,
-            ]
+            ],
+            'totalUsers' => $totalUsers,
+            'totalSubscriptions' => $totalSubscriptions,
+            'usersGrowth' => $usersGrowth,
+            'subscriptionsGrowth' => $subscriptionsGrowth,
         ]);
     }
 }

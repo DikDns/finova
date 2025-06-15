@@ -28,6 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
     Route::get('/budgets/recent', [BudgetController::class, 'recent'])->name('budget.recent');
     Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->name('budget');
+    Route::put('/budgets/{budget}', [BudgetController::class, 'update'])->name('budgets.update');
+    Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
     Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');

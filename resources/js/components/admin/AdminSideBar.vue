@@ -1,144 +1,156 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import SheetHeader from '@/components/ui/sheet/SheetHeader.vue'
-import SheetTitle from '@/components/ui/sheet/SheetTitle.vue'
-import SheetDescription from '@/components/ui/sheet/SheetDescription.vue'
-import { Button } from '@/components/ui/button'
-import { router } from '@inertiajs/vue3'
-import { UserCircle2, Menu } from 'lucide-vue-next'
+import { ref, type Component } from 'vue';
+import FinovaLogo from '@/components/common/FinovaLogo.vue';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { LayoutDashboard, ChevronUp, LogOut, Settings, Menu, X, Receipt, WalletCards } from 'lucide-vue-next';
 
-export interface MenuItem {
-  name: string
-  route: string
-}
+// Sidebar Item Type
+type SidebarItem = {
+  title: string;
+  href: string;
+  icon: Component;
+};
 
-defineProps<{
-  items?: MenuItem[]
-  user?: {
-    name: string
-    email: string
-  }
-}>()
+// Sidebar Menu Items
+const items: SidebarItem[] = [
+  { title: 'Dashboard', href: '/admin/admindashboard', icon: LayoutDashboard },
+  { title: 'Account', href: '/admin/adminaccount', icon: WalletCards },
+  { title: 'Subscription', href: '/admin/adminsubscription', icon: Receipt },
+];
 
-const defaultItems = [
-  { name: 'Dashboard', route: '/admin/dashboard' },
-  { name: 'Account', route: '/admin/account' },
-  { name: 'User Log', route: '/admin/userlog' },
-  { name: 'Subscription', route: '/admin/subscription' },
-  { name: 'Group Category', route: '/admin/group-category' },
-]
+// Admin Profile
+const adminProfile = {
+  name: 'Administrator',
+  email: 'admin@finova.com',
+  avatar: 'A',
+};
 
-const openMobile = ref(false)
-const setOpenMobile = (value: boolean) => {
-  openMobile.value = value
-}
+// Sidebar State
+const isMobileSidebarOpen = ref(false);
+
+// Handlers
+const toggleMobileSidebar = () => {
+  isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
+};
+
+const closeMobileSidebar = () => {
+  isMobileSidebarOpen.value = false;
+};
 
 const handleLogout = () => {
-  router.post('/logout')
-}
-
-// Expose mobile toggle function untuk digunakan dari parent
-defineExpose({
-  toggleMobile: () => setOpenMobile(!openMobile.value)
-})
+  console.log('Logging out...');
+  closeMobileSidebar();
+};
 </script>
 
 <template>
-  <!-- Mobile Header dengan hamburger menu -->
-  <div class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b px-4 py-3">
-    <div class="flex items-center justify-between">
-      <h1 class="text-lg font-bold font-serif">Admin Panel</h1>
-      <Sheet :open="openMobile" @update:open="setOpenMobile">
-        <SheetTrigger as-child>
-          <Button variant="ghost" size="sm" class="p-2">
-            <Menu class="w-5 h-5" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side="left"
-          class="w-64 p-0 flex flex-col font-serif"
-        >
-          <SheetHeader class="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Admin Sidebar</SheetDescription>
-          </SheetHeader>
-          
-          <!-- Profile Section Mobile -->
-          <div class="p-4 border-b">
-            <div class="flex items-center space-x-3">
-              <UserCircle2 class="w-8 h-8 text-muted-foreground" />
-              <div>
-                <p class="text-sm font-bold font-serif">Administrator</p>
-                <p class="text-xs text-muted-foreground font-serif">{{ user?.email }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <nav class="flex flex-col flex-grow space-y-1 p-4">
-            <RouterLink
-              v-for="item in items ?? defaultItems"
-              :key="item.route"
-              :to="item.route"
-              class="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2 rounded-md hover:bg-muted transition-colors font-serif"
-              @click="setOpenMobile(false)"
-            >
-              {{ item.name }}
-            </RouterLink>
-          </nav>
+  <div class="flex min-h-screen">
+    <!-- Mobile Toggle Button -->
+    <button
+      @click="toggleMobileSidebar"
+      class="lg:hidden fixed top-4 left-4 z-[60] p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+      :aria-label="isMobileSidebarOpen ? 'Close menu' : 'Open menu'"
+    >
+      <Menu v-if="!isMobileSidebarOpen" class="h-5 w-5 text-gray-700" />
+      <X v-else class="h-5 w-5 text-gray-700" />
+    </button>
 
-          <!-- Logout Section Mobile -->
-          <div class="p-4 border-t mt-auto">
-            <Button
-              variant="destructive"
-              size="sm"
-              as="button"
-              class="w-full font-serif"
-              @click="handleLogout"
-            >
-              Logout
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  </div>
+    <!-- Mobile Overlay -->
+    <div
+      v-if="isMobileSidebarOpen"
+      @click="closeMobileSidebar"
+      class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+    ></div>
 
-  <!-- Sidebar untuk desktop -->
-  <aside class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-52 lg:flex-col border-r z-40 font-serif bg-white dark:bg-gray-900">
-    <!-- Profile Section -->
-    <div class="p-4 border-b">
-      <div class="flex items-center space-x-3">
-        <UserCircle2 class="w-8 h-8 text-muted-foreground" />
-        <div>
-          <p class="text-lg font-serif text-primary">Administrator</p>
-          <p class="text-xs text-muted-foreground font-serif">{{ user?.email }}</p>
+    <!-- Sidebar -->
+    <Sidebar
+      variant="inset"
+      :class="[
+        'shadow-lg border-r border-gray-200 transition-all duration-300 ease-in-out',
+        'fixed z-50 h-full flex flex-col',
+        'lg:translate-x-0',
+        isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      ]"
+    >
+      <!-- Header -->
+      <SidebarHeader class="flex-shrink-0">
+        <div class="flex items-center justify-between px-2">
+          <SidebarMenu>
+            <SidebarMenuItem class="flex w-full items-center gap-2 overflow-hidden text-left text-sm outline-hidden">
+              <FinovaLogo />
+            </SidebarMenuItem>
+          </SidebarMenu>
         </div>
-      </div>
-    </div>
-    
-    <nav class="flex flex-col flex-grow space-y-1 p-4">
-      <RouterLink
-        v-for="item in items ?? defaultItems"
-        :key="item.route"
-        :to="item.route"
-        class="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2 rounded-md hover:bg-primary transition-colors font-serif"
-      >
-        {{ item.name }}
-      </RouterLink>
-    </nav>
+      </SidebarHeader>
 
-    <!-- Logout Section -->
-    <div class="p-4 border-t">
-      <Button
-        variant="destructive"
-        size="sm"
-        as="button"
-        class="w-full font-serif"
-        @click="handleLogout"
-      >
-        Logout
-      </Button>
-    </div>
-  </aside>
+      <!-- Content -->
+      <SidebarContent class="flex-1 overflow-y-auto">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem v-for="item in items" :key="item.title">
+                <SidebarMenuButton
+                  as-child
+                  class="text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 transition-colors duration-200"
+                >
+                  <a :href="item.href" @click="closeMobileSidebar">
+                    <component :is="item.icon" />
+                    <span>{{ item.title }}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <!-- Footer -->
+      <SidebarFooter class="flex-shrink-0 border-t border-gray-200 bg-white">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <SidebarMenuButton
+                  size="lg"
+                  class="hover:bg-neutral-100 transition-colors duration-200"
+                >
+                  <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-neutral-600 text-white text-sm font-medium">
+                    {{ adminProfile.avatar }}
+                  </div>
+                  <div class="grid flex-1 text-left text-sm leading-tight">
+                    <span class="truncate font-semibold">{{ adminProfile.name }}</span>
+                    <span class="truncate text-xs text-neutral-500">{{ adminProfile.email }}</span>
+                  </div>
+                  <ChevronUp class="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent
+                class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-lg"
+                side="top"
+                align="end"
+                :sideOffset="4"
+              >
+                <DropdownMenuItem class="cursor-pointer" @click="closeMobileSidebar">
+                  <Settings class="mr-2 h-4 w-4" />
+                  <span>Account Settings</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  @click="handleLogout"
+                  class="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut class="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  </div>
 </template>

@@ -79,6 +79,7 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'currency_code' => 'required|string|in:IDR,USD,JPY,GBP',
         ]);
 
         try {
