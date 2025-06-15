@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { AccountType, Budget } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import AISideBar from '@/components/budgets/AISideBar.vue';
 
 interface Props {
     budget: Budget;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const showSidebar = ref(false);
 
 // Sample data
 const expenseData = ref([
@@ -74,11 +76,6 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-// AI Assistant functionality
-const handleAIAssistant = () => {
-    // Handle AI Assistant logic here
-    console.log('AI Assistant clicked');
-};
 </script>
 
 <template>
@@ -88,8 +85,9 @@ const handleAIAssistant = () => {
         <div class="analysis-page">
             <!-- Header -->
             <div class="header">
+                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
                 <h1 class="title">Analisa</h1>
-                <ButtonAi @click="handleAIAssistant" class="ai-assistant-btn"> AI Assistant </ButtonAi>
+                <ButtonAi @click="showSidebar = true" class="ai-assistant-btn"> AI Assistant </ButtonAi>
             </div>
 
             <!-- Analysis Container -->

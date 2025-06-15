@@ -23,6 +23,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 
 interface Props {
     budget: Budget;
@@ -515,9 +516,7 @@ const groupedCategories = computed(() => {
 
     <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
         <div class="absolute top-4 right-4 z-40">
-            <button @click="showSidebar = true" class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 text-white shadow">
-                AI Assistant
-            </button>
+            <ButtonAi @click="showSidebar = true" class=""> AI Assistant </ButtonAi>
         </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">
