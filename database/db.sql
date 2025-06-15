@@ -57,3 +57,16 @@ BEGIN
     WHERE id = OLD.monthly_budget_id;
 END; //
 DELIMITER ;
+
+SHOW FULL COLUMNS FROM transactions;
+SHOW FULL COLUMNS FROM monthly_budgets;
+SHOW FULL COLUMNS FROM category_budgets;
+SHOW FULL COLUMNS FROM users;
+SHOW FULL COLUMNS FROM budgets;
+SHOW FULL COLUMNS FROM category_groups;
+SHOW FULL COLUMNS FROM categories;
+SHOW FULL COLUMNS FROM accounts;
+SHOW FULL COLUMNS FROM user_logs;
+SHOW FULL COLUMNS FROM export_reports;
+SHOW FULL COLUMNS FROM subscriptions;
+SHOW FULL COLUMNS FROM ai_chats;
