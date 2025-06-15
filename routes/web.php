@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryBudgetController;
@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 
     Route::get('/budgets/{budget}/analysis', [AnalysisController::class, 'index'])->name('budget.analysis');
-    Route::get('/budgets/{budget}/accounts', [AccountController::class, 'index'])->name('budget.accounts');
+    Route::get('/budgets/{budget}/accounts', [AccountsController::class, 'index'])->name('budget.accounts');
 
     // Category Group Routes
     Route::post('/category-groups', [CategoryGroupController::class, 'store'])->name('category-groups.store');
