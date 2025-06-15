@@ -27,6 +27,7 @@ class AccountController extends Controller
         $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
 
         $transactions = Transaction::where('budget_id', $budget->id)
+            ->with('category')
             ->orderBy('date', 'desc')
             ->paginate(10);
 
