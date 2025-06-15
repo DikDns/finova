@@ -4,16 +4,16 @@ use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::redirect('admin', '/admin/admindashboard', 301);
+Route::redirect('admin', '/admin/dashboard', 301);
 
 Route::prefix('admin')->group(function () {
-    Route::get('/admindashboard', [DashboardController::class, 'index'])->name('admin.admindashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/adminaccount', function () {
-        return Inertia::render('admin/adminaccount');
-    })->name('admin.adminaccount');
+    Route::get('/account', function () {
+        return Inertia::render('admin/account');
+    })->name('admin.account');
 
-    Route::get('/adminsubscription', function () {
-        return Inertia::render('admin/adminsubscription');
-    })->name('admin.adminsubscription');
+    Route::get('/subscription', function () {
+        return Inertia::render('admin/subscription');
+    })->name('admin.subscription');
 });
