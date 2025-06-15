@@ -47,6 +47,7 @@ const props = defineProps<{
             balance: number;
         }[];
     }[];
+    isCollapsed?: boolean;
 }>();
 
 const page = usePage<SharedData>();
@@ -249,7 +250,7 @@ const confirmDeleteAccount = () => {
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="px-2 py-0">
+    <SidebarGroup class="px-2 py-0" v-show="!isCollapsed">
         <SidebarGroupLabel>Rekening</SidebarGroupLabel>
         <SidebarMenu>
             <Collapsible v-for="item in account_types" :key="item.id" as-child :default-open="item.isActive" class="group/collapsible">
@@ -286,7 +287,7 @@ const confirmDeleteAccount = () => {
             </Collapsible>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="px-2 py-0">
+    <SidebarGroup class="px-2 py-0" v-show="!isCollapsed">
         <Dialog v-model:open="showCreateAccountDialog">
             <DialogTrigger as-child>
                 <Button variant="ghost" class="mt-2" @click="resetForm">

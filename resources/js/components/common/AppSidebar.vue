@@ -3,14 +3,19 @@ import FinovaLogo from '@/components/common/FinovaLogo.vue';
 import NavMain from '@/components/common/NavMain.vue';
 import NavUser from '@/components/common/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar/utils';
 import { type AccountType, type NavItem } from '@/types';
 import { ChartBar, CreditCard, Wallet } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const props = defineProps<{
     budget_id: string;
     currency_code: string;
     account_types?: AccountType[];
 }>();
+
+const { state } = useSidebar();
+const isCollapsed = computed(() => state.value === 'collapsed');
 
 const mainNavItems: NavItem[] = [
     {
@@ -46,7 +51,7 @@ const accountTypes = props.account_types || [];
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" :account_types="accountTypes" :currency_code="currency_code" :budget_id="budget_id" />
+            <NavMain :items="mainNavItems" :account_types="accountTypes" :currency_code="currency_code" :budget_id="budget_id" :isCollapsed="isCollapsed" />
         </SidebarContent>
 
         <SidebarFooter>
