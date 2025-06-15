@@ -247,7 +247,7 @@ const displayBalance = (account: Account) => {
             <div class="mx-auto w-full max-w-7xl">
                 <!-- Header Section -->
                 <div class="mb-4 sm:mb-6"></div>
-                <h1 class="mb-1 font-serif text-xl font-bold sm:mb-2 sm:text-2xl lg:text-4xl">Accounts Management</h1>
+                <h1 class="mb-1 font-serif text-xl font-bold sm:mb-2 sm:text-2xl lg:text-4xl">Manajemen Akun</h1>
                 <p class="text-muted-foreground text-xs sm:text-sm lg:text-base">Kelola dan pantau semua akun pengguna dalam sistem</p>
                 <br />
 
@@ -256,7 +256,7 @@ const displayBalance = (account: Account) => {
                     <Card class="p-2 sm:p-6">
                         <div class="flex flex-row items-center justify-between space-x-2 text-left sm:space-x-3">
                             <div>
-                                <p class="text-muted-foreground text-xs font-medium">Total Accounts</p>
+                                <p class="text-muted-foreground text-xs font-medium">Total Akun</p>
                                 <p class="text-lg font-bold text-gray-900 sm:text-3xl">{{ totalAccounts }}</p>
                             </div>
                             <div class="flex-shrink-0 rounded-full bg-blue-100 p-2 sm:p-3">
@@ -297,7 +297,7 @@ const displayBalance = (account: Account) => {
 
                     <Card class="p-2 sm:p-6">
                         <div class="space-y-2">
-                            <p class="text-muted-foreground text-xs font-medium">Account Types</p>
+                            <p class="text-muted-foreground text-xs font-medium">Tipe Akun</p>
                             <div class="space-y-1">
                                 <div class="flex justify-between text-xs">
                                     <span>Cash:</span>
