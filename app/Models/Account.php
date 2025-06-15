@@ -18,6 +18,10 @@ class Account extends Model
     protected $fillable = [
         'budget_id',
         'name',
+        'type',
+        'balance',
+        'interest',
+        'minimum_payment_monthly'
     ];
 
     protected $attributes = [

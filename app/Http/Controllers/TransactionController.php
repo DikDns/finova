@@ -6,6 +6,8 @@ use App\Models\Transaction;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class TransactionController extends Controller
@@ -33,17 +35,6 @@ class TransactionController extends Controller
             'transactions' => $transactions,
         ]);
     }
-
-    /**
-     * Show the form for creating a new transaction.
-     *
-     * @return \Inertia\Response
-     */
-    public function create()
-    {
-        return Inertia::render('users/TransactionForm');
-    }
-
     /**
      * Store a newly created transaction in storage.
      *
@@ -53,44 +44,53 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'description' => 'required|string|max:255',
+            'payee' => 'nullable|string|max:255',
             'amount' => 'required|numeric',
             'date' => 'required|date',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
             'account_id' => 'required|exists:accounts,id',
-            'notes' => 'nullable|string',
+            'memo' => 'nullable|string|max:500',
+            'budget_id' => 'required|exists:budgets,id',
         ]);
 
-        // Verify the account belongs to one of the user's budgets
-        $user = $request->user();
-        $userBudgetIds = $user->budgets()->pluck('id');
-        $account = Account::findOrFail($validated['account_id']);
+        try {
+            DB::beginTransaction();
 
-        if (!in_array($account->budget_id, $userBudgetIds->toArray())) {
-            abort(403, 'You do not have permission to create transactions for this account.');
+            // Verify the account belongs to the specified budget and user has access
+            $user = $request->user();
+            $budget = $user->budgets()->findOrFail($validated['budget_id']);
+            $account = Account::where('id', $validated['account_id'])
+                ->where('budget_id', $budget->id)
+                ->firstOrFail();
+
+            $payee = $validated['payee'] ?? '';
+            $memo = $validated['memo'] ?? '';
+
+            // Create the transaction
+            $transaction = Transaction::create([
+                'payee' => $payee,
+                'memo' => $memo,
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'category_id' => $validated['category_id'],
+                'account_id' => $validated['account_id'],
+                'budget_id' => $validated['budget_id'],
+            ]);
+
+            // Update account balance
+            $account->balance = $account->balance + $validated['amount'];
+            $account->save();
+
+            DB::commit();
+
+            return back()->with('success', 'Transaksi berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Gagal membuat transaksi: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        Transaction::create($validated);
-
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transaction created successfully.');
-    }
-
-
-    /**
-     * Show the form for editing the specified transaction.
-     *
-     * @param  \App\Models\Transaction  $transaction
-     * @return \Inertia\Response
-     */
-    public function edit(Transaction $transaction)
-    {
-        // Ensure the transaction belongs to the authenticated user through account -> budget -> user
-        $this->authorizeTransaction($transaction);
-
-        return Inertia::render('users/TransactionForm', [
-            'transaction' => $transaction->load(['category', 'account']),
-        ]);
     }
 
     /**
@@ -106,27 +106,68 @@ class TransactionController extends Controller
         $this->authorizeTransaction($transaction);
 
         $validated = $request->validate([
-            'description' => 'required|string|max:255',
+            'payee' => 'nullable|string|max:255',
             'amount' => 'required|numeric',
             'date' => 'required|date',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
             'account_id' => 'required|exists:accounts,id',
-            'notes' => 'nullable|string',
+            'memo' => 'nullable|string|max:500',
+            'budget_id' => 'required|exists:budgets,id',
         ]);
 
-        // Verify the new account belongs to one of the user's budgets
-        $user = $request->user();
-        $userBudgetIds = $user->budgets()->pluck('id');
-        $account = Account::findOrFail($validated['account_id']);
+        try {
+            DB::beginTransaction();
 
-        if (!in_array($account->budget_id, $userBudgetIds->toArray())) {
-            abort(403, 'You do not have permission to use this account.');
+            // Verify the new account belongs to the specified budget and user has access
+            $user = $request->user();
+            $budget = $user->budgets()->findOrFail($validated['budget_id']);
+            $account = Account::where('id', $validated['account_id'])
+                ->where('budget_id', $budget->id)
+                ->firstOrFail();
+
+            $payee = $validated['payee'] ?? '';
+            $memo = $validated['memo'] ?? '';
+
+            // Get the old transaction data to calculate balance adjustment
+            $oldAmount = $transaction->amount;
+            $oldAccountId = $transaction->account_id;
+
+            // If account changed, adjust both old and new account balances
+            if ($oldAccountId !== $validated['account_id']) {
+                // Subtract amount from old account
+                $oldAccount = Account::findOrFail($oldAccountId);
+                $oldAccount->balance = $oldAccount->balance - $oldAmount;
+                $oldAccount->save();
+
+                // Add amount to new account
+                $account->balance = $account->balance + $validated['amount'];
+                $account->save();
+            } else {
+                // Same account, just adjust the difference
+                $account->balance = $account->balance - $oldAmount + $validated['amount'];
+                $account->save();
+            }
+
+            // Update the transaction
+            $transaction->update([
+                'payee' => $payee,
+                'memo' => $memo,
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'category_id' => $validated['category_id'],
+                'account_id' => $validated['account_id'],
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Transaksi berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Gagal memperbarui transaksi: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $transaction->update($validated);
-
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transaction updated successfully.');
     }
 
     /**
@@ -140,10 +181,30 @@ class TransactionController extends Controller
         // Ensure the transaction belongs to the authenticated user through account -> budget -> user
         $this->authorizeTransaction($transaction);
 
-        $transaction->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transaction deleted successfully.');
+            // Get transaction details before deletion
+            $amount = $transaction->amount;
+            $accountId = $transaction->account_id;
+
+            // Update account balance
+            $account = Account::findOrFail($accountId);
+            $account->balance = $account->balance - $amount;
+            $account->save();
+
+            // Delete the transaction
+            $transaction->delete();
+
+            DB::commit();
+
+            return back()->with('success', 'Transaksi berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Gagal menghapus transaksi: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -154,10 +215,8 @@ class TransactionController extends Controller
      */
     private function authorizeTransaction(Transaction $transaction)
     {
-        $currentUser = auth()->guard()->user();
-
-        if (!$currentUser || $currentUser->id !== $transaction->account->budget->user_id) {
-            abort(403, 'You do not have permission to access this transaction.');
+        if (Auth::id() !== $transaction->account->budget->user_id) {
+            abort(403, 'Anda tidak memiliki izin untuk mengakses transaksi ini.');
         }
     }
 }
