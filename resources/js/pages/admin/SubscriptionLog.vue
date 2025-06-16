@@ -88,8 +88,8 @@ watch(searchQuery, () => {
         <!-- Main Content -->
         <main class="flex-1 px-4 pt-16 pb-10 sm:px-6 lg:px-10">
             <!-- Header Section -->
-            <h1 class="text-primary mb-2 font-serif text-2xl font-bold lg:text-4xl">Subscription Log</h1>
-            <p class="text-muted-foreground text-sm lg:text-base">Daftar aktivitas subscription pengguna dalam sistem</p>
+            <h1 class="mb-1 font-serif text-xl font-bold sm:mb-2 sm:text-2xl lg:text-4xl">Subscription Log</h1>
+            <p class="text-muted-foreground text-xs sm:text-sm lg:text-base">Daftar aktivitas subscription pengguna dalam sistem</p>
 
             <!-- Search and Filter Section -->
             <div class="mt-6 mb-6 flex flex-col gap-4 sm:flex-row">
