@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Budget;
+use App\Models\CategoryGroup;
+use App\Models\Category;
+use App\Models\MonthlyBudget;
+use App\Models\CategoryBudget;
+use App\Traits\CreatesBudgetCategories;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
 {
+    use CreatesBudgetCategories;
+    
     /**
      * Display a listing of the user's budget plans.
      */
@@ -42,6 +50,9 @@ class BudgetController extends Controller
             $budget->description = $validated['description'] ?? '';
             $budget->currency_code = $validated['currency_code'] ?? 'IDR';
             $budget->save();
+            
+            // Create default category groups and categories for the new budget
+            $this->createDefaultCategoriesForBudget($budget);
 
             DB::commit();
 
@@ -49,13 +60,14 @@ class BudgetController extends Controller
                 ->with('success', 'Budget berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Failed to create budget: ' . $e->getMessage());
 
             return redirect()->back()
                 ->withErrors(['error' => 'Gagal membuat budget: ' . $e->getMessage()])
                 ->withInput();
         }
     }
-
+    
     /**
      * Display the specified budget plan.
      */

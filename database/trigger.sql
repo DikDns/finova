@@ -1,5 +1,6 @@
 -- Users Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_users_after_insert;
 CREATE TRIGGER trigger_users_after_insert
 AFTER INSERT ON users
 FOR EACH ROW
@@ -41,6 +42,7 @@ DELIMITER ;
 
 -- Users Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_users_after_update;
 CREATE TRIGGER trigger_users_after_update
 AFTER UPDATE ON users
 FOR EACH ROW
@@ -86,6 +88,7 @@ DELIMITER ;
 
 -- Users Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_users_after_delete;
 CREATE TRIGGER trigger_users_after_delete
 AFTER DELETE ON users
 FOR EACH ROW
@@ -139,6 +142,7 @@ DELIMITER ;
 
 -- Transactions Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_transactions_after_insert;
 CREATE TRIGGER trigger_transactions_after_insert
 AFTER INSERT ON transactions
 FOR EACH ROW
@@ -189,6 +193,7 @@ DELIMITER ;
 
 -- Transactions Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_transactions_after_update;
 CREATE TRIGGER trigger_transactions_after_update
 AFTER UPDATE ON transactions
 FOR EACH ROW
@@ -244,6 +249,7 @@ DELIMITER ;
 
 -- Transactions Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_transactions_after_delete;
 CREATE TRIGGER trigger_transactions_after_delete
 AFTER DELETE ON transactions
 FOR EACH ROW
@@ -294,6 +300,7 @@ DELIMITER ;
 
 -- Budgets Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_budgets_after_insert;
 CREATE TRIGGER trigger_budgets_after_insert
 AFTER INSERT ON budgets
 FOR EACH ROW
@@ -334,6 +341,7 @@ DELIMITER ;
 
 -- Budgets Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_budgets_after_update;
 CREATE TRIGGER trigger_budgets_after_update
 AFTER UPDATE ON budgets
 FOR EACH ROW
@@ -377,6 +385,7 @@ DELIMITER ;
 
 -- Budgets Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_budgets_after_delete;
 CREATE TRIGGER trigger_budgets_after_delete
 AFTER DELETE ON budgets
 FOR EACH ROW
@@ -417,6 +426,7 @@ DELIMITER ;
 
 -- Category Groups Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_groups_after_insert;
 CREATE TRIGGER trigger_category_groups_after_insert
 AFTER INSERT ON category_groups
 FOR EACH ROW
@@ -462,6 +472,7 @@ DELIMITER ;
 
 -- Category Groups Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_groups_after_update;
 CREATE TRIGGER trigger_category_groups_after_update
 AFTER UPDATE ON category_groups
 FOR EACH ROW
@@ -509,6 +520,7 @@ DELIMITER ;
 
 -- Category Groups Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_groups_after_delete;
 CREATE TRIGGER trigger_category_groups_after_delete
 AFTER DELETE ON category_groups
 FOR EACH ROW
@@ -554,6 +566,7 @@ DELIMITER ;
 
 -- Categories Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_categories_after_insert;
 CREATE TRIGGER trigger_categories_after_insert
 AFTER INSERT ON categories
 FOR EACH ROW
@@ -605,6 +618,7 @@ DELIMITER ;
 
 -- Categories Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_categories_after_update;
 CREATE TRIGGER trigger_categories_after_update
 AFTER UPDATE ON categories
 FOR EACH ROW
@@ -658,6 +672,7 @@ DELIMITER ;
 
 -- Categories Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_categories_after_delete;
 CREATE TRIGGER trigger_categories_after_delete
 AFTER DELETE ON categories
 FOR EACH ROW
@@ -709,6 +724,7 @@ DELIMITER ;
 
 -- Accounts Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_accounts_after_insert;
 CREATE TRIGGER trigger_accounts_after_insert
 AFTER INSERT ON accounts
 FOR EACH ROW
@@ -758,6 +774,7 @@ DELIMITER ;
 
 -- Accounts Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_accounts_after_update;
 CREATE TRIGGER trigger_accounts_after_update
 AFTER UPDATE ON accounts
 FOR EACH ROW
@@ -811,6 +828,7 @@ DELIMITER ;
 
 -- Accounts Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_accounts_after_delete;
 CREATE TRIGGER trigger_accounts_after_delete
 AFTER DELETE ON accounts
 FOR EACH ROW
@@ -860,6 +878,7 @@ DELIMITER ;
 
 -- Category Budgets Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_budgets_after_insert;
 CREATE TRIGGER trigger_category_budgets_after_insert
 AFTER INSERT ON category_budgets
 FOR EACH ROW
@@ -920,6 +939,7 @@ DELIMITER ;
 
 -- Category Budgets Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_budgets_after_update;
 CREATE TRIGGER trigger_category_budgets_after_update
 AFTER UPDATE ON category_budgets
 FOR EACH ROW
@@ -981,6 +1001,7 @@ DELIMITER ;
 
 -- Category Budgets Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_category_budgets_after_delete;
 CREATE TRIGGER trigger_category_budgets_after_delete
 AFTER DELETE ON category_budgets
 FOR EACH ROW
@@ -1041,6 +1062,7 @@ DELIMITER ;
 
 -- Monthly Budgets Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_monthly_budgets_after_insert;
 CREATE TRIGGER trigger_monthly_budgets_after_insert
 AFTER INSERT ON monthly_budgets
 FOR EACH ROW
@@ -1090,6 +1112,7 @@ DELIMITER ;
 
 -- Monthly Budgets Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_monthly_budgets_after_update;
 CREATE TRIGGER trigger_monthly_budgets_after_update
 AFTER UPDATE ON monthly_budgets
 FOR EACH ROW
@@ -1143,6 +1166,7 @@ DELIMITER ;
 
 -- Monthly Budgets Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_monthly_budgets_after_delete;
 CREATE TRIGGER trigger_monthly_budgets_after_delete
 AFTER DELETE ON monthly_budgets
 FOR EACH ROW
@@ -1192,6 +1216,7 @@ DELIMITER ;
 
 -- Subscriptions Insert Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_subscriptions_after_insert;
 CREATE TRIGGER trigger_subscriptions_after_insert
 AFTER INSERT ON subscriptions
 FOR EACH ROW
@@ -1234,6 +1259,7 @@ DELIMITER ;
 
 -- Subscriptions Update Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_subscriptions_after_update;
 CREATE TRIGGER trigger_subscriptions_after_update
 AFTER UPDATE ON subscriptions
 FOR EACH ROW
@@ -1279,6 +1305,7 @@ DELIMITER ;
 
 -- Subscriptions Delete Trigger
 DELIMITER //
+DROP TRIGGER IF EXISTS trigger_subscriptions_after_delete;
 CREATE TRIGGER trigger_subscriptions_after_delete
 AFTER DELETE ON subscriptions
 FOR EACH ROW
