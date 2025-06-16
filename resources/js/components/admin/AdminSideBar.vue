@@ -14,9 +14,9 @@ type SidebarItem = {
 
 // Sidebar Menu Items
 const items: SidebarItem[] = [
-  { title: 'Dashboard', href: '/admin/admindashboard', icon: LayoutDashboard },
-  { title: 'Account', href: '/admin/adminaccount', icon: WalletCards },
-  { title: 'Subscription', href: '/admin/adminsubscription', icon: Receipt },
+  { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Account', href: '/admin/account', icon: WalletCards },
+  { title: 'Subscription', href: '/admin/subscription', icon: Receipt },
 ];
 
 // Admin Profile
