@@ -4,82 +4,103 @@ import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { History, Plus, Send, X } from 'lucide-vue-next';
 import { marked } from 'marked';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     isOpen: Boolean,
     reply: String,
+    budget_id: String,
 });
 
 const emit = defineEmits(['close']);
 const emitClose = () => emit('close');
 
 const message = ref('');
-const messages = ref<Array<{ id: number; text: string; isUser: boolean }>>([]);
+const messages = ref<Array<{ id: string; text: string; isUser: boolean }>>([]);
 const showSuggestions = ref(true);
-const chatHistory = ref<Array<{ id: number; title: string; messages: Array<{ id: number; text: string; isUser: boolean }> }>>([]);
+const chatHistory = ref<Array<{ id: string; title: string; created_at: string }>>([]);
 const showHistory = ref(false);
-const currentChatId = ref<number | null>(null);
+const currentChatId = ref<string | null>(null);
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
+const isLoading = ref(false);
+const chatContainer = ref<HTMLElement | null>(null);
+const isLoadingHistory = ref(false);
 
 const suggestions = [
     'Berikan rekomendasi kategori berdasarkan profil aku',
     'Buatkan target berdasarkan dana yang aku punya sekarang',
-    'Perbarui target berdasarkan transaksi rekening bulan lalu',
+    'Perbarui kategori yang boros dan tidak penting pada bulan ini',
     'Perbarui grup kategori dan kategori berdasarkan prinsip money game',
 ];
 
+const scrollToBottom = () => {
+    nextTick(() => {
+        if (chatContainer.value) {
+            chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+        }
+    });
+};
+
 const handleSuggestionClick = (suggestion: string) => {
     message.value = suggestion;
-    handleSendMessage();
+    // Menghapus pemanggilan handleSendMessage() agar tidak langsung mengirim pesan
 };
 
 const handleSendMessage = async () => {
     if (message.value.trim()) {
         showSuggestions.value = false;
 
-        if (!currentChatId.value) {
-            const newChatId = Date.now();
-            currentChatId.value = newChatId;
-            chatHistory.value.unshift({
-                id: newChatId,
-                title: message.value.substring(0, 30) + (message.value.length > 30 ? '...' : ''),
-                messages: [],
-            });
-        }
-
         const userMessage = {
-            id: Date.now(),
+            id: Date.now().toString(),
             text: message.value,
             isUser: true,
         };
 
         messages.value.push(userMessage);
-
-        const currentChat = chatHistory.value.find((chat) => chat.id === currentChatId.value);
-        if (currentChat) currentChat.messages.push(userMessage);
+        scrollToBottom();
 
         const userInput = message.value;
         message.value = '';
 
+        // Menyiapkan riwayat chat untuk dikirim ke server
+        const chatMessages = messages.value.map((msg) => ({
+            content: msg.text,
+            role: msg.isUser ? 'user' : 'assistant',
+        }));
+
+        isLoading.value = true;
         try {
-            const res = await axios.post('/ai/chat', { message: userInput });
+            const res = await axios.post('/ai/chat', {
+                message: userInput,
+                chat_history: chatMessages,
+                budget_id: props.budget_id,
+                chat_id: currentChatId.value,
+            });
             const aiMessage = {
-                id: Date.now() + 1,
+                id: Date.now().toString(),
                 text: res.data.reply,
                 isUser: false,
             };
 
             messages.value.push(aiMessage);
-            if (currentChat) currentChat.messages.push(aiMessage);
+            scrollToBottom();
+
+            // Save the chat ID for future messages in this conversation
+            currentChatId.value = res.data.chat_id;
+
+            // Refresh chat history after new chat
+            fetchChatHistory();
         } catch (err) {
             console.error(err);
             messages.value.push({
-                id: Date.now() + 1,
-                text: 'Terjadi kesalahan saat menghubungi AI.',
+                id: Date.now().toString(),
+                text: 'Terjadi kesalahan saat menghubungi AI: ' + JSON.stringify(err),
                 isUser: false,
             });
+            scrollToBottom();
+        } finally {
+            isLoading.value = false;
         }
     }
 };
@@ -94,22 +115,56 @@ const handleReset = () => {
 
 const handleHistory = () => {
     showHistory.value = !showHistory.value;
-};
-
-const loadChatFromHistory = (chatId: number) => {
-    const chat = chatHistory.value.find((c) => c.id === chatId);
-    if (chat) {
-        messages.value = [...chat.messages];
-        currentChatId.value = chatId;
-        showSuggestions.value = false;
-        showHistory.value = false;
+    if (showHistory.value) {
+        fetchChatHistory();
     }
 };
 
-const deleteChatFromHistory = (chatId: number) => {
-    chatHistory.value = chatHistory.value.filter((chat) => chat.id !== chatId);
-    if (currentChatId.value === chatId) {
-        handleReset();
+const fetchChatHistory = async () => {
+    isLoadingHistory.value = true;
+    try {
+        const response = await axios.get('/ai/chats');
+        chatHistory.value = response.data.chats;
+    } catch (error) {
+        console.error('Error fetching chat history:', error);
+    } finally {
+        isLoadingHistory.value = false;
+    }
+};
+
+const loadChatFromHistory = async (chatId: string) => {
+    isLoading.value = true;
+    try {
+        const response = await axios.get(`/ai/chats/${chatId}`);
+        const chatMessages = response.data.messages;
+
+        // Format messages for display
+        messages.value = chatMessages.map((msg: any) => ({
+            id: msg.id,
+            text: msg.content,
+            isUser: msg.role === 'user',
+        }));
+
+        currentChatId.value = chatId;
+        showSuggestions.value = false;
+        showHistory.value = false;
+        scrollToBottom();
+    } catch (error) {
+        console.error('Error loading chat:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const deleteChatFromHistory = async (chatId: string) => {
+    try {
+        await axios.delete(`/ai/chats/${chatId}`);
+        chatHistory.value = chatHistory.value.filter((chat) => chat.id !== chatId);
+        if (currentChatId.value === chatId) {
+            handleReset();
+        }
+    } catch (error) {
+        console.error('Error deleting chat:', error);
     }
 };
 </script>
@@ -184,27 +239,42 @@ const deleteChatFromHistory = (chatId: number) => {
             </div>
 
             <!-- Scrollable Content Area -->
-            <div class="scrollable-content flex-1">
+            <div ref="chatContainer" class="scrollable-content flex-1" v-auto-animate>
                 <!-- Chat History -->
                 <div v-if="showHistory" class="p-4">
                     <h3 class="mb-3 text-sm font-semibold text-gray-700">Chat History</h3>
-                    <div v-if="chatHistory.length === 0" class="py-8 text-center text-sm text-gray-500">Belum ada riwayat chat</div>
+
+                    <!-- Loading State -->
+                    <div v-if="isLoadingHistory" class="py-8 text-center">
+                        <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                        <p class="mt-2 text-sm text-gray-500">Memuat riwayat chat...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div v-else-if="chatHistory.length === 0" class="py-8 text-center text-sm text-gray-500">Belum ada riwayat chat</div>
+
+                    <!-- Chat List -->
                     <div v-else class="space-y-2">
                         <div
                             v-for="chat in chatHistory"
                             :key="chat.id"
-                            class="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+                            class="flex flex-col rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
                         >
-                            <button @click="loadChatFromHistory(chat.id)" class="flex-1 truncate text-left text-sm text-gray-700">
-                                {{ chat.title }}
-                            </button>
-                            <button
-                                @click="deleteChatFromHistory(chat.id)"
-                                class="ml-2 p-1 text-red-500 transition-colors hover:text-red-700"
-                                title="Delete chat"
-                            >
-                                <X class="h-3 w-3" />
-                            </button>
+                            <div class="flex items-center justify-between">
+                                <button @click="loadChatFromHistory(chat.id)" class="flex-1 truncate text-left text-sm text-gray-700">
+                                    {{ chat.title }}
+                                </button>
+                                <button
+                                    @click="deleteChatFromHistory(chat.id)"
+                                    class="ml-2 p-1 text-red-500 transition-colors hover:text-red-700"
+                                    title="Delete chat"
+                                >
+                                    <X class="h-3 w-3" />
+                                </button>
+                            </div>
+                            <div class="mt-1 text-xs text-gray-400">
+                                {{ new Date(chat.created_at).toLocaleString() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -231,17 +301,28 @@ const deleteChatFromHistory = (chatId: number) => {
 
                 <!-- Chat Messages -->
                 <div v-else class="p-4">
-                    <div class="space-y-4">
+                    <div class="space-y-4" v-auto-animate>
                         <div v-for="msg in messages" :key="msg.id" :class="['flex', msg.isUser ? 'justify-end' : 'justify-start']">
                             <div
                                 :class="[
                                     'max-w-xs rounded-lg px-3 py-2 text-sm lg:max-w-md',
                                     msg.isUser
                                         ? 'rounded-br-none bg-blue-600 text-white'
-                                        : 'prose max-w-full rounded-bl-none bg-gray-100 text-gray-800',
+                                        : 'prose prose-sm prose-p:font-sans prose-headings:font-serif max-w-full rounded-bl-none bg-gray-100 text-gray-800',
                                 ]"
                                 v-html="msg.isUser ? msg.text : marked.parse(msg.text)"
                             ></div>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div v-if="isLoading" class="flex justify-start">
+                            <div class="max-w-xs rounded-lg rounded-bl-none bg-gray-100 px-3 py-2 text-gray-500">
+                                <div class="flex space-x-1">
+                                    <div class="h-2 w-2 animate-pulse rounded-full bg-gray-400"></div>
+                                    <div class="h-2 w-2 animate-pulse rounded-full bg-gray-400 delay-100"></div>
+                                    <div class="h-2 w-2 animate-pulse rounded-full bg-gray-400 delay-200"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -253,7 +334,7 @@ const deleteChatFromHistory = (chatId: number) => {
                     <input
                         v-model="message"
                         type="text"
-                        placeholder="Ketik / untuk memberikan konteks"
+                        placeholder="Ketik pesan disini..."
                         class="flex-1 border-none bg-transparent px-2 py-1 text-sm outline-none"
                         @keydown.enter="handleSendMessage"
                     />
