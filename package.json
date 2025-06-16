@@ -23,6 +23,7 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
+        "@formkit/auto-animate": "^0.8.2",
         "@inertiajs/vue3": "^2.0.0",
         "@tailwindcss/vite": "^4.1.1",
         "@tanstack/vue-table": "^8.21.3",
