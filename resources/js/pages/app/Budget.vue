@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import type { AccountType, Budget } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
@@ -530,6 +530,14 @@ const groupedCategories = computed(() => {
         })
         .filter(Boolean);
 });
+
+const currentTotalBalance = computed(() => {
+    return parseFloat(currentMonthBudget.value?.total_balance ?? '0');
+});
+
+const isAccountsDoesNotExist = computed(() => {
+    return props.account_types.length ===0
+})
 </script>
 
 <template>
@@ -560,12 +568,14 @@ const groupedCategories = computed(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
-                                <div class="h-2 w-2 rounded-full bg-green-500"></div>
-                                <span class="text-xl font-semibold">{{
-                                    formatCurrency(parseFloat(currentMonthBudget?.total_balance ?? '0'), budget.currency_code)
-                                }}</span>
+                                <div :class="cn('h-2 w-2 rounded-full', currentTotalBalance > 0 && 'bg-green-600', isAccountsDoesNotExist && 'bg-red-600')"></div>
+                                <span :class="cn('text-xl font-semibold', currentTotalBalance > 0 && 'text-green-600' )">
+                                    {{ formatCurrency(currentTotalBalance, budget.currency_code) }}
+                                </span>
                             </div>
-                            <p class="text-muted-foreground text-sm">Total Budget siap dialokasikan</p>
+                            <p class="text-muted-foreground text-sm" v-if="currentTotalBalance > 0">Total Budget siap dialokasikan</p>
+                            <p class="text-muted-foreground text-sm" v-else-if="isAccountsDoesNotExist">Tambahkan transaksi pada rekening untuk mendapatkan total budget</p>
+                            <p class="text-muted-foreground text-sm" v-else>Kamu sudah berhasil mengalokasikan total budget</p>
                         </div>
                     </div>
                 </div>

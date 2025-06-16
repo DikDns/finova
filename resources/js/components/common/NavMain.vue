@@ -103,7 +103,6 @@ const resetEditForm = () => {
 };
 
 const openEditDialog = (account: any, accountType: string) => {
-    console.log('account: ', account);
     editingAccount.value = account;
     editAccountForm.value = {
         id: account.id,
@@ -117,7 +116,12 @@ const openEditDialog = (account: any, accountType: string) => {
 };
 
 const createAccount = () => {
-    if (!accountForm.value.name || !accountForm.value.type) {
+    if (!accountForm.value.name || !accountForm.value.type || accountForm.value.balance === '') {
+        toast.error('Mohon lengkapi semua field yang diperlukan');
+        return;
+    }
+
+    if (accountForm.value.type === 'loan' && (accountForm.value.interest === '' || accountForm.value.minimum_payment_monthly === '')) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
         return;
     }
@@ -160,7 +164,12 @@ const createAccount = () => {
 const updateAccount = () => {
     console.log('editAccountForm: ', editAccountForm.value);
 
-    if (!editAccountForm.value.name || !editAccountForm.value.type) {
+    if (!editAccountForm.value.name || !editAccountForm.value.type || editAccountForm.value.balance === '') {
+        toast.error('Mohon lengkapi semua field yang diperlukan');
+        return;
+    }
+
+    if (editAccountForm.value.type === 'loan' && (editAccountForm.value.interest === '' || editAccountForm.value.minimum_payment_monthly === '')) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
         return;
     }
@@ -237,11 +246,16 @@ const confirmDeleteAccount = () => {
 
 <template>
     <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>Utama</SidebarGroupLabel>
+        <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <!-- The item.href is contain the domain remove it -->
-                <SidebarMenuButton as-child :is-active="getThePathOnly(item.href) === page.url" :tooltip="item.title">
+                <SidebarMenuButton
+                    as-child
+                    :is-active="getThePathOnly(item.href) === page.url"
+                    :tooltip="item.title"
+                    v-if="!(item.title === 'Semua Rekening' && account_types.length === 0)"
+                >
                     <Link :href="item.href" prefetch>
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
@@ -311,11 +325,11 @@ const confirmDeleteAccount = () => {
                 <div class="grid gap-4 py-4">
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="name" class="text-right"> Nama </Label>
-                        <Input id="name" v-model="accountForm.name" placeholder="Nama rekening" class="col-span-3" />
+                        <Input id="name" v-model="accountForm.name" placeholder="Nama rekening" class="col-span-3" required />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="type" class="text-right"> Jenis </Label>
-                        <Select v-model="accountForm.type">
+                        <Select v-model="accountForm.type" default-value="cash">
                             <SelectTrigger class="col-span-3 w-full">
                                 <SelectValue placeholder="Pilih jenis rekening" />
                             </SelectTrigger>
@@ -335,6 +349,7 @@ const confirmDeleteAccount = () => {
                             type="number"
                             step="500"
                             min="0"
+                            required
                             :placeholder="accountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
                             class="col-span-3"
                         />
@@ -350,6 +365,7 @@ const confirmDeleteAccount = () => {
                                 step="1"
                                 max="100"
                                 min="0"
+                                required
                                 placeholder="Bunga per bulan"
                                 class="col-span-3"
                             />
@@ -361,6 +377,7 @@ const confirmDeleteAccount = () => {
                                 v-model="accountForm.minimum_payment_monthly"
                                 type="number"
                                 step="500"
+                                required
                                 placeholder="Pembayaran minimum bulanan"
                                 class="col-span-3"
                             />
@@ -386,7 +403,7 @@ const confirmDeleteAccount = () => {
                 <div class="grid gap-4 py-4">
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="edit-name" class="text-right"> Nama </Label>
-                        <Input id="edit-name" v-model="editAccountForm.name" placeholder="Nama rekening" class="col-span-3" />
+                        <Input id="edit-name" v-model="editAccountForm.name" placeholder="Nama rekening" class="col-span-3" required />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4" v-if="editAccountForm.type !== 'loan'">
                         <Label for="edit-balance" class="text-right"> Saldo </Label>
@@ -397,6 +414,7 @@ const confirmDeleteAccount = () => {
                             step="500"
                             min="0"
                             placeholder="Saldo awal"
+                            required
                             class="col-span-3"
                         />
                     </div>
@@ -411,6 +429,7 @@ const confirmDeleteAccount = () => {
                                 step="1"
                                 max="100"
                                 min="0"
+                                required
                                 placeholder="Bunga per bulan"
                                 class="col-span-3"
                             />
@@ -422,6 +441,7 @@ const confirmDeleteAccount = () => {
                                 v-model="editAccountForm.minimum_payment_monthly"
                                 type="number"
                                 step="500"
+                                required
                                 placeholder="Pembayaran minimum bulanan"
                                 class="col-span-3"
                             />

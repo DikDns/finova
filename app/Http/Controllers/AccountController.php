@@ -143,7 +143,8 @@ class AccountController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Rekening berhasil dibuat');
+            return redirect()->route('budget.accounts.show', [$account->budget->id, $account->id])
+                ->with('success', 'Rekening berhasil dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -234,7 +235,7 @@ class AccountController extends Controller
 
             DB::commit();
 
-            return to_route('budget.accounts')->with('success', 'Rekening berhasil dihapus');
+            return redirect()->route('accounts.index')->with('success', 'Rekening berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
 
