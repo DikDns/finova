@@ -12,13 +12,13 @@ import {
 import { Button } from '@/components/ui/button';
 import Calendar from '@/components/ui/calendar/Calendar.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import type { Account, AccountType, Budget, Category, Transaction } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
@@ -128,6 +128,10 @@ const submitForm = () => {
                 onSuccess: () => {
                     showEditDialog.value = false;
                     resetForm();
+                    router.visit(window.location.href, {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
                     toast.success('Transaksi berhasil diupdate.');
                 },
                 onError: (err) => {
@@ -153,6 +157,10 @@ const submitForm = () => {
                 onSuccess: () => {
                     showCreateDialog.value = false;
                     resetForm();
+                    router.visit(window.location.href, {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
                     toast.success('Transaksi berhasil dibuat.');
                 },
                 onError: (err) => {
@@ -178,9 +186,13 @@ const handleDelete = () => {
     isLoading.value = true;
     router.delete(route('transactions.destroy', { transaction: deleteTransactionId.value }), {
         onSuccess: () => {
-            toast.success('Transaksi berhasil dihapus.');
             resetForm();
             showDeleteDialog.value = false;
+            router.visit(window.location.href, {
+                preserveScroll: true,
+                preserveState: false,
+            });
+            toast.success('Transaksi berhasil dihapus.');
         },
         onError: (err) => {
             toast.error('Gagal menghapus transaksi', {
@@ -205,16 +217,6 @@ const goToPage = (page: number) => {
             replace: true,
         },
     );
-};
-
-// Format date
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
 };
 
 // Format amount
@@ -406,7 +408,6 @@ const formatAmount = (amount: number) => {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuLabel class="font-medium">Aksi</DropdownMenuLabel>
                                                 <DialogTrigger as-child>
                                                     <DropdownMenuItem @click="setEditForm(transaction)"> Ubah </DropdownMenuItem>
                                                 </DialogTrigger>

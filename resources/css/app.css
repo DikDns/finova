@@ -81,6 +81,30 @@
     --shadow-lg: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 4px 6px -3px hsl(0 0% 0% / 0.1);
     --shadow-xl: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.1), 0.5px 8px 10px -3px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0.5px 4px 10px -2px hsl(0 0% 0% / 0.25);
+
+    --vis-color0: oklch(0.64 0.24 0.71) !important;
+    --vis-color1: oklch(0.45 0.23 304.02) !important;
+    --vis-color2: oklch(0.36 0.21 282.71) !important;
+    --vis-color3: oklch(0.56 0.21 269.02) !important;
+    --vis-color4: oklch(0.78 0.12 222.46) !important;
+
+    /* --tooltip-label-color: rgba(255, 255, 255, 0.5) !important;
+    --tooltip-value-color: rgba(255, 255, 255, 1) !important;
+
+    --vis-axis-grid-color: rgba(255, 255, 255, 0.1) !important;
+
+    --vis-tooltip-background-color: #121212 !important;
+    --vis-tooltip-border-color: none !important;
+
+    --tooltip-label-color: rgba(255, 255, 255, 0.5);
+    --tooltip-value-color: rgba(255, 255, 255, 1);
+
+    --vis-tooltip-text-color: rgba(255, 255, 255, 0.5) !important;
+    --vis-axis-tick-label-color: rgba(255, 255, 255, 0.5) !important;
+    --vis-legend-label-color: rgba(255, 255, 255, 0.75) !important;
+
+    --vis-axis-label-color: rgba(255, 255, 255, 0.5) !important;
+    --vis-legend-label-color: rgba(255, 255, 255, 0.5) !important; */
 }
 
 @theme inline {
@@ -136,20 +160,20 @@
     --shadow-2xl: var(--shadow-2xl);
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
-  @keyframes accordion-down {
-  from {
-    height: 0;
+    @keyframes accordion-down {
+        from {
+            height: 0;
         }
-  to {
-    height: var(--reka-accordion-content-height);
+        to {
+            height: var(--reka-accordion-content-height);
         }
     }
-  @keyframes accordion-up {
-  from {
-    height: var(--reka-accordion-content-height);
+    @keyframes accordion-up {
+        from {
+            height: var(--reka-accordion-content-height);
         }
-  to {
-    height: 0;
+        to {
+            height: 0;
         }
     }
 }

@@ -27,6 +27,9 @@ class AccountController extends Controller
         $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
 
         $transactions = Transaction::where('budget_id', $budget->id)
+            ->whereHas('account', function($query) {
+                $query->where('type', '!=', 'loan');
+            })
             ->with('category')
             ->orderBy('date', 'desc')
             ->paginate(10);
@@ -39,10 +42,11 @@ class AccountController extends Controller
             return $group->categories;
         });
 
+
         return Inertia::render('app/Accounts', [
             'budget' => $budget,
             'account_types' => $accountTypes,
-            'accounts' => $accounts,
+            'accounts' => $this->getCashAccounts($budget->id),
             'categories' => $categories,
             'transactions' => $transactions
         ]);
@@ -71,10 +75,26 @@ class AccountController extends Controller
             return $group->categories;
         });
 
+
+        if ($account->type === 'loan') {
+            // Dapatkan prediksi pelunasan utang
+            $loanPredictions = $this->getLoanAccountProgressPrediction($account);
+
+            return Inertia::render('app/LoanAccount', [
+                'budget' => $budget,
+                'account_types' => $accountTypes,
+                'accounts' => $this->getCashAccounts($budget->id),
+                'current_account' => $account,
+                'transactions' => $transactions,
+                'categories' => $categories,
+                'loan_predictions' => $loanPredictions,
+            ]);
+        }
+
         return Inertia::render('app/Accounts', [
             'budget' => $budget,
             'account_types' => $accountTypes,
-            'accounts' => $budget->accounts,
+            'accounts' => $this->getCashAccounts($budget->id),
             'current_account' => $account,
             'transactions' => $transactions,
             'categories' => $categories,
@@ -157,7 +177,7 @@ class AccountController extends Controller
             $account->update([
                 'name' => $validated['name'],
                 'type' => $validated['type'],
-                'balance' => $validated['balance'],
+                'balance' =>  $validated['balance'],
                 'interest' => $validated['interest'] ?? 0,
                 'minimum_payment_monthly' => $validated['minimum_payment_monthly'] ?? 0
             ]);
@@ -220,6 +240,70 @@ class AccountController extends Controller
         }
     }
 
+    private function getLoanAccountProgressPrediction(Account $account)
+    {
+        // Jika tidak ada saldo utang, kembalikan array kosong
+        if ($account->balance <= 0 || $account->type !== 'loan') {
+            return [];
+        }
+
+        $currentBalance = (float) $account->balance;
+        $interestRate = (float) $account->interest;
+        $minimumPayment = (float) $account->minimum_payment_monthly;
+
+        // Jika tidak ada pembayaran minimum, gunakan 5% dari saldo sebagai default
+        if ($minimumPayment <= 0) {
+            $minimumPayment = $currentBalance * 0.05;
+        }
+
+        $predictions = [];
+        $currentDate = now();
+        // Konversi persentase bunga tahunan ke desimal bulanan
+        $monthlyInterestRate = ($interestRate / 100) / 12;
+
+        // Tambahkan data awal
+        $predictions[] = [
+            'date' => $currentDate->format('Y-m-d'),
+            'balance' => round($currentBalance, 2)
+        ];
+
+        // Hitung prediksi untuk 24 bulan ke depan
+        for ($i = 1; $i <= 24; $i++) {
+            // Tambahkan bunga bulanan
+            $interest = $currentBalance * $monthlyInterestRate;
+
+            // Pastikan pembayaran minimum lebih besar dari bunga agar saldo selalu menurun
+            $effectivePayment = max($minimumPayment, $interest + ($currentBalance * 0.01));
+
+            // Kurangi saldo dengan pembayaran efektif (setelah dikurangi bunga)
+            $currentBalance = $currentBalance + $interest - $effectivePayment;
+
+            // Jika saldo sudah lunas, set ke 0 dan hentikan loop
+            if ($currentBalance <= 0) {
+                $predictions[] = [
+                    'date' => $currentDate->addMonth()->format('Y-m-d'),
+                    'balance' => 0
+                ];
+                break;
+            }
+
+            // Tambahkan ke array prediksi
+            $predictions[] = [
+                'date' => $currentDate->addMonth()->format('Y-m-d'),
+                'balance' => round($currentBalance, 2)
+            ];
+        }
+
+        return $predictions;
+    }
+
+    private function getCashAccounts($budgetId)
+    {
+        return Account::where('budget_id', $budgetId)
+            ->where('type', 'cash')
+            ->get();
+    }
+
     private function formatAccountTypes($accounts, $budgetId)
     {
         $groupedAccounts = $accounts->groupBy('type');
@@ -231,7 +315,9 @@ class AccountController extends Controller
                     'id' => $account->id,
                     'name' => $account->name,
                     'url' => "/budgets/{$budgetId}/accounts/{$account->id}",
-                    'balance' => (float) $account->balance
+                    'balance' => (float) $account->balance,
+                    'interest' => (float) $account->interest,
+                    'minimum_payment_monthly' => (float) $account->minimum_payment_monthly,
                 ];
             })->toArray();
 

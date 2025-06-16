@@ -9,7 +9,8 @@ use App\Models\AiChat;
 
 class AIController extends Controller
 {
-    public function chat(Request $request) {
+    public function chat(Request $request)
+    {
         $request->validate([
             'message' => 'required|string',
         ]);

@@ -14,3 +14,12 @@ export const formatCurrency = (amount: number, currencyCode = 'IDR') => {
         maximumFractionDigits: 0,
     }).format(amount);
 };
+
+export const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+};
