@@ -23,6 +23,40 @@ class BudgetController extends Controller
     }
 
     /**
+     * Store a newly created budget plan in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'currency_code' => 'nullable|string|in:IDR,USD,JPY,GBP',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $budget = new Budget();
+            $budget->user_id = Auth::id();
+            $budget->name = $validated['name'];
+            $budget->description = $validated['description'] ?? '';
+            $budget->currency_code = $validated['currency_code'] ?? 'IDR';
+            $budget->save();
+
+            DB::commit();
+
+            return redirect()->route('budget', $budget->id)
+                ->with('success', 'Budget berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal membuat budget: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
      * Display the specified budget plan.
      */
     public function show(Budget $budget)
@@ -50,7 +84,7 @@ class BudgetController extends Controller
             'account_types' => $accountTypes
         ]);
     }
-
+    
     /**
      * Show the form for editing the specified budget plan.
      */
@@ -174,8 +208,6 @@ class BudgetController extends Controller
         if ($latestBudget) {
             return redirect()->intended(route('budget', $latestBudget, absolute: false));
         }
-
-        // @rafi_zamzami handle to create new budget with paramater of user_plan: true
         return redirect()->intended(route('budgets', absolute: false));
     }
 }

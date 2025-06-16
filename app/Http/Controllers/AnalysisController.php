@@ -23,11 +23,11 @@ class AnalysisController extends Controller
         $currentDay = date('d');
 
         // Call stored functions to get expense statistics
-        $totalExpense = DB::selectOne("SELECT GetTotalMonthlyExpenseForMonth(?, ?) as value", [$currentYear, $currentMonth]);
-        $averageMonthlyExpense = DB::selectOne("SELECT GetAverageExpenseForMonth(?, ?) as value", [$currentYear, $currentMonth]);
-        $averageDailyExpense = DB::selectOne("SELECT GetAverageExpenseForDay(?, ?, ?) as value", [$currentYear, $currentMonth, $currentDay]);
-        $highestMonthlyExpense = DB::selectOne("SELECT GetHighestExpenseForMonth(?, ?) as value", [$currentYear, $currentMonth]);
-        $mostActiveCategory = DB::selectOne("SELECT GetMostActiveExpenseCategoryForMonth(?, ?) as value", [$currentYear, $currentMonth]);
+        $totalExpense = DB::selectOne("SELECT GetTotalMonthlyExpenseForMonth(?, ?, ?) as value", [$budget->id, $currentYear, $currentMonth]);
+        $averageMonthlyExpense = DB::selectOne("SELECT GetAverageExpenseForMonth(?, ?, ?) as value", [$budget->id, $currentYear, $currentMonth]);
+        $averageDailyExpense = DB::selectOne("SELECT GetAverageExpenseForDay(?, ?, ?, ?) as value", [$budget->id, $currentYear, $currentMonth, $currentDay]);
+        $highestMonthlyExpense = DB::selectOne("SELECT GetHighestExpenseForMonth(?, ?, ?) as value", [$budget->id, $currentYear, $currentMonth]);
+        $mostActiveCategory = DB::selectOne("SELECT GetMostActiveExpenseCategoryForMonth(?, ?, ?) as value", [$budget->id, $currentYear, $currentMonth]);
 
         // Load accounts for the sidebar
         $budget->load('accounts');

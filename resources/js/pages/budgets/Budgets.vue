@@ -33,6 +33,9 @@ const budgetToDelete = ref<Budget | null>(null);
 const showEditDialog = ref(false);
 const budgetToEdit = ref<Budget | null>(null);
 
+// State for create dialog
+const showCreateDialog = ref(false);
+
 const form = useForm({
     name: '',
     description: '',
@@ -114,6 +117,29 @@ const cancelEdit = () => {
     budgetToEdit.value = null;
     form.reset();
 };
+
+// Function to show create dialog
+const openCreateDialog = () => {
+    form.reset();
+    form.currency_code = 'IDR'; // Set default currency
+    showCreateDialog.value = true;
+};
+
+// Function to create new budget
+const createBudget = () => {
+    form.post(route('budgets.store'), {
+        onSuccess: () => {
+            showCreateDialog.value = false;
+            form.reset();
+        },
+    });
+};
+
+// Function to cancel create
+const cancelCreate = () => {
+    showCreateDialog.value = false;
+    form.reset();
+};
 </script>
 
 <template>
@@ -183,9 +209,7 @@ const cancelEdit = () => {
                         </div>
                         <h3 class="font-serif text-lg font-medium">Buat Budget Baru</h3>
                         <p class="text-muted-foreground text-sm">Atur budget baru</p>
-                        <!-- <Link :href="route('budgets.create')"> -->
-                        <Button class="mt-2 w-full">Buat Budget</Button>
-                        <!-- </Link> -->
+                        <Button class="mt-2 w-full" @click="openCreateDialog">Buat Budget</Button>
                     </div>
                 </Card>
             </div>
@@ -247,6 +271,51 @@ const cancelEdit = () => {
                     <DialogFooter>
                         <Button variant="outline" type="button" @click="cancelEdit">Batal</Button>
                         <Button type="submit" :disabled="form.processing">Simpan</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Create Budget Dialog -->
+        <Dialog :open="showCreateDialog" @update:open="showCreateDialog = $event">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Buat Budget Baru</DialogTitle>
+                    <DialogDescription>Isi form berikut untuk membuat budget baru.</DialogDescription>
+                </DialogHeader>
+
+                <form @submit.prevent="createBudget" class="space-y-4">
+                    <div class="space-y-2">
+                        <Label for="create-name">Nama</Label>
+                        <Input id="create-name" v-model="form.name" type="text" placeholder="Nama budget" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="create-description">Deskripsi</Label>
+                        <Input id="create-description" v-model="form.description" type="text" placeholder="Deskripsi budget (opsional)" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="create-currency">Mata Uang</Label>
+                        <Select v-model="form.currency_code">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Pilih mata uang" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem
+                                    v-for="currency in currencyOptions"
+                                    :key="currency"
+                                    :value="currency"
+                                >
+                                    {{ currency }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" type="button" @click="cancelCreate">Batal</Button>
+                        <Button type="submit" :disabled="form.processing">Buat</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
