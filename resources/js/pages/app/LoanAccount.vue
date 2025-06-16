@@ -30,10 +30,12 @@ import { toast } from 'vue-sonner';
 interface AreaChartItem {
     date: string;
     balance: number;
+    monthly_interest: number;
 }
 
 const categoriesChart: Record<string, BulletLegendItemInterface> = {
-    balance: { name: 'Sisa Utang', color: '#3b82f6' },
+    balance: { name: 'Sisa Utang', color: '#49c1cb' },
+    monthly_interest: { name: 'Bunga Bulanan', color: '#6e9fc9' },
 };
 
 const xFormatter = (i: number): string | number => {
@@ -99,6 +101,8 @@ const chartData = computed(() => {
     return props.loan_predictions.map((prediction) => ({
         date: prediction.date,
         balance: prediction.balance,
+        monthly_interest: prediction.monthly_interest,
+        monthly_payment: prediction.monthly_payment,
     }));
 });
 

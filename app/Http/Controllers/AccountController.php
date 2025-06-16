@@ -27,7 +27,7 @@ class AccountController extends Controller
         $accountTypes = $this->formatAccountTypes($accounts, $budget->id);
 
         $transactions = Transaction::where('budget_id', $budget->id)
-            ->whereHas('account', function($query) {
+            ->whereHas('account', function ($query) {
                 $query->where('type', '!=', 'loan');
             })
             ->with('category')
@@ -258,13 +258,17 @@ class AccountController extends Controller
 
         $predictions = [];
         $currentDate = now();
-        // Konversi persentase bunga tahunan ke desimal bulanan
-        $monthlyInterestRate = ($interestRate / 100) / 12;
+        // Konversi persentase bunga bulanan ke desimal
+        $monthlyInterestRate = ($interestRate / 100);
+
+        // Hitung bunga bulanan awal
+        $initialInterest = $currentBalance * $monthlyInterestRate;
 
         // Tambahkan data awal
         $predictions[] = [
             'date' => $currentDate->format('Y-m-d'),
-            'balance' => round($currentBalance, 2)
+            'balance' => round($currentBalance, 2),
+            'monthly_interest' => round($initialInterest, 2), // Bunga bulanan awal
         ];
 
         // Hitung prediksi untuk 24 bulan ke depan
@@ -273,7 +277,10 @@ class AccountController extends Controller
             $interest = $currentBalance * $monthlyInterestRate;
 
             // Pastikan pembayaran minimum lebih besar dari bunga agar saldo selalu menurun
-            $effectivePayment = max($minimumPayment, $interest + ($currentBalance * 0.01));
+            // Pembayaran efektif termasuk bunga dan pokok pinjaman
+            // Perhitungan pembayaran yang menurun seiring dengan penurunan saldo utang
+            $principalPayment = $currentBalance * 0.05; // 5% dari saldo utang saat ini
+            $effectivePayment = max($minimumPayment, $interest + $principalPayment);
 
             // Kurangi saldo dengan pembayaran efektif (setelah dikurangi bunga)
             $currentBalance = $currentBalance + $interest - $effectivePayment;
@@ -282,7 +289,8 @@ class AccountController extends Controller
             if ($currentBalance <= 0) {
                 $predictions[] = [
                     'date' => $currentDate->addMonth()->format('Y-m-d'),
-                    'balance' => 0
+                    'balance' => 0,
+                    'monthly_interest' => round($interest, 2),
                 ];
                 break;
             }
@@ -290,7 +298,8 @@ class AccountController extends Controller
             // Tambahkan ke array prediksi
             $predictions[] = [
                 'date' => $currentDate->addMonth()->format('Y-m-d'),
-                'balance' => round($currentBalance, 2)
+                'balance' => round($currentBalance, 2),
+                'monthly_interest' => round($interest, 2),
             ];
         }
 
