@@ -103,6 +103,7 @@ const resetEditForm = () => {
 };
 
 const openEditDialog = (account: any, accountType: string) => {
+    console.log('account: ', account);
     editingAccount.value = account;
     editAccountForm.value = {
         id: account.id,
@@ -116,7 +117,7 @@ const openEditDialog = (account: any, accountType: string) => {
 };
 
 const createAccount = () => {
-    if (!accountForm.value.name || !accountForm.value.type || !accountForm.value.balance) {
+    if (!accountForm.value.name || !accountForm.value.type) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
         return;
     }
@@ -136,14 +137,13 @@ const createAccount = () => {
     }
 
     router.post(route('accounts.store'), formData, {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showCreateAccountDialog.value = false;
             resetForm();
             toast.success('Rekening berhasil dibuat');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error creating account:', errors);
@@ -158,7 +158,9 @@ const createAccount = () => {
 };
 
 const updateAccount = () => {
-    if (!editAccountForm.value.name || !editAccountForm.value.type || !editAccountForm.value.balance) {
+    console.log('editAccountForm: ', editAccountForm.value);
+
+    if (!editAccountForm.value.name || !editAccountForm.value.type) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
         return;
     }
@@ -178,14 +180,13 @@ const updateAccount = () => {
     }
 
     router.put(route('accounts.update', editAccountForm.value.id), formData, {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil diperbarui');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error updating account:', errors);
@@ -213,14 +214,13 @@ const confirmDeleteAccount = () => {
     showDeleteConfirmDialog.value = false;
 
     router.delete(route('accounts.destroy', editAccountForm.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil dihapus');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error deleting account:', errors);
@@ -242,7 +242,7 @@ const confirmDeleteAccount = () => {
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <!-- The item.href is contain the domain remove it -->
                 <SidebarMenuButton as-child :is-active="getThePathOnly(item.href) === page.url" :tooltip="item.title">
-                    <Link :href="item.href">
+                    <Link :href="item.href" prefetch>
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                     </Link>
@@ -266,9 +266,17 @@ const confirmDeleteAccount = () => {
                             <SidebarMenuSubItem v-for="subItem in item.accounts" :key="subItem.name" class="group/account">
                                 <SidebarMenuSubButton as-child>
                                     <div class="flex w-full items-center justify-between">
-                                        <a :href="subItem.url" class="flex min-w-0 flex-1 justify-between">
+                                        <a :href="subItem.url" class="flex min-w-0 flex-1 items-center justify-between">
                                             <span class="truncate capitalize"> {{ subItem.name }}</span>
-                                            <span class="ml-2 text-xs text-gray-500">{{ formatCurrency(subItem.balance, currency_code) }}</span>
+                                            <span
+                                                class="ml-2 text-xs text-gray-500"
+                                                v-if="item.type === 'cash' || (item.type === 'loan' && subItem.balance === 0)"
+                                            >
+                                                {{ formatCurrency(subItem.balance, currency_code) }}
+                                            </span>
+                                            <span class="ml-2 text-xs text-gray-500" v-else>
+                                                -{{ formatCurrency(subItem.balance, currency_code) }}
+                                            </span>
                                         </a>
                                         <Button
                                             variant="ghost"
@@ -326,6 +334,7 @@ const confirmDeleteAccount = () => {
                             v-model="accountForm.balance"
                             type="number"
                             step="500"
+                            min="0"
                             :placeholder="accountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
                             class="col-span-3"
                         />
@@ -379,28 +388,15 @@ const confirmDeleteAccount = () => {
                         <Label for="edit-name" class="text-right"> Nama </Label>
                         <Input id="edit-name" v-model="editAccountForm.name" placeholder="Nama rekening" class="col-span-3" />
                     </div>
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-type" class="text-right"> Jenis </Label>
-                        <Select v-model="editAccountForm.type">
-                            <SelectTrigger class="col-span-3 w-full">
-                                <SelectValue placeholder="Pilih jenis rekening" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cash">Cash (Kas, Tabungan)</SelectItem>
-                                <SelectItem value="loan">Loan (Utang)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-balance" class="text-right">
-                            {{ editAccountForm.type === 'loan' ? 'Total Utang' : 'Saldo' }}
-                        </Label>
+                    <div class="grid grid-cols-4 items-center gap-4" v-if="editAccountForm.type !== 'loan'">
+                        <Label for="edit-balance" class="text-right"> Saldo </Label>
                         <Input
                             id="edit-balance"
                             v-model="editAccountForm.balance"
                             type="number"
                             step="500"
-                            :placeholder="editAccountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
+                            min="0"
+                            placeholder="Saldo awal"
                             class="col-span-3"
                         />
                     </div>

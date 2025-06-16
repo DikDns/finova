@@ -79,9 +79,9 @@ const pricingPlans: PricingPlan[] = [
 
         <main class="py-16">
             <section class="container mx-auto mb-16 px-4 text-center">
-                <h1 class="mb-12 text-4xl font-bold md:text-5xl">
+                <h1 class="mb-12 text-4xl font-bold md:text-5xl font-serif ">
                     Upgrade Finansialmu, <br />
-                    <span class="text-primary">Gak Pakai Ribet!</span>
+                    <span class="text-primary font-serif ">Gak Pakai Ribet!</span>
                 </h1>
 
                 <div class="mb-16 grid gap-8 md:grid-cols-3">
@@ -166,7 +166,7 @@ const pricingPlans: PricingPlan[] = [
                         </div>
                     </div>
                     <div class="md:w-1/2">
-                        <img src="/handMoney.png" alt="Hand with Money" class="mx-auto max-w-md scale-x-100 md:scale-x-100" />
+                        <img src="/hand_money.png" alt="Hand with Money" class="mx-auto max-w-md scale-x-100 md:scale-x-100" />
                     </div>
                 </div>
             </section>

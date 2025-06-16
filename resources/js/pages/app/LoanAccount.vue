@@ -24,7 +24,25 @@ import { Head, router } from '@inertiajs/vue3';
 import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
 import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { AreaChart, BulletLegendItemInterface, LegendPosition } from 'vue-chrts';
 import { toast } from 'vue-sonner';
+
+interface AreaChartItem {
+    date: string;
+    balance: number;
+    monthly_interest: number;
+}
+
+const categoriesChart: Record<string, BulletLegendItemInterface> = {
+    balance: { name: 'Sisa Utang', color: '#49c1cb' },
+    monthly_interest: { name: 'Bunga Bulanan', color: '#6e9fc9' },
+};
+
+const xFormatter = (i: number): string | number => {
+    if (!chartData.value || !chartData.value[i]) return '';
+    const date = new Date(chartData.value[i].date);
+    return date ? `${date.getMonth() + 1}/${date.getFullYear()}` : '';
+};
 
 interface Props {
     budget: Budget;
@@ -39,6 +57,7 @@ interface Props {
     accounts: Account[];
     categories: Category[];
     current_account?: Account;
+    loan_predictions: AreaChartItem[];
 }
 
 const props = defineProps<Props>();
@@ -57,7 +76,7 @@ const form = ref({
     payee: '',
     amount: 0,
     date: new Date().toISOString(),
-    category_id: undefined as string | undefined,
+    category_id: null as string | undefined | null,
     account_id: '' as string,
     memo: '',
     budget_id: props.budget.id,
@@ -71,10 +90,34 @@ const isLoading = ref(false);
 const deleteTransactionId = ref<string | null>(null);
 
 const currentAccountName = computed(() => {
-    if (props.current_account?.name) {
+    if (props.current_account) {
         return props.current_account.name;
     }
     return 'Semua Rekening';
+});
+
+// Pagination
+const goToPage = (page: number) => {
+    router.get(
+        route('budget.accounts.show', { budget: props.budget.id, account: props.current_account?.id }),
+        {
+            page: page,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        },
+    );
+};
+
+// Mengubah format data prediksi untuk AreaChart
+const chartData = computed(() => {
+    return props.loan_predictions.map((prediction) => ({
+        date: prediction.date,
+        balance: prediction.balance,
+        monthly_interest: prediction.monthly_interest,
+    }));
 });
 
 // Reset form
@@ -84,7 +127,7 @@ const resetForm = () => {
         payee: '',
         amount: 0,
         date: new Date().toISOString(),
-        category_id: undefined,
+        category_id: null,
         account_id: '',
         memo: '',
         budget_id: props.budget.id,
@@ -107,7 +150,7 @@ const setEditForm = (transaction: Transaction) => {
         amount: transaction.amount,
         date: transaction.date,
         category_id: transaction.category_id,
-        account_id: transaction.account_id,
+        account_id: transaction.payee,
         memo: transaction.memo || '',
         budget_id: props.budget.id,
     };
@@ -117,12 +160,13 @@ const setEditForm = (transaction: Transaction) => {
 const submitForm = () => {
     isLoading.value = true;
     if (editingTransaction.value) {
-        // Update existing transaction
         router.put(
             route('transactions.update', { transaction: editingTransaction.value.id }),
             {
                 ...form.value,
                 date: dateValue.value?.toString(),
+                current_account_id: props.current_account?.id,
+                account_id: editingTransaction.value.payee,
             },
             {
                 preserveScroll: true,
@@ -145,12 +189,12 @@ const submitForm = () => {
             },
         );
     } else {
-        // Create new transaction
         router.post(
             route('transactions.store'),
             {
                 ...form.value,
                 date: dateValue.value?.toString(),
+                current_account_id: props.current_account?.id,
             },
             {
                 preserveScroll: true,
@@ -201,62 +245,79 @@ const handleDelete = () => {
         },
     });
 };
-
-// Pagination
-const goToPage = (page: number) => {
-    router.get(
-        route('budget.accounts', { budget: props.budget.id }),
-        {
-            page: page,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
-};
 </script>
 
 <template>
     <Head :title="currentAccountName" />
 
     <AppLayout :budget_id="props.budget.id" :currency_code="props.budget.currency_code" :account_types="props.account_types">
-        <div class="w-full space-y-6 p-6">
+        <div class="space-y-6 p-6">
             <!-- Header  -->
             <div class="flex items-center justify-between">
                 <h1 class="font-serif text-2xl font-semibold tracking-tight">{{ currentAccountName }}</h1>
             </div>
 
-            <div class="bg-card w-full rounded-lg border p-6 shadow-sm">
+            <div class="bg-card rounded-lg border p-6 shadow-sm">
                 <div class="flex items-center gap-x-3 md:gap-x-6">
                     <div>
                         <span class="text-xl font-semibold">
                             {{ formatCurrency(props.current_account?.balance ?? 0, props.budget.currency_code) }}
                         </span>
-                        <p class="text-muted-foreground text-xs tracking-tight">Saldo</p>
+                        <p class="text-muted-foreground text-xs tracking-tight">Sisa Nominal Utang</p>
+                    </div>
+                    <div>
+                        <span class="text-xl font-semibold">
+                            {{ (Math.round((props.current_account?.interest ?? 0) * 100) / 100).toFixed(1).toString().replace('.', ',') }}%
+                        </span>
+                        <p class="text-muted-foreground text-xs tracking-tight">Suku Bunga</p>
+                    </div>
+                    <div>
+                        <span class="text-xl font-semibold">
+                            {{ formatCurrency(props.current_account?.minimum_payment_monthly ?? 0, props.budget.currency_code) }}
+                        </span>
+                        <p class="text-muted-foreground text-xs tracking-tight">Minimum Pembayaran Bulanan</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Transactions Section -->
-            <div class="bg-card w-full rounded-lg border p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b p-4">
-                    <h2 class="font-serif text-lg">Transaksi Terbaru</h2>
+            <div class="bg-card overflow-hidden rounded-lg border p-6 shadow-sm">
+                <div class="flex items-center justify-between pb-2">
+                    <h2 class="font-serif text-lg">Progres Utang</h2>
+                </div>
+
+                <AreaChart
+                    :data="chartData"
+                    :height="300"
+                    y-label="Sisa Utang"
+                    x-label="Bulan"
+                    :categories="categoriesChart"
+                    :y-grid-line="true"
+                    :legend-position="LegendPosition.Top"
+                    :hide-legend="false"
+                    :x-formatter="xFormatter"
+                />
+                <div v-if="chartData.length === 0" class="text-muted-foreground flex h-[300px] items-center justify-center">
+                    Tidak ada data prediksi pelunasan utang
+                </div>
+            </div>
+
+            <div class="bg-card overflow-hidden rounded-lg border p-6 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-6">
+                    <h2 class="font-serif text-lg">Aktivitas</h2>
 
                     <!-- Create Transaction Button -->
                     <Dialog v-model:open="showCreateDialog">
                         <DialogTrigger as-child>
                             <Button class="flex items-center gap-2">
                                 <Plus class="h-4 w-4" />
-                                <span>Tambah Transaksi</span>
+                                <span>Buat Pembayaran</span>
                             </Button>
                         </DialogTrigger>
 
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Tambah Transaksi Baru</DialogTitle>
-                                <DialogDescription> Isi form berikut untuk menambahkan transaksi baru. </DialogDescription>
+                                <DialogTitle>Tambah Pembayaran Baru</DialogTitle>
+                                <DialogDescription> Isi form berikut untuk menambahkan pembayaran utang baru. </DialogDescription>
                             </DialogHeader>
 
                             <form @submit.prevent="submitForm" class="mt-4 space-y-4">
@@ -302,46 +363,18 @@ const goToPage = (page: number) => {
                                     <p v-if="errors.account_id" class="mt-1 text-xs text-red-500">{{ errors.account_id }}</p>
                                 </div>
 
-                                <!-- Category (Optional) -->
-                                <div class="space-y-2">
-                                    <label for="category" class="text-sm font-medium">Kategori</label>
-                                    <Select v-model="form.category_id">
-                                        <SelectTrigger class="w-full">
-                                            <SelectValue placeholder="Pilih kategori (opsional)" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem :value="null">Tanpa Kategori</SelectItem>
-                                            <SelectItem v-for="category in props.categories" :key="category.id" :value="category.id">
-                                                {{ category.name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
                                 <!-- Amount -->
                                 <div class="space-y-2">
-                                    <label for="amount" class="text-sm font-medium">Jumlah ({{ props.budget.currency_code }})</label>
+                                    <label for="amount" class="text-sm font-medium">Jumlah Pembayaran ({{ props.budget.currency_code }})</label>
                                     <Input
                                         id="amount"
                                         v-model="form.amount"
                                         type="number"
                                         placeholder="Jumlah transaksi"
+                                        min="0"
                                         :class="{ 'border-red-500': errors.amount }"
                                     />
-                                    <p class="text-muted-foreground text-sm">Negatif untuk pengeluaran dan positif untuk pemasukan.</p>
                                     <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
-                                </div>
-
-                                <!-- Payee -->
-                                <div class="space-y-2">
-                                    <label for="payee" class="text-sm font-medium">Penerima/Pembayar (Opsional)</label>
-                                    <Input
-                                        id="payee"
-                                        v-model="form.payee"
-                                        placeholder="Nama penerima atau pembayar"
-                                        :class="{ 'border-red-500': errors.payee }"
-                                    />
-                                    <p v-if="errors.payee" class="mt-1 text-xs text-red-500">{{ errors.payee }}</p>
                                 </div>
 
                                 <!-- Memo -->
@@ -369,22 +402,19 @@ const goToPage = (page: number) => {
                         }
                     "
                 >
-                    <!-- Transactions Table -->
-
-                    <div class="w-full overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>No</TableHead>
                                     <TableHead>Tanggal</TableHead>
                                     <TableHead>Rekening</TableHead>
-                                    <TableHead>Kategori</TableHead>
-                                    <TableHead>Penerima/Pembayar</TableHead>
                                     <TableHead>Memo</TableHead>
-                                    <TableHead class="text-right">Jumlah</TableHead>
+                                    <TableHead class="text-right">Pembayaran</TableHead>
                                     <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody v-auto-animate>
                                 <TableRow v-for="(transaction, index) in props.transactions.data" :key="transaction.id">
                                     <TableCell class="text-center">{{
@@ -392,13 +422,12 @@ const goToPage = (page: number) => {
                                     }}</TableCell>
                                     <TableCell>{{ formatDate(transaction.date) }}</TableCell>
                                     <TableCell>
-                                        {{ props.accounts.find((a) => a.id === transaction.account_id)?.name || '-' }}
+                                        {{ console.log(props.accounts) }}
+                                        {{ props.accounts.find((a) => a.id === transaction.payee)?.name || '-' }}
                                     </TableCell>
-                                    <TableCell>{{ transaction.category?.name || 'Tanpa Kategori' }}</TableCell>
-                                    <TableCell>{{ transaction.payee }}</TableCell>
                                     <TableCell>{{ transaction.memo || '-' }}</TableCell>
-                                    <TableCell class="text-right font-medium" :class="transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'">
-                                        {{ formatCurrency(transaction.amount, props.budget.currency_code) }}
+                                    <TableCell class="text-right font-medium text-red-600">
+                                        -{{ formatCurrency(transaction.amount, props.budget.currency_code) }}
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -419,8 +448,8 @@ const goToPage = (page: number) => {
 
                                 <!-- Empty State -->
                                 <TableRow v-if="props.transactions.data.length === 0">
-                                    <TableCell colspan="8" class="text-muted-foreground py-6 text-center">
-                                        Tidak ada transaksi untuk ditampilkan
+                                    <TableCell colspan="6" class="text-muted-foreground py-6 text-center">
+                                        Tidak ada aktivitas untuk ditampilkan
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -475,62 +504,34 @@ const goToPage = (page: number) => {
                                 <p v-if="errors.date" class="mt-1 text-xs text-red-500">{{ errors.date }}</p>
                             </div>
 
-                            <!-- Account (Required) -->
                             <div class="space-y-2">
                                 <label for="account" class="text-sm font-medium">Rekening</label>
-                                <Select v-model="form.account_id">
-                                    <SelectTrigger :class="{ 'border-red-500': errors.account_id, 'w-full': true }">
+                                <Select v-model="form.payee">
+                                    <SelectTrigger :class="{ 'border-red-500': errors.payee, 'w-full': true }">
                                         <SelectValue placeholder="Pilih rekening" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem v-for="account in props.accounts" :key="account.id" :value="account.id">
-                                            {{ account.name }} ({{ formatAmount(account.balance) }})
+                                            {{ account.name }} ({{ formatCurrency(account.balance) }})
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p v-if="errors.account_id" class="mt-1 text-xs text-red-500">{{ errors.account_id }}</p>
-                            </div>
-
-                            <!-- Category (Optional) -->
-                            <div class="space-y-2">
-                                <label for="category" class="text-sm font-medium">Kategori</label>
-                                <Select v-model="form.category_id">
-                                    <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Pilih kategori (opsional)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem :value="null">Tanpa Kategori</SelectItem>
-                                        <SelectItem v-for="category in props.categories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <p v-if="errors.payee" class="mt-1 text-xs text-red-500">{{ errors.payee }}</p>
                             </div>
 
                             <!-- Amount -->
                             <div class="space-y-2">
-                                <label for="amount" class="text-sm font-medium">Jumlah ({{ props.budget.currency_code }})</label>
+                                <label for="amount" class="text-sm font-medium">Pembayaran ({{ props.budget.currency_code }})</label>
                                 <Input
                                     id="amount"
                                     v-model="form.amount"
                                     type="number"
                                     placeholder="Jumlah transaksi"
+                                    min="0"
                                     :class="{ 'border-red-500': errors.amount }"
                                 />
                                 <p class="text-muted-foreground text-sm">Negatif untuk pengeluaran dan positif untuk pemasukan.</p>
                                 <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
-                            </div>
-
-                            <!-- Payee -->
-                            <div class="space-y-2">
-                                <label for="payee" class="text-sm font-medium">Penerima/Pembayar (Opsional)</label>
-                                <Input
-                                    id="payee"
-                                    v-model="form.payee"
-                                    placeholder="Nama penerima atau pembayar"
-                                    :class="{ 'border-red-500': errors.payee }"
-                                />
-                                <p v-if="errors.payee" class="mt-1 text-xs text-red-500">{{ errors.payee }}</p>
                             </div>
 
                             <!-- Memo -->
@@ -556,22 +557,8 @@ const goToPage = (page: number) => {
                     </DialogContent>
                 </Dialog>
 
-                <!-- Delete Confirmation Dialog -->
-                <AlertDialog v-model:open="showDeleteDialog">
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                            <AlertDialogDescription> Apakah Anda yakin ingin menghapus transaksi ini? </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel :disabled="isLoading" @click="showDeleteDialog = false">Batal</AlertDialogCancel>
-                            <AlertDialogAction :disabled="isLoading" @click="handleDelete" variant="destructive">Hapus</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
                 <!-- Pagination -->
-                <div class="flex items-center justify-between border-t p-4">
+                <div class="flex items-center justify-between border-t pt-6">
                     <div class="text-sm text-gray-600">
                         Halaman {{ props.transactions.current_page }} dari {{ props.transactions.last_page }} ({{ props.transactions.total }} total
                         transaksi)
@@ -601,5 +588,19 @@ const goToPage = (page: number) => {
                 </div>
             </div>
         </div>
+
+        <!-- Delete Confirmation Dialog -->
+        <AlertDialog v-model:open="showDeleteDialog">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                    <AlertDialogDescription> Apakah Anda yakin ingin menghapus pembayaran ini? </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel :disabled="isLoading" @click="showDeleteDialog = false">Batal</AlertDialogCancel>
+                    <AlertDialogAction :disabled="isLoading" @click="handleDelete" variant="destructive">Hapus</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </AppLayout>
 </template>
