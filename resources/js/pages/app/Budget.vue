@@ -15,6 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/lib/utils';
@@ -23,7 +24,6 @@ import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
-import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 
 interface Props {
     budget: Budget;
@@ -210,6 +210,9 @@ const saveGroupEdit = async () => {
             name: editingGroupName.value.trim(),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Grup kategori berhasil diperbarui');
@@ -237,6 +240,9 @@ const saveCategoryEdit = async () => {
             name: editingCategoryName.value.trim(),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Kategori berhasil diperbarui');
@@ -267,6 +273,9 @@ const saveAllocatedEdit = async () => {
             assigned: amount,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Jumlah alokasi berhasil diperbarui');
@@ -297,6 +306,9 @@ const saveTargetEdit = async () => {
             available: amount,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Target budget berhasil diperbarui');
@@ -324,6 +336,9 @@ const confirmDeleteGroup = async () => {
 
     isLoading.value = true;
     router.delete(route('category-groups.destroy', groupToDelete.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showDeleteGroupDialog.value = false;
             groupToDelete.value = null;
@@ -351,6 +366,9 @@ const confirmDeleteCategory = async () => {
 
     isLoading.value = true;
     router.delete(route('categories.destroy', categoryToDelete.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showDeleteCategoryDialog.value = false;
             categoryToDelete.value = null;
@@ -399,6 +417,9 @@ const saveNewGroup = async () => {
             budget_id: props.budget.id,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Grup kategori berhasil dibuat');
@@ -428,6 +449,9 @@ const saveNewCategory = async () => {
             monthly_budget_ids: props.budget.monthly_budgets.map((mb) => mb.id),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Kategori berhasil dibuat');
@@ -463,12 +487,9 @@ const cancelEditing = () => {
 // Get current month's budget data
 const currentMonthBudget = computed(() => {
     const currentMonthStr = currentMonth.value.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }); // Format: YYYY-MM
-    console.log('Current month string:', currentMonthStr);
     const monthBudget = props.budget.monthly_budgets?.find((mb) => {
-        console.log('Comparing:', mb.month, 'with', currentMonthStr);
         return mb.month === currentMonthStr;
     });
-    console.log('Found monthly budget:', monthBudget);
     return monthBudget;
 });
 
@@ -516,7 +537,7 @@ const groupedCategories = computed(() => {
 
     <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
         <div class="absolute top-4 right-4 z-40">
-            <ButtonAi @click="showSidebar = true" class=""> AI Assistant </ButtonAi>
+            <ButtonAi @click="showSidebar = true" class="cursor-pointer"> AI Assistant </ButtonAi>
         </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">
@@ -564,7 +585,7 @@ const groupedCategories = computed(() => {
                         <div class="w-32 flex-shrink-0 text-right">AKTIVITAS</div>
                     </div>
 
-                    <Accordion type="multiple" class="space-y-0">
+                    <Accordion type="multiple" class="space-y-0" v-auto-animate>
                         <!-- New Group Creation Row -->
                         <div v-if="isCreatingGroup" class="bg-muted/30 border-b px-6 py-3">
                             <div class="flex w-full">
@@ -658,31 +679,73 @@ const groupedCategories = computed(() => {
                             </AccordionTrigger>
 
                             <AccordionContent class="pt-0 pb-0">
-                                <!-- Add Category Button -->
-                                <div class="bg-muted/20 border-t px-6 py-2">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        class="flex items-center gap-2 text-xs"
-                                        @click="startCreatingCategory(group?.id ?? '')"
-                                        :disabled="isLoading"
-                                    >
-                                        <Plus class="h-3 w-3" />
-                                        <span>Tambah Kategori</span>
-                                    </Button>
-                                </div>
+                                <div v-auto-animate>
+                                    <!-- Add Category Button -->
+                                    <div class="bg-muted/20 border-t px-6 py-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            class="flex items-center gap-2 text-xs"
+                                            @click="startCreatingCategory(group?.id ?? '')"
+                                            :disabled="isLoading"
+                                        >
+                                            <Plus class="h-3 w-3" />
+                                            <span>Tambah Kategori</span>
+                                        </Button>
+                                    </div>
 
-                                <!-- New Category Creation Row -->
-                                <div v-if="isCreatingCategory === group?.id" class="bg-muted/30 border-t px-6 py-3">
-                                    <div class="flex text-sm">
+                                    <!-- New Category Creation Row -->
+                                    <div v-if="isCreatingCategory === group?.id" class="bg-muted/30 border-t px-6 py-3">
+                                        <div class="flex text-sm">
+                                            <div class="flex min-w-0 flex-1 items-center gap-x-4">
+                                                <div class="flex h-4 w-4 items-center justify-center"></div>
+                                                <div class="flex min-w-0 flex-1 items-center gap-2">
+                                                    <Input
+                                                        v-model="newCategoryName"
+                                                        placeholder="Nama kategori baru"
+                                                        class="h-8 text-sm"
+                                                        @keyup.enter="saveNewCategory"
+                                                        @keyup.escape="cancelEditing"
+                                                        @click.stop
+                                                        :disabled="isLoading"
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        @click.stop="saveNewCategory"
+                                                        :disabled="!newCategoryName.trim() || isLoading"
+                                                    >
+                                                        <Check class="h-3 w-3" />
+                                                    </Button>
+                                                    <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
+                                                        <X class="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
+                                            <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
+                                            <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Categories -->
+                                    <div
+                                        v-for="category in group?.categories"
+                                        :key="category.id"
+                                        class="hover:bg-muted/50 group flex border-t px-6 py-3 text-sm"
+                                        :class="editingCategoryId === category.id ? 'pointer-events-none' : ''"
+                                    >
                                         <div class="flex min-w-0 flex-1 items-center gap-x-4">
                                             <div class="flex h-4 w-4 items-center justify-center"></div>
-                                            <div class="flex min-w-0 flex-1 items-center gap-2">
+                                            <!-- Category Name Editing -->
+                                            <div
+                                                v-if="editingCategoryId === category.id"
+                                                class="pointer-events-auto flex min-w-0 flex-1 items-center gap-2"
+                                            >
                                                 <Input
-                                                    v-model="newCategoryName"
-                                                    placeholder="Nama kategori baru"
+                                                    v-model="editingCategoryName"
                                                     class="h-8 text-sm"
-                                                    @keyup.enter="saveNewCategory"
+                                                    @keyup.enter="saveCategoryEdit"
                                                     @keyup.escape="cancelEditing"
                                                     @click.stop
                                                     :disabled="isLoading"
@@ -690,8 +753,8 @@ const groupedCategories = computed(() => {
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    @click.stop="saveNewCategory"
-                                                    :disabled="!newCategoryName.trim() || isLoading"
+                                                    @click.stop="saveCategoryEdit"
+                                                    :disabled="!editingCategoryName.trim() || isLoading"
                                                 >
                                                     <Check class="h-3 w-3" />
                                                 </Button>
@@ -699,142 +762,104 @@ const groupedCategories = computed(() => {
                                                     <X class="h-3 w-3" />
                                                 </Button>
                                             </div>
+                                            <!-- Category Name Display -->
+                                            <div v-else class="flex min-w-0 flex-1 items-center gap-2">
+                                                <span class="truncate" :title="category.name">{{ category.name }}</span>
+                                                <div
+                                                    class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                                                >
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        @click="startEditingCategory(category.id, category.name)"
+                                                        :disabled="isLoading"
+                                                    >
+                                                        <Edit2 class="h-3 w-3" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        @click="deleteCategory(category.id, category.name)"
+                                                        :disabled="isLoading"
+                                                    >
+                                                        <Trash2 class="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                        <div class="text-muted-foreground w-32 flex-shrink-0 text-right">-</div>
-                                    </div>
-                                </div>
-
-                                <!-- Categories -->
-                                <div
-                                    v-for="category in group?.categories"
-                                    :key="category.id"
-                                    class="hover:bg-muted/50 group flex border-t px-6 py-3 text-sm"
-                                    :class="editingCategoryId === category.id ? 'pointer-events-none' : ''"
-                                >
-                                    <div class="flex min-w-0 flex-1 items-center gap-x-4">
-                                        <div class="flex h-4 w-4 items-center justify-center"></div>
-                                        <!-- Category Name Editing -->
-                                        <div
-                                            v-if="editingCategoryId === category.id"
-                                            class="pointer-events-auto flex min-w-0 flex-1 items-center gap-2"
-                                        >
-                                            <Input
-                                                v-model="editingCategoryName"
-                                                class="h-8 text-sm"
-                                                @keyup.enter="saveCategoryEdit"
-                                                @keyup.escape="cancelEditing"
-                                                @click.stop
-                                                :disabled="isLoading"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                @click.stop="saveCategoryEdit"
-                                                :disabled="!editingCategoryName.trim() || isLoading"
+                                        <div class="flex w-32 flex-shrink-0 items-center justify-end">
+                                            <div
+                                                v-if="editingAllocatedBudgetId === category.category_budget?.id"
+                                                class="relative flex items-center space-x-1"
                                             >
-                                                <Check class="h-3 w-3" />
-                                            </Button>
-                                            <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                <X class="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                        <!-- Category Name Display -->
-                                        <div v-else class="flex min-w-0 flex-1 items-center gap-2">
-                                            <span class="truncate" :title="category.name">{{ category.name }}</span>
-                                            <div class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click="startEditingCategory(category.id, category.name)"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Edit2 class="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    @click="deleteCategory(category.id, category.name)"
-                                                    :disabled="isLoading"
-                                                >
-                                                    <Trash2 class="h-3 w-3" />
-                                                </Button>
+                                                <div class="absolute -right-32 z-10 flex items-center gap-1">
+                                                    <Input
+                                                        v-model="editingAllocatedAmount"
+                                                        class="h-8 min-w-32"
+                                                        type="number"
+                                                        :disabled="isLoading"
+                                                        @keyup.enter="saveAllocatedEdit"
+                                                        @keyup.escape="cancelEditing"
+                                                    />
+                                                    <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit" :disabled="isLoading">
+                                                        <Check class="h-3 w-3" />
+                                                    </Button>
+                                                    <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
+                                                        <X class="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-else
+                                                class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
+                                                @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
+                                                :disabled="isLoading"
+                                            >
+                                                <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="flex w-32 flex-shrink-0 items-center justify-end">
-                                        <div
-                                            v-if="editingAllocatedBudgetId === category.category_budget?.id"
-                                            class="relative flex items-center space-x-1"
-                                        >
-                                            <div class="absolute -right-32 z-10 flex items-center gap-1">
-                                                <Input
-                                                    v-model="editingAllocatedAmount"
-                                                    class="h-8 min-w-32"
-                                                    type="number"
-                                                    :disabled="isLoading"
-                                                    @keyup.enter="saveAllocatedEdit"
-                                                    @keyup.escape="cancelEditing"
-                                                />
-                                                <Button size="sm" variant="ghost" @click.stop="saveAllocatedEdit" :disabled="isLoading">
-                                                    <Check class="h-3 w-3" />
-                                                </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                    <X class="h-3 w-3" />
-                                                </Button>
+                                        <div class="flex w-32 flex-shrink-0 items-center justify-end">
+                                            <div
+                                                v-if="editingTargetBudgetId === category.category_budget?.id"
+                                                class="relative flex items-center space-x-1"
+                                            >
+                                                <div class="absolute -right-32 z-10 flex items-center gap-1">
+                                                    <Input
+                                                        v-model="editingTargetAmount"
+                                                        class="h-8 min-w-32"
+                                                        type="number"
+                                                        :disabled="isLoading"
+                                                        @keyup.enter="saveTargetEdit"
+                                                        @keyup.escape="cancelEditing"
+                                                    />
+                                                    <Button size="sm" variant="ghost" @click.stop="saveTargetEdit" :disabled="isLoading">
+                                                        <Check class="h-3 w-3" />
+                                                    </Button>
+                                                    <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
+                                                        <X class="h-3 w-3" />
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div
-                                            v-else
-                                            class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
-                                            @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
-                                            :disabled="isLoading"
-                                        >
-                                            <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex w-32 flex-shrink-0 items-center justify-end">
-                                        <div
-                                            v-if="editingTargetBudgetId === category.category_budget?.id"
-                                            class="relative flex items-center space-x-1"
-                                        >
-                                            <div class="absolute -right-32 z-10 flex items-center gap-1">
-                                                <Input
-                                                    v-model="editingTargetAmount"
-                                                    class="h-8 min-w-32"
-                                                    type="number"
-                                                    :disabled="isLoading"
-                                                    @keyup.enter="saveTargetEdit"
-                                                    @keyup.escape="cancelEditing"
-                                                />
-                                                <Button size="sm" variant="ghost" @click.stop="saveTargetEdit" :disabled="isLoading">
-                                                    <Check class="h-3 w-3" />
-                                                </Button>
-                                                <Button size="sm" variant="ghost" @click.stop="cancelEditing" :disabled="isLoading">
-                                                    <X class="h-3 w-3" />
-                                                </Button>
+                                            <div
+                                                v-else
+                                                class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
+                                                @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
+                                                :disabled="isLoading"
+                                            >
+                                                <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
+                                                    formatCurrency(category.target, budget.currency_code)
+                                                }}</span>
                                             </div>
                                         </div>
                                         <div
-                                            v-else
-                                            class="flex w-fit cursor-pointer items-center justify-end space-x-1 hover:underline"
-                                            @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
-                                            :disabled="isLoading"
+                                            class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
+                                            :class="[
+                                                category.spent >= 0 ? 'text-green-500' : 'text-red-500',
+                                                category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
+                                            ]"
                                         >
-                                            <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
-                                                formatCurrency(category.target, budget.currency_code)
-                                            }}</span>
+                                            <span> {{ formatCurrency(category.spent, budget.currency_code) }}</span>
                                         </div>
-                                    </div>
-                                    <div
-                                        class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
-                                        :class="[
-                                            category.spent >= 0 ? 'text-green-500' : 'text-red-500',
-                                            category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
-                                        ]"
-                                    >
-                                        <span> {{ formatCurrency(category.spent, budget.currency_code) }}</span>
                                     </div>
                                 </div>
                             </AccordionContent>
@@ -843,7 +868,7 @@ const groupedCategories = computed(() => {
                 </main>
 
                 <!-- AI Sidebar -->
-                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
+                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" :budget_id="props.budget.id" />
             </div>
         </div>
 
