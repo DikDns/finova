@@ -268,7 +268,7 @@ const displayBalance = (account: Account) => {
                     <Card class="p-2 sm:p-6">
                         <div class="flex flex-row items-center justify-between space-x-2 text-left sm:space-x-3">
                             <div>
-                                <p class="text-muted-foreground text-xs font-medium">Net Worth</p>
+                                <p class="text-muted-foreground text-xs font-medium">Saldo Bersih</p>
                                 <p class="text-lg font-bold sm:text-2xl" :class="correctedTotalBalance >= 0 ? 'text-green-600' : 'text-red-600'">
                                     {{ formatCurrency(correctedTotalBalance) }}
                                 </p>
@@ -283,11 +283,11 @@ const displayBalance = (account: Account) => {
                     <Card class="p-2 sm:p-6">
                         <div class="flex flex-row items-center justify-between space-x-2 text-left sm:space-x-3">
                             <div>
-                                <p class="text-muted-foreground text-xs font-medium">Average Net Worth</p>
+                                <p class="text-muted-foreground text-xs font-medium">Rata-Rata Saldo Bersih</p>
                                 <p class="text-lg font-bold sm:text-2xl" :class="correctedAverageBalance >= 0 ? 'text-green-600' : 'text-red-600'">
                                     {{ formatCurrency(correctedAverageBalance) }}
                                 </p>
-                                <p class="text-xs text-gray-500">Raw Avg: {{ formatCurrency(averageBalance) }}</p>
+                                <p class="text-xs text-gray-500">Raw rerata: {{ formatCurrency(averageBalance) }}</p>
                             </div>
                             <div class="flex-shrink-0 rounded-full bg-purple-100 p-2 sm:p-3">
                                 <TrendingUp class="h-5 w-5 text-purple-600 sm:h-8 sm:w-8" />
@@ -300,23 +300,23 @@ const displayBalance = (account: Account) => {
                             <p class="text-muted-foreground text-xs font-medium">Tipe Akun</p>
                             <div class="space-y-1">
                                 <div class="flex justify-between text-xs">
-                                    <span>Cash:</span>
+                                    <span>Uang:</span>
                                     <span class="font-medium">{{ accountsByType.cash }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
-                                    <span>Savings:</span>
+                                    <span>Tabungan:</span>
                                     <span class="font-medium">{{ accountsByType.savings }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
-                                    <span>Credit:</span>
+                                    <span>Kredit:</span>
                                     <span class="font-medium">{{ accountsByType.credit }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
-                                    <span>Investment:</span>
+                                    <span>Investasi:</span>
                                     <span class="font-medium">{{ accountsByType.investment }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
-                                    <span>Loan:</span>
+                                    <span>Pinjaman:</span>
                                     <span class="font-medium">{{ accountsByType.loan }}</span>
                                 </div>
                             </div>
@@ -330,34 +330,19 @@ const displayBalance = (account: Account) => {
                         <Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                         <Input
                             v-model="searchQuery"
-                            placeholder="Search by account name, user name, email, or budget..."
+                            placeholder="Cari berdasarkan nama akun, nama pengguna, email, atau budget..."
                             class="w-full pl-10 text-xs sm:text-sm"
                         />
                     </div>
-                    <Select v-model="typeFilter">
-                        <SelectTrigger class="w-full text-xs sm:w-auto sm:text-sm">
-                            <SelectValue placeholder="All Types" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="">All Types</SelectItem>
-                            <SelectItem 
-                                v-for="accountType in getAvailableTypes()" 
-                                :key="accountType" 
-                                :value="accountType"
-                            >
-                                {{ accountType.charAt(0).toUpperCase() + accountType.slice(1).replace('_', ' ') }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
                     <Select v-model="perPage">
                         <SelectTrigger class="w-full text-xs sm:w-auto sm:text-sm">
-                            <SelectValue placeholder="Per page" />
+                            <SelectValue placeholder="Per halaman" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="10">10 per page</SelectItem>
-                            <SelectItem value="25">25 per page</SelectItem>
-                            <SelectItem value="50">50 per page</SelectItem>
-                            <SelectItem value="100">100 per page</SelectItem>
+                            <SelectItem value="10">10 per halaman</SelectItem>
+                            <SelectItem value="25">25 per halaman</SelectItem>
+                            <SelectItem value="50">50 per halaman</SelectItem>
+                            <SelectItem value="100">100 per halaman</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -366,11 +351,11 @@ const displayBalance = (account: Account) => {
                 <div class="overflow-x-auto rounded-lg bg-white shadow">
                     <div class="overflow-x-auto rounded-2xl bg-white shadow-md">
                         <div class="border-b px-3 py-3 sm:px-7 sm:py-4">
-                            <h2 class="font-serif text-base sm:text-lg">Accounts</h2>
+                            <h2 class="font-serif text-base sm:text-lg">Akun</h2>
                             <p class="text-muted-foreground mt-1 text-xs sm:text-sm">
-                                Showing {{ accounts.data.length }} of {{ accounts.total }} accounts
+                                Menampilkan {{ accounts.data.length }} dari {{ accounts.total }} akun
                                 <span v-if="typeFilter" class="ml-2 font-medium">
-                                    (Filtered by: {{ typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1).replace('_', ' ') }})
+                                    (Difilter berdasarkan: {{ typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1).replace('_', ' ') }})
                                 </span>
                             </p>
                         </div>
@@ -380,14 +365,14 @@ const displayBalance = (account: Account) => {
                             <Table class="text-muted-foreground min-w-full table-fixed text-left text-sm">
                                 <TableHeader>
                                     <TableRow class="text-muted-foreground bg-gray-100 text-sm">
-                                        <TableHead class="w-48 whitespace-nowrap">Account Name</TableHead>
-                                        <TableHead class="w-32 whitespace-nowrap">Type</TableHead>
-                                        <TableHead class="w-48 whitespace-nowrap">User</TableHead>
-                                        <TableHead class="w-48 whitespace-nowrap">Budget</TableHead>
-                                        <TableHead class="w-36 whitespace-nowrap">Balance</TableHead>
-                                        <TableHead class="w-32 whitespace-nowrap">Interest</TableHead>
-                                        <TableHead class="w-40 whitespace-nowrap">Min Payment</TableHead>
-                                        <TableHead class="w-40 whitespace-nowrap">Created At</TableHead>
+                                        <TableHead class="w-48 whitespace-nowrap">Nama Akun</TableHead>
+                                        <TableHead class="w-32 whitespace-nowrap">Jenis</TableHead>
+                                        <TableHead class="w-48 whitespace-nowrap">Pengguna</TableHead>
+                                        <TableHead class="w-48 whitespace-nowrap">Anggaran</TableHead>
+                                        <TableHead class="w-36 whitespace-nowrap">Neraca</TableHead>
+                                        <TableHead class="w-32 whitespace-nowrap">Minat</TableHead>
+                                        <TableHead class="w-40 whitespace-nowrap">Pembayaran minimum</TableHead>
+                                        <TableHead class="w-40 whitespace-nowrap">Dibuat pada</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -437,17 +422,17 @@ const displayBalance = (account: Account) => {
                                             <TableCell colspan="8" class="p-4">
                                                 <div class="grid gap-4 md:grid-cols-2">
                                                     <div class="space-y-2">
-                                                        <div><strong>Account ID:</strong> {{ account.id }}</div>
-                                                        <div><strong>Budget ID:</strong> {{ account.budget_id }}</div>
-                                                        <div><strong>Account Name:</strong> {{ account.name }}</div>
+                                                        <div><strong>ID Rekening:</strong> {{ account.id }}</div>
+                                                        <div><strong>ID Anggaran:</strong> {{ account.budget_id }}</div>
+                                                        <div><strong>Nama Akun:</strong> {{ account.name }}</div>
                                                         <div>
-                                                            <strong>Account Type:</strong>
+                                                            <strong>Tipe Akun:</strong>
                                                             <Badge :class="getAccountTypeBadgeClass(account.type)" class="ml-2">
                                                                 {{ account.type }}
                                                             </Badge>
                                                         </div>
-                                                        <div><strong>User:</strong> {{ account.user_name }} ({{ account.user_email }})</div>
-                                                        <div><strong>Budget:</strong> {{ account.budget_name }}</div>
+                                                        <div><strong>Pengguna:</strong> {{ account.user_name }} ({{ account.user_email }})</div>
+                                                        <div><strong>Anggaran:</strong> {{ account.budget_name }}</div>
                                                     </div>
                                                     <div class="space-y-2">
                                                         <div>
@@ -459,23 +444,23 @@ const displayBalance = (account: Account) => {
                                                                 {{ formatCurrency(displayBalance(account).amount) }}
                                                             </span>
                                                             <div class="text-xs text-gray-500 mt-1">
-                                                                Raw Balance: {{ formatCurrency(account.balance) }}
+                                                                Saldo: {{ formatCurrency(account.balance) }}
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <strong>Interest Rate:</strong>
+                                                            <strong>Suku Bunga:</strong>
                                                             {{ account.interest > 0 ? formatPercentage(account.interest) : 'No Interest' }}
                                                         </div>
                                                         <div>
-                                                            <strong>Minimum Monthly Payment:</strong>
+                                                            <strong>Pembayaran Bulanan Minimum:</strong>
                                                             {{
                                                                 account.minimum_payment_monthly > 0
                                                                     ? formatCurrency(account.minimum_payment_monthly)
                                                                     : 'No Minimum Payment'
                                                             }}
                                                         </div>
-                                                        <div><strong>Created At:</strong> {{ account.createdAt }}</div>
-                                                        <div><strong>Updated At:</strong> {{ account.updatedAt }}</div>
+                                                        <div><strong>Dibuat pada:</strong> {{ account.createdAt }}</div>
+                                                        <div><strong>Diperbarui pada:</strong> {{ account.updatedAt }}</div>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -504,7 +489,7 @@ const displayBalance = (account: Account) => {
                                         <div class="text-muted-foreground">{{ account.user_email }}</div>
                                     </div>
 
-                                    <div class="text-xs"><Badge class="text-xs">Budget:</Badge> {{ account.budget_name }}</div>
+                                    <div class="text-xs"><Badge class="text-xs">Anggaran:</Badge> {{ account.budget_name }}</div>
 
                                     <div class="flex items-center justify-between">
                                         <div class="text-xs">
@@ -519,9 +504,9 @@ const displayBalance = (account: Account) => {
                                     </div>
 
                                     <div v-if="account.interest > 0 || account.minimum_payment_monthly > 0" class="flex flex-wrap gap-2 text-xs">
-                                        <Badge v-if="account.interest > 0"> Interest: {{ formatPercentage(account.interest) }} </Badge>
+                                        <Badge v-if="account.interest > 0"> Bunga: {{ formatPercentage(account.interest) }} </Badge>
                                         <Badge v-if="account.minimum_payment_monthly > 0">
-                                            Min Payment: {{ formatCurrency(account.minimum_payment_monthly) }}
+                                            Minimum pembayaran: {{ formatCurrency(account.minimum_payment_monthly) }}
                                         </Badge>
                                     </div>
                                 </div>
@@ -533,12 +518,12 @@ const displayBalance = (account: Account) => {
                 <!-- Pagination Section -->
                 <div class="mt-4 flex flex-col items-center justify-between gap-2 sm:mt-6 sm:flex-row">
                     <div class="text-muted-foreground text-xs sm:text-sm">
-                        Page {{ accounts.current_page }} of {{ accounts.last_page }} ({{ accounts.total }} total accounts)
+                        Halaman {{ accounts.current_page }} dari {{ accounts.last_page }} ({{ accounts.total }} total akun)
                     </div>
                     <div class="flex space-x-2">
                         <Button variant="outline" size="sm" :disabled="accounts.current_page === 1" @click="goToPage(accounts.current_page - 1)">
                             <ChevronLeft class="mr-1 h-4 w-4" />
-                            <span class="xs:inline hidden">Previous</span>
+                            <span class="xs:inline hidden">Sebelumnya</span>
                         </Button>
                         <Button
                             variant="outline"
@@ -546,7 +531,7 @@ const displayBalance = (account: Account) => {
                             :disabled="accounts.current_page === accounts.last_page"
                             @click="goToPage(accounts.current_page + 1)"
                         >
-                            <span class="xs:inline hidden">Next</span>
+                            <span class="xs:inline hidden">Selanjutnya</span>
                             <ChevronRight class="ml-1 h-4 w-4" />
                         </Button>
                     </div>
