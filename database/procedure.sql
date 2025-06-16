@@ -22,7 +22,7 @@ DELIMITER ;
 -- Calculate Total Monthly Expense for a month
 DELIMITER //
 DROP FUNCTION IF EXISTS GetTotalMonthlyExpenseForMonth;
-CREATE FUNCTION GetTotalMonthlyExpenseForMonth(p_year INT, p_month INT)
+CREATE FUNCTION GetTotalMonthlyExpenseForMonth(p_budget_id VARCHAR(36), p_year INT, p_month INT)
 RETURNS DECIMAL(19, 4)
 DETERMINISTIC
 READS SQL DATA
@@ -32,7 +32,8 @@ BEGIN
     SELECT COALESCE(ABS(SUM(amount)), 0) INTO total_expense
     FROM transactions
     WHERE 
-        amount < 0
+        budget_id = p_budget_id COLLATE utf8mb4_general_ci
+        AND amount < 0
         AND YEAR(date) = p_year
         AND MONTH(date) = p_month;
     
@@ -43,7 +44,7 @@ DELIMITER ;
 -- Calculate Average Monthly Expense for a month
 DELIMITER //
 DROP FUNCTION IF EXISTS GetAverageExpenseForMonth;
-CREATE FUNCTION GetAverageExpenseForMonth(p_year INT, p_month INT)
+CREATE FUNCTION GetAverageExpenseForMonth(p_budget_id VARCHAR(36), p_year INT, p_month INT)
 RETURNS DECIMAL(19, 4)
 DETERMINISTIC
 READS SQL DATA
@@ -53,7 +54,8 @@ BEGIN
     SELECT COALESCE(ABS(AVG(amount)), 0) INTO avg_expense
     FROM transactions
     WHERE 
-        amount < 0
+        budget_id = p_budget_id COLLATE utf8mb4_general_ci
+        AND amount < 0
         AND YEAR(date) = p_year
         AND MONTH(date) = p_month;
     
@@ -64,7 +66,7 @@ DELIMITER ;
 -- Calculate Average Daily Expense for a day
 DELIMITER //
 DROP FUNCTION IF EXISTS GetAverageExpenseForDay;
-CREATE FUNCTION GetAverageExpenseForDay(p_year INT, p_month INT, p_day INT)
+CREATE FUNCTION GetAverageExpenseForDay(p_budget_id VARCHAR(36), p_year INT, p_month INT, p_day INT)
 RETURNS DECIMAL(19, 4)
 DETERMINISTIC
 READS SQL DATA
@@ -73,7 +75,8 @@ BEGIN
     SELECT COALESCE(ABS(AVG(amount)), 0) INTO avg_expense_for_day
     FROM transactions
     WHERE 
-        amount < 0
+        budget_id = p_budget_id COLLATE utf8mb4_general_ci
+        AND amount < 0
         AND YEAR(date) = p_year
         AND MONTH(date) = p_month
         AND DAY(date) = p_day;
@@ -84,7 +87,7 @@ DELIMITER ;
 -- Get Highest Expense for a month
 DELIMITER //
 DROP FUNCTION IF EXISTS GetHighestExpenseForMonth;
-CREATE FUNCTION GetHighestExpenseForMonth(p_year INT, p_month INT)
+CREATE FUNCTION GetHighestExpenseForMonth(p_budget_id VARCHAR(36), p_year INT, p_month INT)
 RETURNS DECIMAL(19, 4)
 DETERMINISTIC
 READS SQL DATA
@@ -93,7 +96,8 @@ BEGIN
     SELECT COALESCE(ABS(MIN(amount)), 0) INTO highest_expense
     FROM transactions
     WHERE 
-        amount < 0
+        budget_id = p_budget_id COLLATE utf8mb4_general_ci
+        AND amount < 0
         AND YEAR(date) = p_year 
         AND MONTH(date) = p_month;
     
@@ -104,7 +108,7 @@ DELIMITER ;
 -- Get Most Active Category for a month
 DELIMITER //
 DROP FUNCTION IF EXISTS GetMostActiveExpenseCategoryForMonth;
-CREATE FUNCTION GetMostActiveExpenseCategoryForMonth(p_year INT, p_month INT)
+CREATE FUNCTION GetMostActiveExpenseCategoryForMonth(p_budget_id VARCHAR(36), p_year INT, p_month INT)
 RETURNS VARCHAR(255)
 DETERMINISTIC
 READS SQL DATA
@@ -115,7 +119,8 @@ BEGIN
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
     WHERE 
-        t.amount < 0
+        t.budget_id = p_budget_id COLLATE utf8mb4_general_ci
+        AND t.amount < 0
         AND YEAR(t.date) = p_year
         AND MONTH(t.date) = p_month
     GROUP BY t.category_id, c.name
