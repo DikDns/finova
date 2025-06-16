@@ -6,75 +6,57 @@ import type { AccountType, Budget } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AISideBar from '@/components/budgets/AISideBar.vue';
+import { formatCurrency } from '@/lib/utils';
+
+interface ExpenseData {
+    category: string;
+    amount: number;
+    percentage: number;
+    color: string;
+    icon: string;
+}
+
+interface ExpenseStats {
+    totalExpense: number;
+    averageMonthlyExpense: number;
+    averageDailyExpense: number;
+    highestMonthlyExpense: number;
+    mostActiveCategory: string;
+}
 
 interface Props {
     budget: Budget;
     account_types: AccountType[];
+    expenseData: ExpenseData[];
+    expenseStats: ExpenseStats;
 }
 
 const props = defineProps<Props>();
 const showSidebar = ref(false);
 
-// Sample data
-const expenseData = ref([
-    {
-        category: 'KPR',
-        amount: 250000,
-        percentage: 77,
-        color: '#2563eb',
-        icon: '🏠',
-    },
-    {
-        category: 'Listrik',
-        amount: 100000,
-        percentage: 22,
-        color: '#16a34a',
-        icon: '⚡',
-    },
-    {
-        category: 'Belanja',
-        amount: 150000,
-        percentage: 34,
-        color: '#dc2626',
-        icon: '🛒',
-    },
-    {
-        category: 'Bensin',
-        amount: 80000,
-        percentage: 22,
-        color: '#ea580c',
-        icon: '⛽',
-    },
-]);
+const expenseData = ref(props.expenseData);
 
 const totalExpense = computed(() => {
-    return expenseData.value.reduce((total, item) => total + item.amount, 0);
+    return props.expenseStats.totalExpense || 0;
 });
 
 const monthlyAverage = computed(() => {
-    return Math.round(totalExpense.value / 12);
+    return props.expenseStats.averageMonthlyExpense || 0;
 });
 
 const dailyAverage = computed(() => {
-    return Math.round(totalExpense.value / 30);
+    return props.expenseStats.averageDailyExpense || 0;
 });
 
 const mostActiveCategory = computed(() => {
-    return expenseData.value.reduce((prev, current) => (prev.percentage > current.percentage ? prev : current));
+    // Find the category that matches the most active category name
+    const category = expenseData.value.find(item => item.category === props.expenseStats.mostActiveCategory);
+    return category || { category: props.expenseStats.mostActiveCategory, icon: '📊', percentage: 0 };
 });
 
 const largestExpense = computed(() => {
-    return Math.max(...expenseData.value.map((item) => item.amount));
+    return props.expenseStats.highestMonthlyExpense || 0;
 });
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
 
 </script>
 
@@ -97,7 +79,7 @@ const formatCurrency = (amount: number) => {
                     <div class="chart-header">
                         <div>
                             <h3 class="chart-title">Total Pengeluaran</h3>
-                            <p class="chart-subtitle">{{ formatCurrency(totalExpense) }}</p>
+                            <p class="chart-subtitle">{{ formatCurrency(totalExpense, props.budget.currency_code) }}</p>
                         </div>
                     </div>
 
@@ -115,19 +97,19 @@ const formatCurrency = (amount: number) => {
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-label">Rerata Pengeluaran Bulanan</div>
-                            <div class="stat-value">{{ formatCurrency(monthlyAverage) }}</div>
+                            <div class="stat-value">{{ formatCurrency(monthlyAverage, props.budget.currency_code) }}</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Rerata Pengeluaran Harian</div>
-                            <div class="stat-value">{{ formatCurrency(dailyAverage) }}</div>
+                            <div class="stat-value">{{ formatCurrency(dailyAverage, props.budget.currency_code) }}</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Kategori Paling Aktif</div>
                             <div class="stat-value">{{ mostActiveCategory.icon }} {{ mostActiveCategory.category }}</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Pengeluaran Terbesar</div>
-                            <div class="stat-value">{{ formatCurrency(largestExpense) }}</div>
+                            <div class="stat-label">Pengeluaran Terbesar Bulanan</div>
+                            <div class="stat-value">{{ formatCurrency(largestExpense, props.budget.currency_code) }}</div>
                         </div>
                     </div>
                 </div>
@@ -148,7 +130,7 @@ const formatCurrency = (amount: number) => {
                                 <span class="category-name">{{ item.category }}</span>
                             </div>
                             <div class="category-amounts">
-                                <span class="category-amount">{{ formatCurrency(item.amount) }}</span>
+                                <span class="category-amount">{{ formatCurrency(item.amount, props.budget.currency_code) }}</span>
                                 <span class="category-percentage">{{ item.percentage }}%</span>
                             </div>
                         </div>
