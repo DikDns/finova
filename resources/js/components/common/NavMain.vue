@@ -137,14 +137,13 @@ const createAccount = () => {
     }
 
     router.post(route('accounts.store'), formData, {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showCreateAccountDialog.value = false;
             resetForm();
             toast.success('Rekening berhasil dibuat');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error creating account:', errors);
@@ -181,14 +180,13 @@ const updateAccount = () => {
     }
 
     router.put(route('accounts.update', editAccountForm.value.id), formData, {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil diperbarui');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error updating account:', errors);
@@ -216,14 +214,13 @@ const confirmDeleteAccount = () => {
     showDeleteConfirmDialog.value = false;
 
     router.delete(route('accounts.destroy', editAccountForm.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showEditAccountDialog.value = false;
             resetEditForm();
             toast.success('Rekening berhasil dihapus');
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
         },
         onError: (errors) => {
             console.error('Error deleting account:', errors);
@@ -245,7 +242,7 @@ const confirmDeleteAccount = () => {
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <!-- The item.href is contain the domain remove it -->
                 <SidebarMenuButton as-child :is-active="getThePathOnly(item.href) === page.url" :tooltip="item.title">
-                    <Link :href="item.href">
+                    <Link :href="item.href" prefetch>
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                     </Link>

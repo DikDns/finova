@@ -63,7 +63,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/monthly-budgets/store', [MonthlyBudgetController::class, 'store'])->name('monthly-budgets.store');
 
+    // AI Routes
     Route::post('/ai/chat', [AIController::class, 'chat'])->name('ai.chat');
+    Route::get('/ai/chats', [AIController::class, 'getChats'])->name('ai.chats');
+    Route::get('/ai/chats/{chatId}', [AIController::class, 'getChatMessages'])->name('ai.chat.messages');
+    Route::delete('/ai/chats/{chatId}', [AIController::class, 'deleteChat'])->name('ai.chat.delete');
 });
 
 require __DIR__ . '/settings.php';

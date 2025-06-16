@@ -125,13 +125,12 @@ const submitForm = () => {
                 date: dateValue.value?.toString(),
             },
             {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
                 onSuccess: () => {
                     showEditDialog.value = false;
                     resetForm();
-                    router.visit(window.location.href, {
-                        preserveScroll: true,
-                        preserveState: false,
-                    });
                     toast.success('Transaksi berhasil diupdate.');
                 },
                 onError: (err) => {
@@ -154,13 +153,12 @@ const submitForm = () => {
                 date: dateValue.value?.toString(),
             },
             {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
                 onSuccess: () => {
                     showCreateDialog.value = false;
                     resetForm();
-                    router.visit(window.location.href, {
-                        preserveScroll: true,
-                        preserveState: false,
-                    });
                     toast.success('Transaksi berhasil dibuat.');
                 },
                 onError: (err) => {
@@ -185,13 +183,12 @@ const confirmDelete = (transactionId: string) => {
 const handleDelete = () => {
     isLoading.value = true;
     router.delete(route('transactions.destroy', { transaction: deleteTransactionId.value }), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             resetForm();
             showDeleteDialog.value = false;
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
             toast.success('Transaksi berhasil dihapus.');
         },
         onError: (err) => {
@@ -213,19 +210,11 @@ const goToPage = (page: number) => {
             page: page,
         },
         {
+            preserveScroll: true,
             preserveState: true,
             replace: true,
         },
     );
-};
-
-// Format amount
-const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: props.budget.currency_code,
-        minimumFractionDigits: 0,
-    }).format(amount);
 };
 </script>
 
@@ -306,7 +295,7 @@ const formatAmount = (amount: number) => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem v-for="account in props.accounts" :key="account.id" :value="account.id">
-                                                {{ account.name }} ({{ formatAmount(account.balance) }})
+                                                {{ account.name }} ({{ formatCurrency(account.balance, props.budget.currency_code) }})
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -396,7 +385,7 @@ const formatAmount = (amount: number) => {
                                     <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
+                            <TableBody v-auto-animate>
                                 <TableRow v-for="(transaction, index) in props.transactions.data" :key="transaction.id">
                                     <TableCell class="text-center">{{
                                         index + 1 + (props.transactions.current_page - 1) * props.transactions.per_page
@@ -409,7 +398,7 @@ const formatAmount = (amount: number) => {
                                     <TableCell>{{ transaction.payee }}</TableCell>
                                     <TableCell>{{ transaction.memo || '-' }}</TableCell>
                                     <TableCell class="text-right font-medium" :class="transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'">
-                                        {{ formatAmount(transaction.amount) }}
+                                        {{ formatCurrency(transaction.amount, props.budget.currency_code) }}
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -430,7 +419,7 @@ const formatAmount = (amount: number) => {
 
                                 <!-- Empty State -->
                                 <TableRow v-if="props.transactions.data.length === 0">
-                                    <TableCell colspan="6" class="text-muted-foreground py-6 text-center">
+                                    <TableCell colspan="8" class="text-muted-foreground py-6 text-center">
                                         Tidak ada transaksi untuk ditampilkan
                                     </TableCell>
                                 </TableRow>

@@ -22,7 +22,7 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { Account, AccountType, Budget, Category, Transaction } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
-import { CalendarIcon, EllipsisIcon, Plus } from 'lucide-vue-next';
+import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { AreaChart, BulletLegendItemInterface, LegendPosition } from 'vue-chrts';
 import { toast } from 'vue-sonner';
@@ -96,6 +96,21 @@ const currentAccountName = computed(() => {
     return 'Semua Rekening';
 });
 
+// Pagination
+const goToPage = (page: number) => {
+    router.get(
+        route('budget.accounts.show', { budget: props.budget.id, account: props.current_account?.id }),
+        {
+            page: page,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        },
+    );
+};
+
 // Mengubah format data prediksi untuk AreaChart
 const chartData = computed(() => {
     return props.loan_predictions.map((prediction) => ({
@@ -154,13 +169,12 @@ const submitForm = () => {
                 account_id: editingTransaction.value.payee,
             },
             {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
                 onSuccess: () => {
                     showEditDialog.value = false;
                     resetForm();
-                    router.visit(window.location.href, {
-                        preserveScroll: true,
-                        preserveState: false,
-                    });
                     toast.success('Transaksi berhasil diupdate.');
                 },
                 onError: (err) => {
@@ -183,13 +197,12 @@ const submitForm = () => {
                 current_account_id: props.current_account?.id,
             },
             {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
                 onSuccess: () => {
                     showCreateDialog.value = false;
                     resetForm();
-                    router.visit(window.location.href, {
-                        preserveScroll: true,
-                        preserveState: false,
-                    });
                     toast.success('Transaksi berhasil dibuat.');
                 },
                 onError: (err) => {
@@ -214,13 +227,12 @@ const confirmDelete = (transactionId: string) => {
 const handleDelete = () => {
     isLoading.value = true;
     router.delete(route('transactions.destroy', { transaction: deleteTransactionId.value }), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             resetForm();
             showDeleteDialog.value = false;
-            router.visit(window.location.href, {
-                preserveScroll: true,
-                preserveState: false,
-            });
             toast.success('Transaksi berhasil dihapus.');
         },
         onError: (err) => {
@@ -290,7 +302,7 @@ const handleDelete = () => {
             </div>
 
             <div class="bg-card overflow-hidden rounded-lg border p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b pb-2">
+                <div class="flex items-center justify-between border-b pb-6">
                     <h2 class="font-serif text-lg">Aktivitas</h2>
 
                     <!-- Create Transaction Button -->
@@ -402,7 +414,8 @@ const handleDelete = () => {
                                     <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
+
+                            <TableBody v-auto-animate>
                                 <TableRow v-for="(transaction, index) in props.transactions.data" :key="transaction.id">
                                     <TableCell class="text-center">{{
                                         index + 1 + (props.transactions.current_page - 1) * props.transactions.per_page
@@ -543,6 +556,36 @@ const handleDelete = () => {
                         </form>
                     </DialogContent>
                 </Dialog>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between border-t pt-6">
+                    <div class="text-sm text-gray-600">
+                        Halaman {{ props.transactions.current_page }} dari {{ props.transactions.last_page }} ({{ props.transactions.total }} total
+                        transaksi)
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            :disabled="props.transactions.current_page === 1"
+                            @click="goToPage(props.transactions.current_page - 1)"
+                        >
+                            <ChevronLeft class="mr-1 h-4 w-4" />
+                            Sebelumnya
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            :disabled="props.transactions.current_page === props.transactions.last_page"
+                            @click="goToPage(props.transactions.current_page + 1)"
+                        >
+                            Selanjutnya
+                            <ChevronRight class="ml-1 h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
 
