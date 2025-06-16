@@ -370,7 +370,7 @@ const displayBalance = (account: Account) => {
                                         <TableHead class="w-48 whitespace-nowrap">Pengguna</TableHead>
                                         <TableHead class="w-48 whitespace-nowrap">Anggaran</TableHead>
                                         <TableHead class="w-36 whitespace-nowrap">Neraca</TableHead>
-                                        <TableHead class="w-32 whitespace-nowrap">Minat</TableHead>
+                                        <TableHead class="w-32 whitespace-nowrap">Bunga</TableHead>
                                         <TableHead class="w-40 whitespace-nowrap">Pembayaran minimum</TableHead>
                                         <TableHead class="w-40 whitespace-nowrap">Dibuat pada</TableHead>
                                     </TableRow>
