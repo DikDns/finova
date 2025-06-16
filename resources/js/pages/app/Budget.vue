@@ -565,7 +565,7 @@ const groupedCategories = computed(() => {
                                     formatCurrency(parseFloat(currentMonthBudget?.total_balance ?? '0'), budget.currency_code)
                                 }}</span>
                             </div>
-                            <p class="text-muted-foreground text-sm">Siap dialokasikan</p>
+                            <p class="text-muted-foreground text-sm">Total Budget siap dialokasikan</p>
                         </div>
                     </div>
                 </div>
