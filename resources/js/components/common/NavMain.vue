@@ -391,17 +391,15 @@ const confirmDeleteAccount = () => {
                         <Label for="edit-name" class="text-right"> Nama </Label>
                         <Input id="edit-name" v-model="editAccountForm.name" placeholder="Nama rekening" class="col-span-3" />
                     </div>
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="edit-balance" class="text-right">
-                            {{ editAccountForm.type === 'loan' ? 'Total Utang' : 'Saldo' }}
-                        </Label>
+                    <div class="grid grid-cols-4 items-center gap-4" v-if="editAccountForm.type !== 'loan'">
+                        <Label for="edit-balance" class="text-right"> Saldo </Label>
                         <Input
                             id="edit-balance"
                             v-model="editAccountForm.balance"
                             type="number"
                             step="500"
                             min="0"
-                            :placeholder="editAccountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
+                            placeholder="Saldo awal"
                             class="col-span-3"
                         />
                     </div>
