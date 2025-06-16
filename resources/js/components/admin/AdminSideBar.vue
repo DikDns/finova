@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FinovaLogo from '@/components/common/FinovaLogo.vue';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import NavUser from '@/components/common/NavUser.vue';
 import {
     Sidebar,
     SidebarContent,
@@ -12,9 +12,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { SharedData } from '@/types';
-import { usePage } from '@inertiajs/vue3';
-import { ChevronUp, LayoutDashboard, LogOut, Menu, Receipt, Settings, WalletCards, X } from 'lucide-vue-next';
+import { LayoutDashboard, Menu, Receipt, WalletCards, X } from 'lucide-vue-next';
 import { ref, type Component } from 'vue';
 
 // Sidebar Item Type
@@ -31,8 +29,6 @@ const items: SidebarItem[] = [
     { title: 'Subscription', href: '/admin/subscription', icon: Receipt },
 ];
 
-const props = usePage<SharedData>();
-
 // Sidebar State
 const isMobileSidebarOpen = ref(false);
 
@@ -43,11 +39,6 @@ const toggleMobileSidebar = () => {
 
 const closeMobileSidebar = () => {
     isMobileSidebarOpen.value = false;
-};
-
-const handleLogout = () => {
-    console.log('Logging out...');
-    closeMobileSidebar();
 };
 </script>
 
@@ -116,41 +107,7 @@ const handleLogout = () => {
             <SidebarFooter class="flex-shrink-0 border-t border-gray-200 bg-white">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <SidebarMenuButton size="lg" class="transition-colors duration-200 hover:bg-neutral-100">
-                                    <div
-                                        class="flex aspect-square size-8 items-center justify-center rounded-full bg-neutral-600 text-sm font-medium text-white"
-                                    >
-                                        {{ adminProfile.avatar }}
-                                    </div>
-                                    <div class="grid flex-1 text-left text-sm leading-tight">
-                                        <span class="truncate font-semibold">{{ adminProfile.name }}</span>
-                                        <span class="truncate text-xs text-neutral-500">{{ adminProfile.email }}</span>
-                                    </div>
-                                    <ChevronUp class="ml-auto size-4" />
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent
-                                class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-lg"
-                                side="top"
-                                align="end"
-                                :sideOffset="4"
-                            >
-                                <DropdownMenuItem class="cursor-pointer" @click="closeMobileSidebar">
-                                    <Settings class="mr-2 h-4 w-4" />
-                                    <span>Account Settings</span>
-                                </DropdownMenuItem>
-
-                                <DropdownMenuSeparator />
-
-                                <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600">
-                                    <LogOut class="mr-2 h-4 w-4" />
-                                    <span>Log out</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <NavUser />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
