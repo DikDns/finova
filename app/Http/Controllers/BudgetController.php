@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Budget;
+use App\Models\CategoryGroup;
+use App\Models\Category;
+use App\Models\MonthlyBudget;
+use App\Models\CategoryBudget;
+use App\Traits\CreatesBudgetCategories;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
 {
+    use CreatesBudgetCategories;
+
     /**
      * Display a listing of the user's budget plans.
      */
@@ -20,6 +28,44 @@ class BudgetController extends Controller
         return Inertia::render('budgets/Budgets', [
             'budgets' => $budgets
         ]);
+    }
+
+    /**
+     * Store a newly created budget plan in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'currency_code' => 'nullable|string|in:IDR,USD,JPY,GBP',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $budget = new Budget();
+            $budget->user_id = Auth::id();
+            $budget->name = $validated['name'];
+            $budget->description = $validated['description'] ?? '';
+            $budget->currency_code = $validated['currency_code'] ?? 'IDR';
+            $budget->save();
+
+            // Create default category groups and categories for the new budget
+            $this->createDefaultCategoriesForBudget($budget);
+
+            DB::commit();
+
+            return redirect()->route('budget', $budget->id)
+                ->with('success', 'Budget berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create budget: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal membuat budget: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     /**
@@ -52,21 +98,6 @@ class BudgetController extends Controller
     }
 
     /**
-     * Show the form for editing the specified budget plan.
-     */
-    public function edit(Budget $budget)
-    {
-        // Ensure the user can only edit their own budgets
-        if ($budget->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        return Inertia::render('users/EditBudget', [
-            'budget' => $budget
-        ]);
-    }
-
-    /**
      * Update the specified budget plan in storage.
      */
     public function update(Request $request, Budget $budget)
@@ -79,7 +110,7 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'currency_code' => 'required|string|in:IDR,USD,JPY,GBP',
+            'currency_code' => 'required|string|in:IDR,USD,JPY',
         ]);
 
         try {
@@ -87,11 +118,12 @@ class BudgetController extends Controller
 
             $budget->name = $validated['name'];
             $budget->description = $validated['description'] ?? $budget->description;
+            $budget->currency_code = $validated['currency_code'];
             $budget->save();
 
             DB::commit();
 
-            return redirect()->route('budget', $budget)->with('success', 'Budget berhasil diperbarui.');
+            return redirect()->back()->with('success', 'Budget berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -113,15 +145,6 @@ class BudgetController extends Controller
 
         try {
             DB::beginTransaction();
-
-            // Check if budget has any related data
-            $hasAccounts = $budget->accounts()->exists();
-            $hasCategories = $budget->categoryGroups()->exists();
-            $hasMonthlyBudgets = $budget->monthlyBudgets()->exists();
-
-            if ($hasAccounts || $hasCategories || $hasMonthlyBudgets) {
-                throw new \Exception('Tidak dapat menghapus budget yang memiliki data terkait (akun, kategori, atau budget bulanan).');
-            }
 
             $budget->delete();
 
@@ -174,8 +197,6 @@ class BudgetController extends Controller
         if ($latestBudget) {
             return redirect()->intended(route('budget', $latestBudget, absolute: false));
         }
-
-        // @rafi_zamzami handle to create new budget with paramater of user_plan: true
         return redirect()->intended(route('budgets', absolute: false));
     }
 }
