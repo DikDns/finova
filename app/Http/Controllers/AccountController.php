@@ -48,7 +48,10 @@ class AccountController extends Controller
             'account_types' => $accountTypes,
             'accounts' => $this->getCashAccounts($budget->id),
             'categories' => $categories,
-            'transactions' => $transactions
+            'transactions' => $transactions,
+            'current_account' => [
+                'balance' => $this->getCurrentAllCashAccountsBalance($budget->id),
+            ]
         ]);
     }
 
@@ -311,6 +314,18 @@ class AccountController extends Controller
         return Account::where('budget_id', $budgetId)
             ->where('type', 'cash')
             ->get();
+    }
+
+    private function getCurrentAllCashAccountsBalance($budgetId)
+    {
+        $cashAccounts = $this->getCashAccounts($budgetId);
+        $totalBalance = 0;
+
+        foreach ($cashAccounts as $account) {
+            $totalBalance += $account->balance;
+        }
+
+        return $totalBalance;
     }
 
     private function formatAccountTypes($accounts, $budgetId)

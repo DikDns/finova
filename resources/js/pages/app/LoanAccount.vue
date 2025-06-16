@@ -102,7 +102,6 @@ const chartData = computed(() => {
         date: prediction.date,
         balance: prediction.balance,
         monthly_interest: prediction.monthly_interest,
-        monthly_payment: prediction.monthly_payment,
     }));
 });
 

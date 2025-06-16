@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { cn, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { Account, AccountType, Budget, Category, Transaction } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
@@ -71,7 +71,7 @@ const isLoading = ref(false);
 const deleteTransactionId = ref<string | null>(null);
 
 const currentAccountName = computed(() => {
-    if (props.current_account) {
+    if (props.current_account?.name) {
         return props.current_account.name;
     }
     return 'Semua Rekening';
@@ -233,14 +233,25 @@ const formatAmount = (amount: number) => {
     <Head :title="currentAccountName" />
 
     <AppLayout :budget_id="props.budget.id" :currency_code="props.budget.currency_code" :account_types="props.account_types">
-        <div class="p-6">
+        <div class="w-full space-y-6 p-6">
             <!-- Header  -->
-            <div class="mb-6 flex items-center justify-between">
+            <div class="flex items-center justify-between">
                 <h1 class="font-serif text-2xl font-semibold tracking-tight">{{ currentAccountName }}</h1>
             </div>
 
+            <div class="bg-card w-full rounded-lg border p-6 shadow-sm">
+                <div class="flex items-center gap-x-3 md:gap-x-6">
+                    <div>
+                        <span class="text-xl font-semibold">
+                            {{ formatCurrency(props.current_account?.balance ?? 0, props.budget.currency_code) }}
+                        </span>
+                        <p class="text-muted-foreground text-xs tracking-tight">Saldo</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Transactions Section -->
-            <div class="overflow-hidden rounded-lg shadow">
+            <div class="bg-card w-full rounded-lg border p-6 shadow-sm">
                 <div class="flex items-center justify-between border-b p-4">
                     <h2 class="font-serif text-lg">Transaksi Terbaru</h2>
 
@@ -371,7 +382,7 @@ const formatAmount = (amount: number) => {
                 >
                     <!-- Transactions Table -->
 
-                    <div class="overflow-x-auto">
+                    <div class="w-full overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
