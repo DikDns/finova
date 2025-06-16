@@ -51,6 +51,7 @@ class TransactionController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'memo' => 'nullable|string|max:500',
             'budget_id' => 'required|exists:budgets,id',
+            'current_account_id' => 'nullable|exists:accounts,id',
         ]);
 
         try {
@@ -65,21 +66,68 @@ class TransactionController extends Controller
 
             $payee = $validated['payee'] ?? '';
             $memo = $validated['memo'] ?? '';
+            $current_account_id = $validated['current_account_id'] ?? null;
+            $amount = $validated['amount'];
 
-            // Create the transaction
-            $transaction = Transaction::create([
-                'payee' => $payee,
-                'memo' => $memo,
-                'amount' => $validated['amount'],
-                'date' => $validated['date'],
-                'category_id' => $validated['category_id'],
-                'account_id' => $validated['account_id'],
-                'budget_id' => $validated['budget_id'],
-            ]);
+            // Jika ada current_account_id, berarti ini adalah transaksi pinjaman
+            if ($current_account_id) {
+                $current_account = Account::where('id', $current_account_id)
+                    ->where('budget_id', $budget->id)
+                    ->firstOrFail();
 
-            // Update account balance
-            $account->balance = $account->balance + $validated['amount'];
-            $account->save();
+                // Cek apakah current_account adalah akun pinjaman (loan)
+                if ($current_account->type === 'loan') {
+                    // Pastikan amount selalu positif untuk pembayaran pinjaman
+                    $amount = abs($amount);
+
+                    // Kurangi saldo pinjaman (balance berkurang karena utang berkurang)
+                    $current_account->balance = $current_account->balance - $amount;
+                    $current_account->save();
+
+                    // Kurangi saldo rekening sumber pembayaran
+                    $account->balance = $account->balance - $amount;
+                    $account->save();
+
+                    // Buat transaksi dengan account_id adalah akun pinjaman
+                    $transaction = Transaction::create([
+                        'payee' => $account->id,
+                        'memo' => $memo,
+                        'amount' => $amount, // Selalu positif untuk pembayaran pinjaman
+                        'date' => $validated['date'],
+                        'category_id' => $validated['category_id'],
+                        'account_id' => $current_account_id,
+                        'budget_id' => $validated['budget_id'],
+                    ]);
+                } else {
+                    // Jika bukan akun pinjaman, gunakan logika normal
+                    $transaction = Transaction::create([
+                        'payee' => $payee,
+                        'memo' => $memo,
+                        'amount' => $amount,
+                        'date' => $validated['date'],
+                        'category_id' => $validated['category_id'],
+                        'account_id' => $current_account_id,
+                        'budget_id' => $validated['budget_id'],
+                    ]);
+
+                    $current_account->balance = $current_account->balance + $amount;
+                    $current_account->save();
+                }
+            } else {
+                // Transaksi normal tanpa current_account_id
+                $transaction = Transaction::create([
+                    'payee' => $payee,
+                    'memo' => $memo,
+                    'amount' => $amount,
+                    'date' => $validated['date'],
+                    'category_id' => $validated['category_id'],
+                    'account_id' => $validated['account_id'],
+                    'budget_id' => $validated['budget_id'],
+                ]);
+
+                $account->balance = $account->balance + $amount;
+                $account->save();
+            }
 
             DB::commit();
 
@@ -113,6 +161,7 @@ class TransactionController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'memo' => 'nullable|string|max:500',
             'budget_id' => 'required|exists:budgets,id',
+            'current_account_id' => 'nullable|exists:accounts,id',
         ]);
 
         try {
@@ -121,42 +170,112 @@ class TransactionController extends Controller
             // Verify the new account belongs to the specified budget and user has access
             $user = $request->user();
             $budget = $user->budgets()->findOrFail($validated['budget_id']);
-            $account = Account::where('id', $validated['account_id'])
-                ->where('budget_id', $budget->id)
-                ->firstOrFail();
+            $account = Account::findOrFail($validated['account_id']);
 
             $payee = $validated['payee'] ?? '';
             $memo = $validated['memo'] ?? '';
+            $current_account_id = $validated['current_account_id'] ?? null;
 
             // Get the old transaction data to calculate balance adjustment
             $oldAmount = $transaction->amount;
             $oldAccountId = $transaction->account_id;
+            $amount = $validated['amount'];
 
-            // If account changed, adjust both old and new account balances
-            if ($oldAccountId !== $validated['account_id']) {
-                // Subtract amount from old account
-                $oldAccount = Account::findOrFail($oldAccountId);
-                $oldAccount->balance = $oldAccount->balance - $oldAmount;
-                $oldAccount->save();
+            // Jika ada current_account_id, berarti ini adalah transaksi pinjaman
+            if ($current_account_id) {
+                $current_account = Account::where('id', $current_account_id)
+                    ->where('budget_id', $budget->id)
+                    ->firstOrFail();
 
-                // Add amount to new account
-                $account->balance = $account->balance + $validated['amount'];
-                $account->save();
+                // Cek apakah current_account adalah akun pinjaman (loan)
+                if ($current_account->type === 'loan') {
+                    // Pastikan amount selalu positif untuk pembayaran pinjaman
+                    $amount = abs($amount);
+
+                    // Kembalikan saldo lama pada akun pinjaman
+                    $current_account->balance = $current_account->balance + $oldAmount;
+
+                    // Kembalikan saldo lama pada akun sumber pembayaran lama (disimpan di payee)
+                    $oldSourceAccount = Account::findOrFail($account->id);
+                    $oldSourceAccount->balance = $oldSourceAccount->balance + $oldAmount;
+                    $oldSourceAccount->save();
+
+                    // Kurangi saldo pinjaman dengan jumlah baru
+                    $current_account->balance = $current_account->balance - $amount;
+                    $current_account->save();
+
+                    // Kurangi saldo rekening sumber pembayaran baru dengan jumlah baru
+                    $newSourceAccount = Account::findOrFail($payee);
+                    $newSourceAccount->balance = $newSourceAccount->balance - $amount;
+                    $newSourceAccount->save();
+
+                    // Update transaksi
+                    // payee: sumber rekening baru, tetap disimpan di payee
+                    // account_id: rekening type 'loan' disimpan ke account_id
+                    $transaction->update([
+                        'payee' => $payee, // sumber rekening baru
+                        'memo' => $memo,
+                        'amount' => $amount, // Selalu positif untuk pembayaran pinjaman
+                        'date' => $validated['date'],
+                        'category_id' => $validated['category_id'],
+                        'account_id' => $current_account_id, // rekening loan
+                    ]);
+                } else {
+                    // Jika bukan akun pinjaman, gunakan logika normal
+                    // If account changed, adjust both old and new account balances
+                    if ($oldAccountId !== $current_account_id) {
+                        // Subtract amount from old account
+                        $oldAccount = Account::findOrFail($oldAccountId);
+                        $oldAccount->balance = $oldAccount->balance - $oldAmount;
+                        $oldAccount->save();
+
+                        // Add amount to new account
+                        $current_account->balance = $current_account->balance + $amount;
+                        $current_account->save();
+                    } else {
+                        // Same account, just adjust the difference
+                        $current_account->balance = $current_account->balance - $oldAmount + $amount;
+                        $current_account->save();
+                    }
+
+                    // Update transaksi
+                    $transaction->update([
+                        'payee' => $payee,
+                        'memo' => $memo,
+                        'amount' => $amount,
+                        'date' => $validated['date'],
+                        'category_id' => $validated['category_id'],
+                        'account_id' => $current_account_id,
+                    ]);
+                }
             } else {
-                // Same account, just adjust the difference
-                $account->balance = $account->balance - $oldAmount + $validated['amount'];
-                $account->save();
-            }
+                // Transaksi normal tanpa current_account_id
+                // If account changed, adjust both old and new account balances
+                if ($oldAccountId !== $validated['account_id']) {
+                    // Subtract amount from old account
+                    $oldAccount = Account::findOrFail($oldAccountId);
+                    $oldAccount->balance = $oldAccount->balance - $oldAmount;
+                    $oldAccount->save();
 
-            // Update the transaction
-            $transaction->update([
-                'payee' => $payee,
-                'memo' => $memo,
-                'amount' => $validated['amount'],
-                'date' => $validated['date'],
-                'category_id' => $validated['category_id'],
-                'account_id' => $validated['account_id'],
-            ]);
+                    // Add amount to new account
+                    $account->balance = $account->balance + $amount;
+                    $account->save();
+                } else {
+                    // Same account, just adjust the difference
+                    $account->balance = $account->balance - $oldAmount + $amount;
+                    $account->save();
+                }
+
+                // Update transaksi
+                $transaction->update([
+                    'payee' => $payee,
+                    'memo' => $memo,
+                    'amount' => $amount,
+                    'date' => $validated['date'],
+                    'category_id' => $validated['category_id'],
+                    'account_id' => $validated['account_id'],
+                ]);
+            }
 
             DB::commit();
 
@@ -187,11 +306,28 @@ class TransactionController extends Controller
             // Get transaction details before deletion
             $amount = $transaction->amount;
             $accountId = $transaction->account_id;
-
-            // Update account balance
             $account = Account::findOrFail($accountId);
-            $account->balance = $account->balance - $amount;
-            $account->save();
+
+            // Cek apakah ini transaksi akun pinjaman
+            if ($account->type === 'loan') {
+                // Untuk akun pinjaman, tambahkan kembali saldo pinjaman (utang bertambah)
+                $account->balance = $account->balance + $amount;
+                $account->save();
+
+                // Untuk transaksi pinjaman, payee menyimpan id akun sumber pembayaran
+                // Kembalikan saldo ke akun sumber pembayaran
+                if ($transaction->payee) {
+                    $sourceAccount = Account::find($transaction->payee);
+                    if ($sourceAccount) {
+                        $sourceAccount->balance = $sourceAccount->balance + $amount;
+                        $sourceAccount->save();
+                    }
+                }
+            } else {
+                // Untuk akun normal, kurangi saldo sesuai jumlah transaksi
+                $account->balance = $account->balance - $amount;
+                $account->save();
+            }
 
             // Delete the transaction
             $transaction->delete();
