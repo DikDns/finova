@@ -15,6 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/lib/utils';
@@ -23,7 +24,6 @@ import { Head, router } from '@inertiajs/vue3';
 import { Check, ChevronLeft, ChevronRight, Edit2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
-import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 
 interface Props {
     budget: Budget;
@@ -210,6 +210,9 @@ const saveGroupEdit = async () => {
             name: editingGroupName.value.trim(),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Grup kategori berhasil diperbarui');
@@ -237,6 +240,9 @@ const saveCategoryEdit = async () => {
             name: editingCategoryName.value.trim(),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Kategori berhasil diperbarui');
@@ -267,6 +273,9 @@ const saveAllocatedEdit = async () => {
             assigned: amount,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Jumlah alokasi berhasil diperbarui');
@@ -297,6 +306,9 @@ const saveTargetEdit = async () => {
             available: amount,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Target budget berhasil diperbarui');
@@ -324,6 +336,9 @@ const confirmDeleteGroup = async () => {
 
     isLoading.value = true;
     router.delete(route('category-groups.destroy', groupToDelete.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showDeleteGroupDialog.value = false;
             groupToDelete.value = null;
@@ -351,6 +366,9 @@ const confirmDeleteCategory = async () => {
 
     isLoading.value = true;
     router.delete(route('categories.destroy', categoryToDelete.value.id), {
+        preserveScroll: true,
+        preserveState: false,
+        replace: true,
         onSuccess: () => {
             showDeleteCategoryDialog.value = false;
             categoryToDelete.value = null;
@@ -399,6 +417,9 @@ const saveNewGroup = async () => {
             budget_id: props.budget.id,
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Grup kategori berhasil dibuat');
@@ -428,6 +449,9 @@ const saveNewCategory = async () => {
             monthly_budget_ids: props.budget.monthly_budgets.map((mb) => mb.id),
         },
         {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
             onSuccess: () => {
                 cancelEditing();
                 toast.success('Kategori berhasil dibuat');
@@ -463,12 +487,9 @@ const cancelEditing = () => {
 // Get current month's budget data
 const currentMonthBudget = computed(() => {
     const currentMonthStr = currentMonth.value.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }); // Format: YYYY-MM
-    console.log('Current month string:', currentMonthStr);
     const monthBudget = props.budget.monthly_budgets?.find((mb) => {
-        console.log('Comparing:', mb.month, 'with', currentMonthStr);
         return mb.month === currentMonthStr;
     });
-    console.log('Found monthly budget:', monthBudget);
     return monthBudget;
 });
 
@@ -516,7 +537,7 @@ const groupedCategories = computed(() => {
 
     <AppLayout :account_types="props.account_types" :budget_id="props.budget.id" :currency_code="props.budget.currency_code">
         <div class="absolute top-4 right-4 z-40">
-            <ButtonAi @click="showSidebar = true" class=""> AI Assistant </ButtonAi>
+            <ButtonAi @click="showSidebar = true" class="cursor-pointer"> AI Assistant </ButtonAi>
         </div>
         <div class="p-6">
             <div class="flex flex-col gap-6">

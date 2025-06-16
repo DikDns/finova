@@ -484,7 +484,7 @@ const goToPage = (page: number) => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem v-for="account in props.accounts" :key="account.id" :value="account.id">
-                                            {{ account.name }} ({{ formatAmount(account.balance) }})
+                                            {{ account.name }} ({{ formatCurrency(account.balance, props.budget.currency_code) }})
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
