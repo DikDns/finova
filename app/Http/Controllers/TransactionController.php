@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Account;
+use App\Models\CategoryBudget;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -127,6 +128,10 @@ class TransactionController extends Controller
 
                 $account->balance = $account->balance + $amount;
                 $account->save();
+            }
+
+            if ($validated['category_id']) {
+                $this->updateCategoryActivity($validated['category_id'], $amount);
             }
 
             DB::commit();
@@ -277,6 +282,11 @@ class TransactionController extends Controller
                 ]);
             }
 
+            if ($validated['category_id']) {
+                $diff = $oldAmount + $amount;
+                $this->updateCategoryActivity($validated['category_id'], -$diff);
+            }
+
             DB::commit();
 
             return back()->with('success', 'Transaksi berhasil diperbarui.');
@@ -332,6 +342,10 @@ class TransactionController extends Controller
             // Delete the transaction
             $transaction->delete();
 
+            if ($transaction->category_id) {
+                $this->updateCategoryActivity($transaction->category_id, -$amount);
+            }
+
             DB::commit();
 
             return back()->with('success', 'Transaksi berhasil dihapus.');
@@ -343,16 +357,21 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Authorize that the transaction belongs to the authenticated user.
-     *
-     * @param  \App\Models\Transaction  $transaction
-     * @return void
-     */
     private function authorizeTransaction(Transaction $transaction)
     {
         if (Auth::id() !== $transaction->account->budget->user_id) {
             abort(403, 'Anda tidak memiliki izin untuk mengakses transaksi ini.');
+        }
+    }
+
+    private function updateCategoryActivity($categoryId, $amount)
+    {
+        $categoryBudgets = CategoryBudget::where('category_id', $categoryId)
+            ->get();
+
+        foreach ($categoryBudgets as $categoryBudget) {
+            $categoryBudget->activity = $categoryBudget->activity + $amount;
+            $categoryBudget->save();
         }
     }
 }
