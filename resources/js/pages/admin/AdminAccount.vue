@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import AdminSideBarLayout from '@/components/admin/AdminSideBarLayout.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminLayout from '@/layouts/admin/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Banknote, ChevronLeft, ChevronRight, CreditCard, PiggyBank, Search, TrendingUp, Wallet } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -91,6 +91,7 @@ const search = () => {
             page: 1,
         },
         {
+            preserveScroll: true,
             preserveState: true,
             replace: true,
         },
@@ -108,6 +109,7 @@ const goToPage = (page: number) => {
             page: page,
         },
         {
+            preserveScroll: true,
             preserveState: true,
             replace: true,
         },
@@ -197,15 +199,6 @@ const getAccountTypeIcon = (type: string) => {
     }
 };
 
-// Get available types for dropdown (fallback if not provided from backend)
-// const getAvailableTypes = () => {
-//     if (props.availableTypes && props.availableTypes.length > 0) {
-//         return props.availableTypes;
-//     }
-//     // Fallback types
-//     return ['cash', 'savings', 'credit', 'investment', 'loan'];
-// };
-
 // Helper function to display balance with proper sign for different account types
 const displayBalance = (account: Account) => {
     const balance = account.balance;
@@ -239,12 +232,11 @@ const displayBalance = (account: Account) => {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col lg:flex-row">
-        <Head title="Finova - Admin - Accounts" />
-        <AdminSideBarLayout class="hidden lg:block" />
+    <Head title="Admin Accounts Log" />
 
-        <div class="flex-1 px-2 pt-8 pb-10 sm:px-4 lg:px-13">
-            <div class="mx-auto w-full max-w-7xl">
+    <AdminLayout>
+        <div class="px-2 pt-8 pb-10 sm:px-4 lg:px-13">
+            <div class="w-full">
                 <!-- Header Section -->
                 <div class="mb-4 sm:mb-6"></div>
                 <h1 class="mb-1 font-serif text-xl font-bold sm:mb-2 sm:text-2xl lg:text-4xl">Manajemen Akun</h1>
@@ -302,18 +294,6 @@ const displayBalance = (account: Account) => {
                                 <div class="flex justify-between text-xs">
                                     <span>Uang:</span>
                                     <span class="font-medium">{{ accountsByType.cash }}</span>
-                                </div>
-                                <div class="flex justify-between text-xs">
-                                    <span>Tabungan:</span>
-                                    <span class="font-medium">{{ accountsByType.savings }}</span>
-                                </div>
-                                <div class="flex justify-between text-xs">
-                                    <span>Kredit:</span>
-                                    <span class="font-medium">{{ accountsByType.credit }}</span>
-                                </div>
-                                <div class="flex justify-between text-xs">
-                                    <span>Investasi:</span>
-                                    <span class="font-medium">{{ accountsByType.investment }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
                                     <span>Pinjaman:</span>
@@ -544,5 +524,5 @@ const displayBalance = (account: Account) => {
                 </div>
             </div>
         </div>
-    </div>
+    </AdminLayout>
 </template>

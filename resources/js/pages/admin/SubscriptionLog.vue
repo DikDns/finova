@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import AdminSideBarLayout from '@/components/admin/AdminSideBarLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminLayout from '@/layouts/admin/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
@@ -46,6 +46,7 @@ const search = () => {
             page: 1,
         },
         {
+            preserveScroll: true,
             preserveState: true,
             replace: true,
         },
@@ -61,6 +62,7 @@ const goToPage = (page: number) => {
             page: page,
         },
         {
+            preserveScroll: true,
             preserveState: true,
             replace: true,
         },
@@ -78,15 +80,11 @@ watch(searchQuery, () => {
 </script>
 
 <template>
-    <div class="flex min-h-screen">
-        <!-- <Head title="Finova - Admin - User Log" /> -->
-        <Head title="Finova - Admin - Subscription Log" />
+    <Head title="Admin Subscription Log" />
 
-        <!-- Import SideBar Component -->
-        <AdminSideBarLayout />
-
+    <AdminLayout>
         <!-- Main Content -->
-        <main class="flex-1 px-4 pt-16 pb-10 sm:px-6 lg:px-10">
+        <main class="px-4 pt-16 pb-10 sm:px-6 lg:px-10">
             <!-- Header Section -->
             <h1 class="mb-1 font-serif text-xl font-bold sm:mb-2 sm:text-2xl lg:text-4xl">Subscription Log</h1>
             <p class="text-muted-foreground text-xs sm:text-sm lg:text-base">Daftar aktivitas subscription pengguna dalam sistem</p>
@@ -166,5 +164,5 @@ watch(searchQuery, () => {
                 <p class="text-muted-foreground">Tidak ada log aktivitas subscription pengguna</p>
             </div>
         </main>
-    </div>
+    </AdminLayout>
 </template>
