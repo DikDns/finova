@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Navbar from '@/components/common/NavBar.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Head, Link } from '@inertiajs/vue3';
@@ -32,7 +33,7 @@ const fiturItems = [
                         </h1>
                         <p class="text-muted-foreground">Kelola keuangan dengan Finova</p>
                         <div class="flex justify-center pt-6 md:justify-start">
-                            <Button as-child class="w-full md:w-auto bg-primary hover:bg-primary/90 text-background rounded-full">
+                            <Button as-child class="bg-primary hover:bg-primary/90 text-background w-full rounded-full md:w-auto">
                                 <Link href="/register">Mulai Hidup Elegan</Link>
                             </Button>
                         </div>
@@ -50,6 +51,13 @@ const fiturItems = [
                 <h2 class="text-muted-foreground mx-auto mb-8 max-w-3xl text-2xl font-medium italic">
                     "Finova bukan sekadar aplikasi, tapi kunci keuangan yang lebih teratur dan tenang."
                 </h2>
+
+                <div class="flex justify-center pb-2">
+                    <Avatar class="size-16">
+                        <AvatarFallback> R </AvatarFallback>
+                        <AvatarImage src="https://i.pravatar.cc/300" alt="Rafi Zamzami" />
+                    </Avatar>
+                </div>
                 <p class="text-lg font-medium">
                     <span class="text-muted-foreground">Rafi Zamzami</span>,
                     <span class="text-muted-foreground/70">Media Social Student Associate</span>
@@ -84,7 +92,7 @@ const fiturItems = [
                             Fitur ini membantu mu mengelola keuangan dengan memberikan pengingat saat pengeluaran mencapai batas yang ditetapkan.
                         </p>
                         <div class="flex justify-center pt-6 md:justify-start">
-                            <Button as-child class="w-full md:w-auto bg-primary hover:bg-primary/90 text-background rounded-full">
+                            <Button as-child class="bg-primary hover:bg-primary/90 text-background w-full rounded-full md:w-auto">
                                 <Link href="/features/expense-alert">Pelajari Lebih Lanjut</Link>
                             </Button>
                         </div>
@@ -111,7 +119,7 @@ const fiturItems = [
                             <CarouselItem
                                 v-for="(item, index) in fiturItems"
                                 :key="index"
-                                class="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3"
+                                class="basis-full pl-2 sm:basis-1/2 md:basis-1/2 md:pl-4 lg:basis-1/3"
                             >
                                 <div class="bg-card rounded-lg p-6 text-center shadow-md">
                                     <div class="mb-4 flex justify-center">
@@ -136,10 +144,10 @@ const fiturItems = [
                         <h1 class="text-foreground font-serif text-4xl leading-tight font-bold sm:text-5xl md:text-6xl">Uangmu Kendalimu</h1>
                         <p class="text-muted-foreground text-lg">Kontrol penuh atas keuangan pribadi Anda dengan fitur yang komprehensif</p>
                         <div class="flex flex-col items-center gap-4 pt-4 md:flex-row md:justify-start">
-                            <Button as-child class="w-full md:w-auto bg-primary/90 text-background hover:bg-primary rounded-full">
-                                <Link href="/features/money-control">Mulai Kendalikan Uangmu</Link>
+                            <Button as-child class="bg-primary/90 text-background hover:bg-primary w-full rounded-full md:w-auto">
+                                <Link href="/register">Mulai Kendalikan Uangmu</Link>
                             </Button>
-                            <Button as-child class="w-full md:w-auto bg-primary/90 text-background hover:bg-primary rounded-full">
+                            <Button as-child class="bg-primary/90 text-background hover:bg-primary w-full rounded-full md:w-auto">
                                 <Link href="/features">Lihat Fitur Lainnya</Link>
                             </Button>
                         </div>

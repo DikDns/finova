@@ -92,7 +92,7 @@ import { Head, Link } from '@inertiajs/vue3';
                         </p>
                         <div class="flex justify-center pt-6 md:justify-start">
                             <Button as-child class="bg-primary hover:bg-primary/90 text-background w-full rounded-full md:w-auto">
-                                <Link href="/features/expense-alert">Pelajari Lebih Lanjut</Link>
+                                <Link href="/features">Pelajari Lebih Lanjut</Link>
                             </Button>
                         </div>
                     </div>
