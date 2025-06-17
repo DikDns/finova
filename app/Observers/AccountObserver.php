@@ -12,7 +12,7 @@ class AccountObserver
     public function created(Account $account): void
     {
         // handle account.balance and monthly_budget.total_balance sync
-        $monthlyBudgets = $account->budget->monthlyBudgets();
+        $monthlyBudgets = $account->budget->monthlyBudgets()->get();
         foreach ($monthlyBudgets as $monthlyBudget) {
             $monthlyBudget->total_balance = $monthlyBudget->total_balance + $account->balance;
             $monthlyBudget->save();
@@ -25,7 +25,7 @@ class AccountObserver
     public function updated(Account $account): void
     {
         // handle account.balance and monthly_budget.total_balance sync
-        $monthlyBudgets = $account->budget->monthlyBudgets();
+        $monthlyBudgets = $account->budget->monthlyBudgets()->get();
         $balanceDifference = $account->balance - $account->getOriginal('balance');
 
         foreach ($monthlyBudgets as $monthlyBudget) {

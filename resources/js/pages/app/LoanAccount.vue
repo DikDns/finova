@@ -294,6 +294,8 @@ const handleDelete = () => {
                     :y-grid-line="true"
                     :legend-position="LegendPosition.Top"
                     :hide-legend="false"
+                    :x-num-ticks="8"
+                    :y-num-ticks="6"
                     :x-formatter="xFormatter"
                 />
                 <div v-if="chartData.length === 0" class="text-muted-foreground flex h-[300px] items-center justify-center">

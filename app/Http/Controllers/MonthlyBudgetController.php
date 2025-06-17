@@ -40,19 +40,21 @@ class MonthlyBudgetController extends Controller
             }
 
             return DB::transaction(function () use ($budget, $monthFormatted, $referenceMonthFormatted) {
-                // Create new monthly budget
-                $monthlyBudget = $budget->monthlyBudgets()->create([
-                    'month' => $monthFormatted,
-                    'total_balance' => 0,
-                    'total_assigned' => 0,
-                    'total_activity' => 0,
-                    'total_available' => 0,
-                ]);
 
                 // Get reference monthly budget
                 $referenceMonthlyBudget = $budget->monthlyBudgets()
                     ->where('month', $referenceMonthFormatted)
                     ->first();
+
+                // Create new monthly budget
+                $monthlyBudget = $budget->monthlyBudgets()->create([
+                    'month' => $monthFormatted,
+                    'total_balance' => $referenceMonthlyBudget->total_balance,
+                    'total_assigned' => 0,
+                    'total_activity' => 0,
+                    'total_available' => 0,
+                ]);
+
 
                 if ($referenceMonthlyBudget) {
                     // Copy category budgets from reference month

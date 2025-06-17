@@ -235,7 +235,7 @@ class AccountController extends Controller
 
             DB::commit();
 
-            return redirect()->route('accounts.index')->with('success', 'Rekening berhasil dihapus');
+            return redirect()->route('budget', $account->budget_id)->with('success', 'Rekening berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
 

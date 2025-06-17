@@ -536,8 +536,8 @@ const currentTotalBalance = computed(() => {
 });
 
 const isAccountsDoesNotExist = computed(() => {
-    return props.account_types.length ===0
-})
+    return props.account_types.length === 0;
+});
 </script>
 
 <template>
@@ -568,13 +568,15 @@ const isAccountsDoesNotExist = computed(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
-                                <div :class="cn('h-2 w-2 rounded-full', currentTotalBalance > 0 && 'bg-green-600', isAccountsDoesNotExist && 'bg-red-600')"></div>
-                                <span :class="cn('text-xl font-semibold', currentTotalBalance > 0 && 'text-green-600' )">
+                                <div :class="cn('h-2 w-2 rounded-full bg-green-600', isAccountsDoesNotExist && 'bg-red-600')"></div>
+                                <span :class="cn('text-xl font-semibold', currentTotalBalance > 0 && 'text-green-600')">
                                     {{ formatCurrency(currentTotalBalance, budget.currency_code) }}
                                 </span>
                             </div>
                             <p class="text-muted-foreground text-sm" v-if="currentTotalBalance > 0">Total Budget siap dialokasikan</p>
-                            <p class="text-muted-foreground text-sm" v-else-if="isAccountsDoesNotExist">Tambahkan transaksi pada rekening untuk mendapatkan total budget</p>
+                            <p class="text-muted-foreground text-sm" v-else-if="isAccountsDoesNotExist">
+                                Tambahkan transaksi pada rekening untuk mendapatkan total budget
+                            </p>
                             <p class="text-muted-foreground text-sm" v-else>Kamu sudah berhasil mengalokasikan total budget</p>
                         </div>
                     </div>
@@ -825,7 +827,15 @@ const isAccountsDoesNotExist = computed(() => {
                                                 @click="startEditingAllocated(category.category_budget?.id ?? '', category.allocated.toString())"
                                                 :disabled="isLoading"
                                             >
-                                                <span>{{ formatCurrency(category.allocated, budget.currency_code) }}</span>
+                                                <div class="flex items-center gap-1">
+                                                    <div 
+                                                        class="h-2 w-2 rounded-full" 
+                                                        :class="getAllocationStatusClass(category.allocated, category.target)"
+                                                    ></div>
+                                                    <span :class="getAllocationStatusClass(category.allocated, category.target)">
+                                                        {{ formatCurrency(category.allocated, budget.currency_code) }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="flex w-32 flex-shrink-0 items-center justify-end">
@@ -856,11 +866,12 @@ const isAccountsDoesNotExist = computed(() => {
                                                 @click="startEditingTarget(category.category_budget?.id ?? '', category.target.toString())"
                                                 :disabled="isLoading"
                                             >
-                                                <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">{{
-                                                    formatCurrency(category.target, budget.currency_code)
-                                                }}</span>
+                                                <span :class="editingAllocatedBudgetId !== category.category_budget?.id ? '' : 'opacity-0'">
+                                                    {{ formatCurrency(category.target, budget.currency_code) }}
+                                                </span>
                                             </div>
                                         </div>
+
                                         <div
                                             class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
                                             :class="[
@@ -938,3 +949,35 @@ const isAccountsDoesNotExist = computed(() => {
         </AlertDialog>
     </AppLayout>
 </template>
+
+
+// Function to determine allocation status indicator
+const getAllocationStatus = (allocated: number, target: number) => {
+    // Tolerance value (consider equal if difference is very small)
+    const tolerance = 0.01;
+    
+    if (Math.abs(allocated - target) <= tolerance) {
+        return 'equal'; // Alokasi sesuai target
+    } else if (allocated < target) {
+        return 'under'; // Alokasi kurang dari target
+    } else {
+        return 'over'; // Alokasi melebihi target
+    }
+};
+
+// Function to get indicator class based on allocation status
+const getAllocationStatusClass = (allocated: number, target: number) => {
+    const status = getAllocationStatus(allocated, target);
+    
+    switch (status) {
+        case 'equal':
+            return 'text-green-600'; // Hijau untuk alokasi sesuai target
+        case 'under':
+            return 'text-amber-500'; // Kuning/amber untuk alokasi kurang dari target
+        case 'over':
+            return 'text-red-500'; // Merah untuk alokasi melebihi target
+        default:
+            return '';
+    }
+};
+</script>
