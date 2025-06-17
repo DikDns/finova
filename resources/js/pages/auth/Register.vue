@@ -29,10 +29,6 @@ const submit = () => {
     form.username = form.name.toLowerCase().replace(/\s+/g, '');
     
     form.post(route('register'), {
-        onSuccess: () => {
-            // Show success message
-            alert('Registration successful! Redirecting to budgets page...');
-        },
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
