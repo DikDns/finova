@@ -254,7 +254,7 @@ const confirmDeleteAccount = () => {
                     as-child
                     :is-active="getThePathOnly(item.href) === page.url"
                     :tooltip="item.title"
-                    v-if="!(item.title === 'Semua Rekening' && account_types.length === 0)"
+                    v-if="!((item.title === 'Semua Rekening' || item.title === 'Analisis') && account_types.length === 0)"
                 >
                     <Link :href="item.href" prefetch>
                         <component :is="item.icon" />

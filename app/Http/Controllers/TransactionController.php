@@ -130,7 +130,9 @@ class TransactionController extends Controller
                 $account->save();
             }
 
-            if ($validated['category_id']) {
+            // Update category activity if category is set
+            // Kondisi 1: Transaksi baru dengan kategori
+            if (isset($validated['category_id']) && $validated['category_id'] !== null) {
                 $this->updateCategoryActivity($validated['category_id'], $amount);
             }
 
@@ -184,6 +186,8 @@ class TransactionController extends Controller
             // Get the old transaction data to calculate balance adjustment
             $oldAmount = $transaction->amount;
             $oldAccountId = $transaction->account_id;
+            $oldCategoryId = $transaction->category_id;
+            $newCategoryId = $validated['category_id'];
             $amount = $validated['amount'];
 
             // Jika ada current_account_id, berarti ini adalah transaksi pinjaman
@@ -280,12 +284,31 @@ class TransactionController extends Controller
                     'category_id' => $validated['category_id'],
                     'account_id' => $validated['account_id'],
                 ]);
+
+                // Handle category activity updates
+                // Dapatkan kategori ID asli sebelum update
+
+                // Kondisi 1: Transaksi diubah jumlahnya namun tetap sama kategori id
+                if ($oldCategoryId === $newCategoryId && $oldCategoryId !== null) {
+                    // Hitung selisih amount dan update activity
+                    $amountDifference = $amount - $oldAmount;
+                    $this->updateCategoryActivity($oldCategoryId, $amountDifference);
+                }
+                // Kondisi 2: Transaksi tidak diubah jumlahnya namun beda kategori id
+                // atau transaksi diubah jumlahnya dan beda kategori id
+                else {
+                    // Hapus amount dari kategori lama jika ada
+                    if ($oldCategoryId) {
+                        $this->updateCategoryActivity($oldCategoryId, -$oldAmount);
+                    }
+
+                    // Tambahkan amount ke kategori baru jika ada
+                    if ($newCategoryId) {
+                        $this->updateCategoryActivity($newCategoryId, $amount);
+                    }
+                }
             }
 
-            if ($validated['category_id']) {
-                $diff = $oldAmount + $amount;
-                $this->updateCategoryActivity($validated['category_id'], -$diff);
-            }
 
             DB::commit();
 
@@ -339,12 +362,15 @@ class TransactionController extends Controller
                 $account->save();
             }
 
+            // Kondisi 3: Ketika transaksi dihapus
+            // Update category activity when deleting transaction
+            if ($transaction->category_id !== null) {
+                $this->updateCategoryActivity($transaction->category_id, -$amount);
+            }
+
             // Delete the transaction
             $transaction->delete();
 
-            if ($transaction->category_id) {
-                $this->updateCategoryActivity($transaction->category_id, -$amount);
-            }
 
             DB::commit();
 

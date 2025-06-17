@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import ButtonAi from '@/components/ui/button/ButtonAi.vue';
 import DonutChart from '@/components/ui/chart/DonutChart.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import type { AccountType, Budget } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import AISideBar from '@/components/budgets/AISideBar.vue';
-import { formatCurrency } from '@/lib/utils';
 
 interface ExpenseData {
     category: string;
@@ -32,7 +30,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const showSidebar = ref(false);
 
 const expenseData = ref(props.expenseData);
 
@@ -50,14 +47,13 @@ const dailyAverage = computed(() => {
 
 const mostActiveCategory = computed(() => {
     // Find the category that matches the most active category name
-    const category = expenseData.value.find(item => item.category === props.expenseStats.mostActiveCategory);
+    const category = expenseData.value.find((item) => item.category === props.expenseStats.mostActiveCategory);
     return category || { category: props.expenseStats.mostActiveCategory, icon: '📊', percentage: 0 };
 });
 
 const largestExpense = computed(() => {
     return props.expenseStats.highestMonthlyExpense || 0;
 });
-
 </script>
 
 <template>
@@ -67,9 +63,7 @@ const largestExpense = computed(() => {
         <div class="analysis-page">
             <!-- Header -->
             <div class="header">
-                <AISideBar :isOpen="showSidebar" @close="showSidebar = false" />
-                <h1 class="title">Analisa</h1>
-                <ButtonAi @click="showSidebar = true" class="ai-assistant-btn"> AI Assistant </ButtonAi>
+                <h1 class="font-serif text-2xl font-semibold tracking-tight">Analisa {{ formatDate(new Date().toISOString()) }}</h1>
             </div>
 
             <!-- Analysis Container -->
@@ -105,7 +99,7 @@ const largestExpense = computed(() => {
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Kategori Paling Aktif</div>
-                            <div class="stat-value">{{ mostActiveCategory.icon }} {{ mostActiveCategory.category }}</div>
+                            <div class="stat-value">{{ mostActiveCategory.category }}</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Pengeluaran Terbesar Bulanan</div>
@@ -126,7 +120,6 @@ const largestExpense = computed(() => {
                     <div class="category-list">
                         <div v-for="item in expenseData" :key="item.category" class="category-item">
                             <div class="category-info">
-                                <span class="category-icon">{{ item.icon }}</span>
                                 <span class="category-name">{{ item.category }}</span>
                             </div>
                             <div class="category-amounts">

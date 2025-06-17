@@ -26,46 +26,46 @@ trait CreatesBudgetCategories
                 'total_activity' => 0,
                 'total_available' => 0,
             ]);
-            
+
             // Create category groups and their categories
             $categoryGroups = [
                 'Tagihan' => [
-                    'Uang Kuliah (UKT)',
-                    'Sewa Kost',
-                    'Telepon & Internet',
-                    'Listrik & Air',
-                    'Transportasi',
+                    '🎓 Uang Kuliah (UKT)',
+                    '🏠 Sewa Kost',
+                    '📱 Telepon & Internet',
+                    '💡 Listrik & Air',
+                    '🚗 Transportasi',
                 ],
                 'Kebutuhan' => [
-                    'Makan & Minum',
-                    'Perlengkapan Kuliah',
-                    'Kebutuhan Mandi & Kebersihan Diri',
-                    'Kesehatan',
-                    'Dana Darurat',
+                    '🍽️ Makan & Minum',
+                    '📚 Perlengkapan Kuliah',
+                    '🧴 Kebutuhan Mandi & Kebersihan Diri',
+                    '🏥 Kesehatan',
+                    '🚨 Dana Darurat',
                 ],
                 'Keinginan' => [
-                    'Jajan',
-                    'Hiburan',
-                    'Langganan',
-                    'Belanja',
-                    'Liburan',
+                    '🍪 Jajan',
+                    '🎮 Hiburan',
+                    '📺 Langganan',
+                    '🛍️ Belanja',
+                    '✈️ Liburan',
                 ]
             ];
-            
+
             foreach ($categoryGroups as $groupName => $categories) {
                 // Create category group
                 $categoryGroup = CategoryGroup::create([
                     'budget_id' => $budget->id,
                     'name' => $groupName,
                 ]);
-                
+
                 // Create categories for this group
                 foreach ($categories as $categoryName) {
                     $category = Category::create([
                         'name' => $categoryName,
                         'category_group_id' => $categoryGroup->id,
                     ]);
-                    
+
                     // Create category budget for current month
                     CategoryBudget::create([
                         'monthly_budget_id' => $monthlyBudget->id,

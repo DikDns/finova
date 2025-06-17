@@ -538,6 +538,41 @@ const currentTotalBalance = computed(() => {
 const isAccountsDoesNotExist = computed(() => {
     return props.account_types.length === 0;
 });
+
+// Function to determine allocation status indicator
+const getAllocationStatus = (allocated: number, target: number) => {
+    // Tolerance value (consider equal if difference is very small)
+    const tolerance = 0.01;
+
+    // if value is zero
+    if (target === 0) {
+        return ''; // Alokasi sesuai target
+    }
+
+    if (Math.abs(allocated - target) <= tolerance) {
+        return 'equal'; // Alokasi sesuai target
+    } else if (allocated < target) {
+        return 'under'; // Alokasi kurang dari target
+    } else {
+        return 'over'; // Alokasi melebihi target
+    }
+};
+
+// Function to get indicator class based on allocation status
+const getAllocationStatusClass = (allocated: number, target: number) => {
+    const status = getAllocationStatus(allocated, target);
+
+    switch (status) {
+        case 'equal':
+            return 'text-green-600'; // Hijau untuk alokasi sesuai target
+        case 'under':
+            return 'text-amber-600'; // Kuning/amber untuk alokasi kurang dari target
+        case 'over':
+            return 'text-red-600'; // Merah untuk alokasi melebihi target
+        default:
+            return '';
+    }
+};
 </script>
 
 <template>
@@ -682,8 +717,13 @@ const isAccountsDoesNotExist = computed(() => {
                                         {{ formatCurrency(group?.totalTarget ?? 0, budget.currency_code) }}
                                     </div>
                                     <div
-                                        class="w-32 flex-shrink-0 text-right font-semibold"
-                                        :class="(group?.totalSpent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'"
+                                        :class="
+                                            cn(
+                                                'w-32 flex-shrink-0 text-right font-semibold',
+                                                (group?.totalSpent ?? 0) > 0 && 'text-green-600',
+                                                (group?.totalSpent ?? 0) < 0 && 'text-red-600',
+                                            )
+                                        "
                                     >
                                         {{ formatCurrency(group?.totalSpent ?? 0, budget.currency_code) }}
                                     </div>
@@ -828,8 +868,8 @@ const isAccountsDoesNotExist = computed(() => {
                                                 :disabled="isLoading"
                                             >
                                                 <div class="flex items-center gap-1">
-                                                    <div 
-                                                        class="h-2 w-2 rounded-full" 
+                                                    <div
+                                                        class="h-2 w-2 rounded-full"
                                                         :class="getAllocationStatusClass(category.allocated, category.target)"
                                                     ></div>
                                                     <span :class="getAllocationStatusClass(category.allocated, category.target)">
@@ -873,11 +913,14 @@ const isAccountsDoesNotExist = computed(() => {
                                         </div>
 
                                         <div
-                                            class="flex w-32 flex-shrink-0 items-center justify-end font-medium"
-                                            :class="[
-                                                category.spent >= 0 ? 'text-green-500' : 'text-red-500',
-                                                category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
-                                            ]"
+                                            :class="
+                                                cn(
+                                                    'flex w-32 flex-shrink-0 items-center justify-end font-medium',
+                                                    (group?.totalSpent ?? 0) > 0 && 'text-green-600',
+                                                    (group?.totalSpent ?? 0) < 0 && 'text-red-600',
+                                                    category.category_budget?.id !== editingTargetBudgetId ? '' : 'opacity-0',
+                                                )
+                                            "
                                         >
                                             <span> {{ formatCurrency(category.spent, budget.currency_code) }}</span>
                                         </div>
@@ -949,35 +992,3 @@ const isAccountsDoesNotExist = computed(() => {
         </AlertDialog>
     </AppLayout>
 </template>
-
-
-// Function to determine allocation status indicator
-const getAllocationStatus = (allocated: number, target: number) => {
-    // Tolerance value (consider equal if difference is very small)
-    const tolerance = 0.01;
-    
-    if (Math.abs(allocated - target) <= tolerance) {
-        return 'equal'; // Alokasi sesuai target
-    } else if (allocated < target) {
-        return 'under'; // Alokasi kurang dari target
-    } else {
-        return 'over'; // Alokasi melebihi target
-    }
-};
-
-// Function to get indicator class based on allocation status
-const getAllocationStatusClass = (allocated: number, target: number) => {
-    const status = getAllocationStatus(allocated, target);
-    
-    switch (status) {
-        case 'equal':
-            return 'text-green-600'; // Hijau untuk alokasi sesuai target
-        case 'under':
-            return 'text-amber-500'; // Kuning/amber untuk alokasi kurang dari target
-        case 'over':
-            return 'text-red-500'; // Merah untuk alokasi melebihi target
-        default:
-            return '';
-    }
-};
-</script>
