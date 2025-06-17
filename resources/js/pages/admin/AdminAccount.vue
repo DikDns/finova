@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Head, router } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, CreditCard, PiggyBank, Search, TrendingUp, Wallet, Banknote } from 'lucide-vue-next';
-import { ref, watch, computed } from 'vue';
+import { Banknote, ChevronLeft, ChevronRight, CreditCard, PiggyBank, Search, TrendingUp, Wallet } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface Account {
     id: string;
@@ -198,42 +198,42 @@ const getAccountTypeIcon = (type: string) => {
 };
 
 // Get available types for dropdown (fallback if not provided from backend)
-const getAvailableTypes = () => {
-    if (props.availableTypes && props.availableTypes.length > 0) {
-        return props.availableTypes;
-    }
-    // Fallback types
-    return ['cash', 'savings', 'credit', 'investment', 'loan'];
-};
+// const getAvailableTypes = () => {
+//     if (props.availableTypes && props.availableTypes.length > 0) {
+//         return props.availableTypes;
+//     }
+//     // Fallback types
+//     return ['cash', 'savings', 'credit', 'investment', 'loan'];
+// };
 
 // Helper function to display balance with proper sign for different account types
 const displayBalance = (account: Account) => {
     const balance = account.balance;
     const type = account.type.toLowerCase();
-    
+
     // For loan accounts, display as debt (positive numbers represent money owed)
     if (type === 'loan') {
         return {
             amount: Math.abs(balance),
             isPositive: false,
-            label: 'Debt'
+            label: 'Debt',
         };
     }
-    
+
     // For credit accounts, positive balance means debt
     if (type.includes('credit')) {
         return {
             amount: Math.abs(balance),
             isPositive: balance <= 0, // Negative balance in credit means credit available
-            label: balance > 0 ? 'Debt' : 'Available Credit'
+            label: balance > 0 ? 'Debt' : 'Available Credit',
         };
     }
-    
+
     // For other accounts (cash, savings, investment)
     return {
         amount: Math.abs(balance),
         isPositive: balance >= 0,
-        label: 'Balance'
+        label: 'Balance',
     };
 };
 </script>
@@ -439,13 +439,11 @@ const displayBalance = (account: Account) => {
                                                             <strong>{{ displayBalance(account).label }}:</strong>
                                                             <span
                                                                 :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'"
-                                                                class="font-semibold ml-2"
+                                                                class="ml-2 font-semibold"
                                                             >
                                                                 {{ formatCurrency(displayBalance(account).amount) }}
                                                             </span>
-                                                            <div class="text-xs text-gray-500 mt-1">
-                                                                Saldo: {{ formatCurrency(account.balance) }}
-                                                            </div>
+                                                            <div class="mt-1 text-xs text-gray-500">Saldo: {{ formatCurrency(account.balance) }}</div>
                                                         </div>
                                                         <div>
                                                             <strong>Suku Bunga:</strong>
@@ -494,7 +492,10 @@ const displayBalance = (account: Account) => {
                                     <div class="flex items-center justify-between">
                                         <div class="text-xs">
                                             <Badge class="font-medium">{{ displayBalance(account).label }}:</Badge>
-                                            <span :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'" class="ml-1 font-semibold">
+                                            <span
+                                                :class="displayBalance(account).isPositive ? 'text-green-600' : 'text-red-600'"
+                                                class="ml-1 font-semibold"
+                                            >
                                                 {{ formatCurrency(displayBalance(account).amount) }}
                                             </span>
                                         </div>
