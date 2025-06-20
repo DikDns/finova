@@ -14,6 +14,8 @@ import Calendar from '@/components/ui/calendar/Calendar.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,8 +27,6 @@ import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@inter
 import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
-
-import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field';
 interface Props {
     budget: Budget;
     transactions: {
@@ -59,7 +59,7 @@ const form = ref({
     amount: 0,
     date: new Date().toISOString(),
     category_id: undefined as string | undefined,
-    account_id: '' as string,
+    account_id: props.accounts.at(0)?.id ?? '',
     memo: '',
     budget_id: props.budget.id,
     type: 'expense' as 'expense' | 'income',
@@ -87,7 +87,7 @@ const resetForm = () => {
         amount: 0,
         date: new Date().toISOString(),
         category_id: undefined,
-        account_id: '',
+        account_id: props.accounts.at(0)?.id ?? '',
         memo: '',
         budget_id: props.budget.id,
         type: 'expense',
@@ -294,7 +294,10 @@ const goToPage = (page: number) => {
                                 <div class="space-y-2">
                                     <label for="account" class="text-sm font-medium">Rekening</label>
                                     <Select v-model="form.account_id">
-                                        <SelectTrigger :class="{ 'border-red-500': errors.account_id, 'w-full': true }">
+                                        <SelectTrigger
+                                            :class="{ 'border-red-500': errors.account_id, 'w-full': true }"
+                                            :default-value="props.accounts[0].name"
+                                        >
                                             <SelectValue placeholder="Pilih rekening" />
                                         </SelectTrigger>
                                         <SelectContent>

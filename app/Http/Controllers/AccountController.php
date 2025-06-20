@@ -264,8 +264,7 @@ class AccountController extends Controller
 
         $predictions = [];
         $currentDate = now();
-        // Konversi persentase bunga bulanan ke desimal
-        $monthlyInterestRate = ($interestRate / 100);
+        $monthlyInterestRate = $interestRate;
 
         // Hitung bunga bulanan awal
         $initialInterest = $currentBalance * $monthlyInterestRate;
@@ -287,6 +286,11 @@ class AccountController extends Controller
             // Perhitungan pembayaran yang menurun seiring dengan penurunan saldo utang
             $principalPayment = $currentBalance * 0.05; // 5% dari saldo utang saat ini
             $effectivePayment = max($minimumPayment, $interest + $principalPayment);
+            
+            // Batasi pembayaran efektif agar tidak melebihi saldo pinjaman saat ini ditambah bunga
+            // Ini untuk menangani kasus pembayaran berlebih
+            $maxPayment = $currentBalance + $interest;
+            $effectivePayment = min($effectivePayment, $maxPayment);
 
             // Kurangi saldo dengan pembayaran efektif (setelah dikurangi bunga)
             $currentBalance = $currentBalance + $interest - $effectivePayment;

@@ -69,8 +69,8 @@ const accountForm = ref({
     name: '',
     type: '',
     balance: 0,
-    interest: '',
-    minimum_payment_monthly: '',
+    interest: 0.05,
+    minimum_payment_monthly: 0,
 });
 
 const editAccountForm = ref({
@@ -78,8 +78,8 @@ const editAccountForm = ref({
     name: '',
     type: '',
     balance: 0,
-    interest: '',
-    minimum_payment_monthly: '',
+    interest: 0.05,
+    minimum_payment_monthly: 0,
 });
 
 const resetForm = () => {
@@ -87,8 +87,8 @@ const resetForm = () => {
         name: '',
         type: '',
         balance: 0,
-        interest: '',
-        minimum_payment_monthly: '',
+        interest: 0.05,
+        minimum_payment_monthly: 0,
     };
 };
 
@@ -98,8 +98,8 @@ const resetEditForm = () => {
         name: '',
         type: '',
         balance: 0,
-        interest: '',
-        minimum_payment_monthly: '',
+        interest: 0.05,
+        minimum_payment_monthly: 0,
     };
 };
 
@@ -109,9 +109,9 @@ const openEditDialog = (account: any, accountType: string) => {
         id: account.id,
         name: account.name,
         type: accountType,
-        balance: account.balance.toString(),
-        interest: account.interest?.toString() || '',
-        minimum_payment_monthly: account.minimum_payment_monthly?.toString() || '',
+        balance: account.balance,
+        interest: account.interest ?? 0.05,
+        minimum_payment_monthly: account.minimum_payment_monthly ?? 0,
     };
     showEditAccountDialog.value = true;
 };
@@ -127,11 +127,6 @@ const createAccount = () => {
         return;
     }
 
-    if (accountForm.value.type === 'loan' && (accountForm.value.interest === '' || accountForm.value.minimum_payment_monthly === '')) {
-        toast.error('Mohon lengkapi semua field yang diperlukan');
-        return;
-    }
-
     isLoading.value = true;
 
     const formData: any = {
@@ -142,8 +137,8 @@ const createAccount = () => {
     };
 
     if (accountForm.value.type === 'loan') {
-        formData.interest = parseFloat(accountForm.value.interest) || 0;
-        formData.minimum_payment_monthly = parseFloat(accountForm.value.minimum_payment_monthly) || 0;
+        formData.interest = accountForm.value.interest;
+        formData.minimum_payment_monthly = accountForm.value.minimum_payment_monthly;
     }
 
     router.post(route('accounts.store'), formData, {
@@ -180,11 +175,6 @@ const updateAccount = () => {
         return;
     }
 
-    if (editAccountForm.value.type === 'loan' && (editAccountForm.value.interest === '' || editAccountForm.value.minimum_payment_monthly === '')) {
-        toast.error('Mohon lengkapi semua field yang diperlukan');
-        return;
-    }
-
     isLoading.value = true;
 
     const formData: any = {
@@ -195,8 +185,8 @@ const updateAccount = () => {
     };
 
     if (editAccountForm.value.type === 'loan') {
-        formData.interest = parseFloat(editAccountForm.value.interest) || 0;
-        formData.minimum_payment_monthly = parseFloat(editAccountForm.value.minimum_payment_monthly) || 0;
+        formData.interest = editAccountForm.value.interest;
+        formData.minimum_payment_monthly = editAccountForm.value.minimum_payment_monthly;
     }
 
     router.put(route('accounts.update', editAccountForm.value.id), formData, {
@@ -384,30 +374,63 @@ const confirmDeleteAccount = () => {
                     <!-- Additional fields for loan type -->
                     <template v-if="accountForm.type === 'loan'">
                         <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="interest" class="text-right"> Bunga/Bulan (%) </Label>
-                            <Input
+                            <Label for="interest" class="text-right"> Bunga/Bulan </Label>
+                            <NumberField
                                 id="interest"
-                                v-model="accountForm.interest"
-                                type="number"
-                                step="1"
-                                max="100"
-                                min="0"
-                                required
-                                placeholder="Bunga per bulan"
+                                :model-value="accountForm.interest"
+                                :default-value="0.05"
+                                :step="0.01"
+                                :format-options="{
+                                    style: 'percent',
+                                }"
                                 class="col-span-3"
-                            />
+                                @update:model-value="
+                                    (v) => {
+                                        if (v) {
+                                            accountForm.interest = v;
+                                        } else {
+                                            accountForm.interest = 0;
+                                        }
+                                    }
+                                "
+                            >
+                                <NumberFieldContent>
+                                    <NumberFieldDecrement />
+                                    <NumberFieldInput />
+                                    <NumberFieldIncrement />
+                                </NumberFieldContent>
+                            </NumberField>
                         </div>
                         <div class="grid grid-cols-4 items-center gap-4">
                             <Label for="minimum_payment" class="text-right"> Bayar Minimum </Label>
-                            <Input
+                            <NumberField
                                 id="minimum_payment"
-                                v-model="accountForm.minimum_payment_monthly"
-                                type="number"
-                                step="500"
-                                required
-                                placeholder="Pembayaran minimum bulanan"
+                                :step="500"
+                                :min="0"
+                                :model-value="accountForm.minimum_payment_monthly"
+                                :format-options="{
+                                    style: 'currency',
+                                    currency: currency_code,
+                                    currencyDisplay: 'code',
+                                    currencySign: 'accounting',
+                                }"
                                 class="col-span-3"
-                            />
+                                @update:model-value="
+                                    (v) => {
+                                        if (v) {
+                                            accountForm.minimum_payment_monthly = v;
+                                        } else {
+                                            accountForm.minimum_payment_monthly = 0;
+                                        }
+                                    }
+                                "
+                            >
+                                <NumberFieldContent>
+                                    <NumberFieldDecrement />
+                                    <NumberFieldInput />
+                                    <NumberFieldIncrement />
+                                </NumberFieldContent>
+                            </NumberField>
                         </div>
                     </template>
                 </div>
@@ -466,30 +489,63 @@ const confirmDeleteAccount = () => {
                     <!-- Additional fields for loan type -->
                     <template v-if="editAccountForm.type === 'loan'">
                         <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="edit-interest" class="text-right"> Bunga/Bulan (%) </Label>
-                            <Input
-                                id="edit-interest"
-                                v-model="editAccountForm.interest"
-                                type="number"
-                                step="1"
-                                max="100"
-                                min="0"
-                                required
-                                placeholder="Bunga per bulan"
+                            <Label for="interest" class="text-right"> Bunga/Bulan </Label>
+                            <NumberField
+                                id="interest"
+                                :model-value="editAccountForm.interest"
+                                :default-value="0.05"
+                                :step="0.01"
+                                :format-options="{
+                                    style: 'percent',
+                                }"
                                 class="col-span-3"
-                            />
+                                @update:model-value="
+                                    (v) => {
+                                        if (v) {
+                                            editAccountForm.interest = v;
+                                        } else {
+                                            editAccountForm.interest = 0;
+                                        }
+                                    }
+                                "
+                            >
+                                <NumberFieldContent>
+                                    <NumberFieldDecrement />
+                                    <NumberFieldInput />
+                                    <NumberFieldIncrement />
+                                </NumberFieldContent>
+                            </NumberField>
                         </div>
                         <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="edit-minimum-payment" class="text-right"> Bayar Minimum </Label>
-                            <Input
-                                id="edit-minimum-payment"
-                                v-model="editAccountForm.minimum_payment_monthly"
-                                type="number"
-                                step="500"
-                                required
-                                placeholder="Pembayaran minimum bulanan"
+                            <Label for="minimum_payment" class="text-right"> Bayar Minimum </Label>
+                            <NumberField
+                                id="minimum_payment"
+                                :step="500"
+                                :min="0"
+                                :model-value="editAccountForm.minimum_payment_monthly"
+                                :format-options="{
+                                    style: 'currency',
+                                    currency: currency_code,
+                                    currencyDisplay: 'code',
+                                    currencySign: 'accounting',
+                                }"
                                 class="col-span-3"
-                            />
+                                @update:model-value="
+                                    (v) => {
+                                        if (v) {
+                                            editAccountForm.minimum_payment_monthly = v;
+                                        } else {
+                                            editAccountForm.minimum_payment_monthly = 0;
+                                        }
+                                    }
+                                "
+                            >
+                                <NumberFieldContent>
+                                    <NumberFieldDecrement />
+                                    <NumberFieldInput />
+                                    <NumberFieldIncrement />
+                                </NumberFieldContent>
+                            </NumberField>
                         </div>
                     </template>
                 </div>

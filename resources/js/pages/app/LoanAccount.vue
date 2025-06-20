@@ -14,6 +14,8 @@ import Calendar from '@/components/ui/calendar/Calendar.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -77,9 +79,10 @@ const form = ref({
     amount: 0,
     date: new Date().toISOString(),
     category_id: null as string | undefined | null,
-    account_id: '' as string,
+    account_id: props.accounts.at(0)?.id ?? '',
     memo: '',
     budget_id: props.budget.id,
+    type: 'expense' as 'expense' | 'income',
 });
 
 const dateValue = ref<DateValue>();
@@ -128,9 +131,10 @@ const resetForm = () => {
         amount: 0,
         date: new Date().toISOString(),
         category_id: null,
-        account_id: '',
+        account_id: props.accounts.at(0)?.id ?? '',
         memo: '',
         budget_id: props.budget.id,
+        type: 'expense',
     };
     errors.value = {};
     isLoading.value = false;
@@ -153,6 +157,7 @@ const setEditForm = (transaction: Transaction) => {
         account_id: transaction.payee,
         memo: transaction.memo || '',
         budget_id: props.budget.id,
+        type: transaction.type || 'expense', // Gunakan tipe transaksi yang ada atau default ke 'expense'
     };
 };
 
@@ -267,7 +272,12 @@ const handleDelete = () => {
                     </div>
                     <div>
                         <span class="text-xl font-semibold">
-                            {{ (Math.round((props.current_account?.interest ?? 0) * 100) / 100).toFixed(1).toString().replace('.', ',') }}%
+                            {{
+                                Math.round((props.current_account?.interest ?? 0) * 100)
+                                    .toFixed(1)
+                                    .toString()
+                                    .replace('.', ',')
+                            }}%
                         </span>
                         <p class="text-muted-foreground text-xs tracking-tight">Suku Bunga</p>
                     </div>
@@ -297,6 +307,7 @@ const handleDelete = () => {
                     :x-num-ticks="8"
                     :y-num-ticks="6"
                     :x-formatter="xFormatter"
+                    v-if="chartData.length !== 0"
                 />
                 <div v-if="chartData.length === 0" class="text-muted-foreground flex h-[300px] items-center justify-center">
                     Tidak ada data prediksi pelunasan utang
@@ -312,14 +323,16 @@ const handleDelete = () => {
                         <DialogTrigger as-child>
                             <Button class="flex items-center gap-2">
                                 <Plus class="h-4 w-4" />
-                                <span>Buat Pembayaran</span>
+                                <span>Buat Transaksi</span>
                             </Button>
                         </DialogTrigger>
 
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Tambah Pembayaran Baru</DialogTitle>
-                                <DialogDescription> Isi form berikut untuk menambahkan pembayaran utang baru. </DialogDescription>
+                                <DialogTitle>Tambah Transaksi Utang Baru</DialogTitle>
+                                <DialogDescription>
+                                    Isi form berikut untuk menambahkan transaksi utang baru (pembayaran atau penambahan).
+                                </DialogDescription>
                             </DialogHeader>
 
                             <form @submit.prevent="submitForm" class="mt-4 space-y-4">
@@ -367,16 +380,51 @@ const handleDelete = () => {
 
                                 <!-- Amount -->
                                 <div class="space-y-2">
-                                    <label for="amount" class="text-sm font-medium">Jumlah Pembayaran ({{ props.budget.currency_code }})</label>
-                                    <Input
+                                    <Label for="amount" class="text-sm font-medium"> Jumlah Transaksi</Label>
+                                    <NumberField
+                                        :step="500"
+                                        :min="0"
                                         id="amount"
-                                        v-model="form.amount"
-                                        type="number"
                                         placeholder="Jumlah transaksi"
-                                        min="0"
-                                        :class="{ 'border-red-500': errors.amount }"
-                                    />
+                                        :model-value="form.amount"
+                                        :format-options="{
+                                            style: 'currency',
+                                            currency: props.budget.currency_code,
+                                            currencyDisplay: 'code',
+                                            currencySign: 'accounting',
+                                        }"
+                                        @update:model-value="
+                                            (v) => {
+                                                if (v) {
+                                                    form.amount = v;
+                                                } else {
+                                                    form.amount = 0;
+                                                }
+                                            }
+                                        "
+                                    >
+                                        <NumberFieldContent>
+                                            <NumberFieldDecrement />
+                                            <NumberFieldInput />
+                                            <NumberFieldIncrement />
+                                        </NumberFieldContent>
+                                    </NumberField>
                                     <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
+                                </div>
+
+                                <!-- Transaction Type -->
+                                <div class="space-y-2">
+                                    <label for="type" class="text-sm font-medium">Tipe Transaksi</label>
+                                    <Select v-model="form.type">
+                                        <SelectTrigger :class="{ 'border-red-500': errors.type, 'w-full': true }">
+                                            <SelectValue placeholder="Pilih tipe transaksi" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="expense">Pembayaran Utang</SelectItem>
+                                            <SelectItem value="income">Penambahan Utang</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p v-if="errors.type" class="mt-1 text-xs text-red-500">{{ errors.type }}</p>
                                 </div>
 
                                 <!-- Memo -->
@@ -412,7 +460,7 @@ const handleDelete = () => {
                                     <TableHead>Tanggal</TableHead>
                                     <TableHead>Rekening</TableHead>
                                     <TableHead>Memo</TableHead>
-                                    <TableHead class="text-right">Pembayaran</TableHead>
+                                    <TableHead class="text-right">Jumlah</TableHead>
                                     <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -424,12 +472,14 @@ const handleDelete = () => {
                                     }}</TableCell>
                                     <TableCell>{{ formatDate(transaction.date) }}</TableCell>
                                     <TableCell>
-                                        {{ console.log(props.accounts) }}
                                         {{ props.accounts.find((a) => a.id === transaction.payee)?.name || '-' }}
                                     </TableCell>
                                     <TableCell>{{ transaction.memo || '-' }}</TableCell>
-                                    <TableCell class="text-right font-medium text-red-600">
-                                        -{{ formatCurrency(transaction.amount, props.budget.currency_code) }}
+                                    <TableCell
+                                        :class="cn('text-right font-medium', transaction.type === 'expense' ? 'text-green-600' : 'text-red-600')"
+                                    >
+                                        {{ transaction.type === 'expense' ? '-' : '+'
+                                        }}{{ formatCurrency(Math.abs(transaction.amount), props.budget.currency_code) }}
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -523,17 +573,51 @@ const handleDelete = () => {
 
                             <!-- Amount -->
                             <div class="space-y-2">
-                                <label for="amount" class="text-sm font-medium">Pembayaran ({{ props.budget.currency_code }})</label>
-                                <Input
+                                <Label for="amount" class="text-sm font-medium"> Jumlah transaksi</Label>
+                                <NumberField
+                                    :step="500"
+                                    :min="0"
                                     id="amount"
-                                    v-model="form.amount"
-                                    type="number"
                                     placeholder="Jumlah transaksi"
-                                    min="0"
-                                    :class="{ 'border-red-500': errors.amount }"
-                                />
-                                <p class="text-muted-foreground text-sm">Negatif untuk pengeluaran dan positif untuk pemasukan.</p>
+                                    :model-value="form.amount"
+                                    :format-options="{
+                                        style: 'currency',
+                                        currency: props.budget.currency_code,
+                                        currencyDisplay: 'code',
+                                        currencySign: 'accounting',
+                                    }"
+                                    @update:model-value="
+                                        (v) => {
+                                            if (v) {
+                                                form.amount = v;
+                                            } else {
+                                                form.amount = 0;
+                                            }
+                                        }
+                                    "
+                                >
+                                    <NumberFieldContent>
+                                        <NumberFieldDecrement />
+                                        <NumberFieldInput />
+                                        <NumberFieldIncrement />
+                                    </NumberFieldContent>
+                                </NumberField>
                                 <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
+                            </div>
+
+                            <!-- Transaction Type -->
+                            <div class="space-y-2">
+                                <label for="type" class="text-sm font-medium">Tipe Transaksi</label>
+                                <Select v-model="form.type">
+                                    <SelectTrigger :class="{ 'border-red-500': errors.type, 'w-full': true }">
+                                        <SelectValue placeholder="Pilih tipe transaksi" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="expense">Pembayaran Utang (Expense)</SelectItem>
+                                        <SelectItem value="income">Penambahan Utang (Income)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="errors.type" class="mt-1 text-xs text-red-500">{{ errors.type }}</p>
                             </div>
 
                             <!-- Memo -->
