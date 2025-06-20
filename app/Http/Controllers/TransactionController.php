@@ -53,6 +53,7 @@ class TransactionController extends Controller
             'memo' => 'nullable|string|max:500',
             'budget_id' => 'required|exists:budgets,id',
             'current_account_id' => 'nullable|exists:accounts,id',
+            'type' => 'required|in:expense,income',
         ]);
 
         try {
@@ -68,7 +69,18 @@ class TransactionController extends Controller
             $payee = $validated['payee'] ?? '';
             $memo = $validated['memo'] ?? '';
             $current_account_id = $validated['current_account_id'] ?? null;
-            $amount = $validated['amount'];
+            $amount = abs($validated['amount']); // Selalu gunakan nilai positif
+            $type = $validated['type'];
+            
+            // Jika tipe transaksi adalah expense, maka jumlah harus negatif
+            if ($type === 'expense') {
+                $amount = -$amount;
+                
+                // Cek apakah saldo cukup untuk transaksi expense
+                if ($account->balance + $amount < 0) {
+                    throw new \Exception('Saldo tidak cukup untuk melakukan transaksi ini.');
+                }
+            }
 
             // Jika ada current_account_id, berarti ini adalah transaksi pinjaman
             if ($current_account_id) {
@@ -98,6 +110,7 @@ class TransactionController extends Controller
                         'category_id' => $validated['category_id'],
                         'account_id' => $current_account_id,
                         'budget_id' => $validated['budget_id'],
+                        'type' => 'expense', // Pembayaran pinjaman selalu expense
                     ]);
                 } else {
                     // Jika bukan akun pinjaman, gunakan logika normal
@@ -109,6 +122,7 @@ class TransactionController extends Controller
                         'category_id' => $validated['category_id'],
                         'account_id' => $current_account_id,
                         'budget_id' => $validated['budget_id'],
+                        'type' => $type,
                     ]);
 
                     $current_account->balance = $current_account->balance + $amount;
@@ -124,6 +138,7 @@ class TransactionController extends Controller
                     'category_id' => $validated['category_id'],
                     'account_id' => $validated['account_id'],
                     'budget_id' => $validated['budget_id'],
+                    'type' => $type,
                 ]);
 
                 $account->balance = $account->balance + $amount;
@@ -169,6 +184,7 @@ class TransactionController extends Controller
             'memo' => 'nullable|string|max:500',
             'budget_id' => 'required|exists:budgets,id',
             'current_account_id' => 'nullable|exists:accounts,id',
+            'type' => 'required|in:expense,income',
         ]);
 
         try {
@@ -188,7 +204,20 @@ class TransactionController extends Controller
             $oldAccountId = $transaction->account_id;
             $oldCategoryId = $transaction->category_id;
             $newCategoryId = $validated['category_id'];
-            $amount = $validated['amount'];
+            $amount = abs($validated['amount']); // Selalu gunakan nilai positif
+            $type = $validated['type'];
+            
+            // Jika tipe transaksi adalah expense, maka jumlah harus negatif
+            if ($type === 'expense') {
+                $amount = -$amount;
+                
+                // Cek apakah saldo cukup untuk transaksi expense
+                // Hitung saldo setelah mengembalikan transaksi lama dan menambahkan yang baru
+                $newBalance = $account->balance - $oldAmount + $amount;
+                if ($newBalance < 0) {
+                    throw new \Exception('Saldo tidak cukup untuk melakukan transaksi ini.');
+                }
+            }
 
             // Jika ada current_account_id, berarti ini adalah transaksi pinjaman
             if ($current_account_id) {
@@ -228,6 +257,7 @@ class TransactionController extends Controller
                         'date' => $validated['date'],
                         'category_id' => $validated['category_id'],
                         'account_id' => $current_account_id, // rekening loan
+                        'type' => 'expense', // Pembayaran pinjaman selalu expense
                     ]);
                 } else {
                     // Jika bukan akun pinjaman, gunakan logika normal
@@ -255,6 +285,7 @@ class TransactionController extends Controller
                         'date' => $validated['date'],
                         'category_id' => $validated['category_id'],
                         'account_id' => $current_account_id,
+                        'type' => $type,
                     ]);
                 }
             } else {
@@ -283,6 +314,7 @@ class TransactionController extends Controller
                     'date' => $validated['date'],
                     'category_id' => $validated['category_id'],
                     'account_id' => $validated['account_id'],
+                    'type' => $type,
                 ]);
 
                 // Handle category activity updates

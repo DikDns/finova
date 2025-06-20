@@ -108,7 +108,7 @@ class AIController extends Controller
             // Prepare user message with budget context if available
             $userMessage = $message;
             if (!empty($budgetContext)) {
-                $userMessage = "[CONTEXT]\n{$budgetContext}\n[/CONTEXT]\n\nUser Question: {$message}";
+                $userMessage = "[CONTEXT]\n{$budgetContext}\n[/CONTEXT]\n\nBalas dalam bahasa Indonesia, berikut ini pertanyaan pengguna: {$message}";
             }
 
             // Call Gemini API
@@ -116,7 +116,7 @@ class AIController extends Controller
                 'Content-Type' => 'application/json',
             ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
                 'contents' => [
-                    ...$formattedHistory,
+                    // ...$formattedHistory,
                     [
                         'role' => 'user',
                         'parts' => [['text' => $userMessage]],
@@ -129,15 +129,18 @@ class AIController extends Controller
                 ],
             ]);
 
+
             $data = $response->json();
             $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Maaf, saya tidak dapat memproses permintaan Anda saat ini.';
+
+
 
             // Get existing chat or create new one
             if ($chatId) {
                 $aiChat = AiChat::where('id', $chatId)
                     ->where('user_id', Auth::id())
                     ->first();
-                
+
                 if (!$aiChat) {
                     // If chat ID is invalid, create a new chat
                     $aiChat = AiChat::create([
@@ -161,14 +164,14 @@ class AIController extends Controller
                 ]);
             }
 
-            // Save user message
+            // // Save user message
             AiMessage::create([
                 'ai_chat_id' => $aiChat->id,
                 'content' => $message,
                 'role' => 'user',
             ]);
 
-            // Save AI response
+            // // Save AI response
             AiMessage::create([
                 'ai_chat_id' => $aiChat->id,
                 'content' => $reply,
@@ -177,7 +180,7 @@ class AIController extends Controller
 
             return response()->json([
                 'reply' => $reply,
-                'chat_id' => $aiChat->id
+                'chat_id' => '$aiChat->id'
             ]);
         } catch (\Exception $e) {
             Log::error('Gemini API Error: ' . $e->getMessage());

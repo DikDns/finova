@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('account_id');
-            $table->foreignUuid('category_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignUuid('budget_id')->constrained()->onDelete('cascade');
-            $table->string('payee', 255);
-            $table->dateTime('date');
-            $table->decimal('amount', 19, 4);
-            $table->text('memo');
+            $table->string('payee')->nullable();
+            $table->decimal('amount', 15, 2);
+            $table->date('date');
+            $table->text('memo')->nullable();
+            $table->enum('type', ['expense', 'income'])->default('expense');
+            $table->foreignUuid('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('account_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('budget_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -26,6 +26,7 @@ import { CalendarIcon, ChevronLeft, ChevronRight, EllipsisIcon, Plus } from 'luc
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field';
 interface Props {
     budget: Budget;
     transactions: {
@@ -61,6 +62,7 @@ const form = ref({
     account_id: '' as string,
     memo: '',
     budget_id: props.budget.id,
+    type: 'expense' as 'expense' | 'income',
 });
 
 const dateValue = ref<DateValue>();
@@ -88,6 +90,7 @@ const resetForm = () => {
         account_id: '',
         memo: '',
         budget_id: props.budget.id,
+        type: 'expense',
     };
     errors.value = {};
     isLoading.value = false;
@@ -110,6 +113,7 @@ const setEditForm = (transaction: Transaction) => {
         account_id: transaction.account_id,
         memo: transaction.memo || '',
         budget_id: props.budget.id,
+        type: transaction.type,
     };
 };
 
@@ -318,17 +322,52 @@ const goToPage = (page: number) => {
                                     </Select>
                                 </div>
 
+                                <!-- Transaction Type -->
+                                <div class="space-y-2">
+                                    <label for="type" class="text-sm font-medium">Tipe Transaksi</label>
+                                    <Select v-model="form.type" default-value="expense">
+                                        <SelectTrigger class="w-full">
+                                            <SelectValue placeholder="Pilih tipe transaksi" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="expense">Pengeluaran (Expense)</SelectItem>
+                                            <SelectItem value="income">Pemasukan (Income)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
                                 <!-- Amount -->
                                 <div class="space-y-2">
-                                    <label for="amount" class="text-sm font-medium">Jumlah ({{ props.budget.currency_code }})</label>
-                                    <Input
+                                    <Label for="amount" class="text-sm font-medium"> Jumlah </Label>
+                                    <NumberField
+                                        :step="500"
+                                        :min="0"
                                         id="amount"
-                                        v-model="form.amount"
-                                        type="number"
                                         placeholder="Jumlah transaksi"
-                                        :class="{ 'border-red-500': errors.amount }"
-                                    />
-                                    <p class="text-muted-foreground text-sm">Negatif untuk pengeluaran dan positif untuk pemasukan.</p>
+                                        :model-value="form.amount"
+                                        :format-options="{
+                                            style: 'currency',
+                                            currency: props.budget.currency_code,
+                                            currencyDisplay: 'code',
+                                            currencySign: 'accounting',
+                                        }"
+                                        @update:model-value="
+                                            (v) => {
+                                                if (v) {
+                                                    form.amount = v;
+                                                } else {
+                                                    form.amount = 0;
+                                                }
+                                            }
+                                        "
+                                    >
+                                        <NumberFieldContent>
+                                            <NumberFieldDecrement />
+                                            <NumberFieldInput />
+                                            <NumberFieldIncrement />
+                                        </NumberFieldContent>
+                                    </NumberField>
+
                                     <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
                                 </div>
 
@@ -507,17 +546,51 @@ const goToPage = (page: number) => {
                                 </Select>
                             </div>
 
+                            <!-- Transaction Type -->
+                            <div class="space-y-2">
+                                <label for="type" class="text-sm font-medium">Tipe Transaksi</label>
+                                <Select v-model="form.type" default-value="expense">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Pilih tipe transaksi" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="expense">Pengeluaran (Expense)</SelectItem>
+                                        <SelectItem value="income">Pemasukan (Income)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <!-- Amount -->
                             <div class="space-y-2">
-                                <label for="amount" class="text-sm font-medium">Jumlah ({{ props.budget.currency_code }})</label>
-                                <Input
+                                <Label for="amount" class="text-sm font-medium"> Jumlah </Label>
+                                <NumberField
+                                    :step="500"
+                                    :min="0"
                                     id="amount"
-                                    v-model="form.amount"
-                                    type="number"
                                     placeholder="Jumlah transaksi"
-                                    :class="{ 'border-red-500': errors.amount }"
-                                />
-                                <p class="text-muted-foreground text-sm">Negatif untuk pengeluaran dan positif untuk pemasukan.</p>
+                                    :model-value="form.amount"
+                                    :format-options="{
+                                        style: 'currency',
+                                        currency: props.budget.currency_code,
+                                        currencyDisplay: 'code',
+                                        currencySign: 'accounting',
+                                    }"
+                                    @update:model-value="
+                                        (v) => {
+                                            if (v) {
+                                                form.amount = v;
+                                            } else {
+                                                form.amount = 0;
+                                            }
+                                        }
+                                    "
+                                >
+                                    <NumberFieldContent>
+                                        <NumberFieldDecrement />
+                                        <NumberFieldInput />
+                                        <NumberFieldIncrement />
+                                    </NumberFieldContent>
+                                </NumberField>
                                 <p v-if="errors.amount" class="mt-1 text-xs text-red-500">{{ errors.amount }}</p>
                             </div>
 

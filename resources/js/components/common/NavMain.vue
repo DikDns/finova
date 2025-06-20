@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     SidebarGroup,
@@ -67,7 +68,7 @@ const editingAccount = ref<any>(null);
 const accountForm = ref({
     name: '',
     type: '',
-    balance: '',
+    balance: 0,
     interest: '',
     minimum_payment_monthly: '',
 });
@@ -76,7 +77,7 @@ const editAccountForm = ref({
     id: '',
     name: '',
     type: '',
-    balance: '',
+    balance: 0,
     interest: '',
     minimum_payment_monthly: '',
 });
@@ -85,7 +86,7 @@ const resetForm = () => {
     accountForm.value = {
         name: '',
         type: '',
-        balance: '',
+        balance: 0,
         interest: '',
         minimum_payment_monthly: '',
     };
@@ -96,7 +97,7 @@ const resetEditForm = () => {
         id: '',
         name: '',
         type: '',
-        balance: '',
+        balance: 0,
         interest: '',
         minimum_payment_monthly: '',
     };
@@ -116,8 +117,13 @@ const openEditDialog = (account: any, accountType: string) => {
 };
 
 const createAccount = () => {
-    if (!accountForm.value.name || !accountForm.value.type || accountForm.value.balance === '') {
+    if (!accountForm.value.name || !accountForm.value.type) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
+        return;
+    }
+
+    if (accountForm.value.balance < 0) {
+        toast.error(`Jumlah ${accountForm.value.type === 'cash' ? 'saldo' : 'utang'} tidak boleh negatif`);
         return;
     }
 
@@ -131,7 +137,7 @@ const createAccount = () => {
     const formData: any = {
         name: accountForm.value.name,
         type: accountForm.value.type,
-        balance: parseFloat(accountForm.value.balance),
+        balance: accountForm.value.balance,
         budget_id: props.budget_id,
     };
 
@@ -164,8 +170,13 @@ const createAccount = () => {
 const updateAccount = () => {
     console.log('editAccountForm: ', editAccountForm.value);
 
-    if (!editAccountForm.value.name || !editAccountForm.value.type || editAccountForm.value.balance === '') {
+    if (!editAccountForm.value.name || !editAccountForm.value.type) {
         toast.error('Mohon lengkapi semua field yang diperlukan');
+        return;
+    }
+
+    if (editAccountForm.value.balance < 0) {
+        toast.error(`Jumlah ${editAccountForm.value.type === 'cash' ? 'saldo' : 'utang'} tidak boleh negatif`);
         return;
     }
 
@@ -179,7 +190,7 @@ const updateAccount = () => {
     const formData: any = {
         name: editAccountForm.value.name,
         type: editAccountForm.value.type,
-        balance: parseFloat(editAccountForm.value.balance),
+        balance: editAccountForm.value.balance,
         budget_id: props.budget_id,
     };
 
@@ -340,19 +351,35 @@ const confirmDeleteAccount = () => {
                         </Select>
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="balance" class="text-right">
-                            {{ accountForm.type === 'loan' ? 'Total Utang' : 'Saldo' }}
-                        </Label>
-                        <Input
+                        <Label for="balance" class="text-right"> {{ accountForm.type === 'loan' ? 'Total Utang' : 'Saldo' }} </Label>
+                        <NumberField
                             id="balance"
-                            v-model="accountForm.balance"
-                            type="number"
-                            step="500"
-                            min="0"
-                            required
-                            :placeholder="accountForm.type === 'loan' ? 'Jumlah utang' : 'Saldo awal'"
+                            :step="500"
+                            :min="0"
+                            :model-value="accountForm.balance"
+                            :format-options="{
+                                style: 'currency',
+                                currency: currency_code,
+                                currencyDisplay: 'code',
+                                currencySign: 'accounting',
+                            }"
                             class="col-span-3"
-                        />
+                            @update:model-value="
+                                (v) => {
+                                    if (v) {
+                                        accountForm.balance = v;
+                                    } else {
+                                        accountForm.balance = 0;
+                                    }
+                                }
+                            "
+                        >
+                            <NumberFieldContent>
+                                <NumberFieldDecrement />
+                                <NumberFieldInput />
+                                <NumberFieldIncrement />
+                            </NumberFieldContent>
+                        </NumberField>
                     </div>
                     <!-- Additional fields for loan type -->
                     <template v-if="accountForm.type === 'loan'">
@@ -407,16 +434,34 @@ const confirmDeleteAccount = () => {
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4" v-if="editAccountForm.type !== 'loan'">
                         <Label for="edit-balance" class="text-right"> Saldo </Label>
-                        <Input
+                        <NumberField
+                            class="col-span-3 text-left"
                             id="edit-balance"
-                            v-model="editAccountForm.balance"
-                            type="number"
-                            step="500"
-                            min="0"
-                            placeholder="Saldo awal"
-                            required
-                            class="col-span-3"
-                        />
+                            :step="500"
+                            :min="0"
+                            :model-value="editAccountForm.balance"
+                            :format-options="{
+                                style: 'currency',
+                                currency: currency_code,
+                                currencyDisplay: 'code',
+                                currencySign: 'accounting',
+                            }"
+                            @update:model-value="
+                                (v) => {
+                                    if (v) {
+                                        editAccountForm.balance = v;
+                                    } else {
+                                        editAccountForm.balance = 0;
+                                    }
+                                }
+                            "
+                        >
+                            <NumberFieldContent>
+                                <NumberFieldDecrement />
+                                <NumberFieldInput />
+                                <NumberFieldIncrement />
+                            </NumberFieldContent>
+                        </NumberField>
                     </div>
                     <!-- Additional fields for loan type -->
                     <template v-if="editAccountForm.type === 'loan'">

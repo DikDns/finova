@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\CategoryGroup;
-use App\Models\MonthlyBudget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
 {
@@ -108,10 +106,10 @@ class CategoryController extends Controller
 
             // Before deleting, restore the assigned amounts back to monthly budgets
             $categoryBudgets = $category->categoryBudgets;
-            
+
             foreach ($categoryBudgets as $categoryBudget) {
                 $monthlyBudget = $categoryBudget->monthlyBudget;
-                
+
                 // Restore the assigned amount back to total_balance
                 $monthlyBudget->update([
                     'total_balance' => $monthlyBudget->total_balance + $categoryBudget->assigned

@@ -15,22 +15,22 @@ class Transaction extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'account_id',
-        'category_id',
-        'budget_id',
         'payee',
-        'date',
         'amount',
-        'memo'
+        'date',
+        'memo',
+        'type',
+        'category_id',
+        'account_id',
+        'budget_id',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'datetime',
-            'amount' => 'decimal:4'
-        ];
-    }
+    protected $casts = [
+        'id' => 'string',
+        'amount' => 'decimal:4',
+        'date' => 'date',
+        'type' => 'string',
+    ];
 
     public function account(): BelongsTo
     {

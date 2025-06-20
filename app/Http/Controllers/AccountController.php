@@ -135,6 +135,7 @@ class AccountController extends Controller
                     'budget_id' => $validated['budget_id'],
                     'category_id' => null, // No category for initial balance
                     'payee' => 'Saldo Awal',
+                    'type' => 'income',
                     'date' => now(),
                     'amount' => $validated['balance'], // Positive amount for income
                     'memo' => 'Saldo awal rekening ' . $validated['name']
@@ -195,6 +196,7 @@ class AccountController extends Controller
                     'budget_id' => $account->budget_id,
                     'category_id' => null,
                     'payee' => 'Penyesuaian Saldo',
+                    'type' => 'income',
                     'date' => now(),
                     'amount' => $balanceDifference,
                     'memo' => 'Penyesuaian saldo rekening ' . $validated['name']
